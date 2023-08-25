@@ -13,9 +13,11 @@ Examination Protocol is a plugin that streamlines the process of managing and co
 - [Suggestions](#suggestions)
 - [License](#license)
 
+
 ## BETA Disclaimer
-The plugin is currently in a *BETA* state. Please do not use it in production.
-If you find any bugs or side effects, please let me know, either by posting an issue in this git repository or later by submitting a Mantis ticket.
+The plugin provided herein is currently in a BETA state of development. It is not recommended for use in production environments. Users are advised that any use of the plugin in a production setting is undertaken at their own risk. The developers and maintainers of the plugin will not be responsible for any consequences arising from the use of this plugin in production systems.
+
+During this beta phase, user feedback is crucial to improve the plugin's functionality and stability. If you encounter any bugs, unexpected behaviors, or side effects while using the plugin, please let us know. You can submit your feedback by creating an issue on the associated Git repository or through some time later submission of a Mantis ticket.
 
 ## Installation
 

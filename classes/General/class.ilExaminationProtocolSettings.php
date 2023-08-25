@@ -20,8 +20,13 @@ declare(strict_types=1);
  */
 
 namespace ILIAS\Plugin\ExaminationProtocol;
+
 use ilSetting;
 
+/**
+ * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
+ * @version  $Id$
+ */
 class ilExaminationProtocolSettings
 {
     /** @var ilSetting */
@@ -35,6 +40,9 @@ class ilExaminationProtocolSettings
         2 => 'all'
     ];
 
+    /**
+     * @param ilSetting $settings
+     */
     public function __construct(ilSetting $settings)
     {
         $this->settings = $settings;
@@ -43,26 +51,25 @@ class ilExaminationProtocolSettings
 
     /**
      *
-     * @param bool $state
+     * @param int $mode
      * @return void
      */
-    public function setOperationMode(int $mode) {
+    public function setOperationMode(int $mode) : void
+    {
         $this->examination_protocol_settings['mode'] = self::OPERATION_MODES[$mode];
         $this->save();
     }
 
-
-
     /**
      * @return int
      */
-    public function getOperationModeKey() : ?int {
+    public function getOperationModeKey() : ?int
+    {
         if (is_null($this->examination_protocol_settings['mode'])) {
             return null;
         }
         return array_search($this->examination_protocol_settings['mode'], self::OPERATION_MODES);
     }
-
 
     /**
      * Save the current settings state
@@ -84,7 +91,7 @@ class ilExaminationProtocolSettings
             $examination_protocol_setting = json_decode($examination_protocol_setting, true);
         }
         if (!is_array($examination_protocol_setting)) {
-            $examination_protocol_setting  = [];
+            $examination_protocol_setting = [];
         }
         $this->examination_protocol_settings = $examination_protocol_setting;
     }

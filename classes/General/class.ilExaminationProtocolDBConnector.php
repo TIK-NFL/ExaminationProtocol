@@ -21,6 +21,10 @@ declare(strict_types=1);
 
 namespace ILIAS\Plugin\ExaminationProtocol;
 
+/**
+ * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
+ * @version  $Id$
+ */
 class ilExaminationProtocolDBConnector
 {
     /** @var string */
@@ -73,6 +77,9 @@ class ilExaminationProtocolDBConnector
     /** @var $ilDB */
     private $ilDB;
 
+    /**
+     *
+     */
     public function __construct()
     {
         global $ilDB;
@@ -85,7 +92,8 @@ class ilExaminationProtocolDBConnector
      * @param array $values An array of values to be inserted into the settings table.
      * @return void
      */
-    public function insertSetting(array $values) {
+    public function insertSetting(array $values) : void
+    {
         // add auto increment to first array element
         $primaryKey = [self::SETTINGS_PRIMARY_KEY => ['integer', $this->ilDB->nextId(self::SETTINGS_TABLE_NAME)]];
         $keyValue = array_combine(self::SETTINGS_TABLE_FIELDS, $values);
@@ -96,7 +104,8 @@ class ilExaminationProtocolDBConnector
      * @param array $values
      * @return void
      */
-    public function createEmptySetting(array $values) {
+    public function createEmptySetting(array $values) : void
+    {
         // add auto increment to first array element
         $primaryKey = [self::SETTINGS_PRIMARY_KEY => ['integer', $this->ilDB->nextId(self::SETTINGS_TABLE_NAME)]];
         $keyValue = array_combine([self::SETTINGS_TABLE_FIELDS[0]], $values);
@@ -109,7 +118,8 @@ class ilExaminationProtocolDBConnector
      * @param array $where An associative array of column names and their values to use as a WHERE clause to identify the row to update.
      * @return void
      */
-    public function updateSetting(array $values, array $where) {
+    public function updateSetting(array $values, array $where) : void
+    {
         $columns = array_combine(self::SETTINGS_TABLE_FIELDS, $values);
         $this->ilDB->update(self::SETTINGS_TABLE_NAME, $columns, $where);
     }
@@ -121,11 +131,12 @@ class ilExaminationProtocolDBConnector
      */
     public function getSettingByTestID($test_id) : array
     {
-        $query = $this->ilDB->queryF("SELECT * FROM " . self::SETTINGS_TABLE_NAME . " WHERE ".self::TEST_ID_KEY." = %s",
+        $query = $this->ilDB->queryF(
+            "SELECT * FROM " . self::SETTINGS_TABLE_NAME . " WHERE " . self::TEST_ID_KEY . " = %s",
             array('integer'),
             array($test_id)
         );
-        return (array)$this->ilDB->fetchObject($query);
+        return (array) $this->ilDB->fetchObject($query);
     }
 
     /**
@@ -133,8 +144,10 @@ class ilExaminationProtocolDBConnector
      * @param $test_id
      * @return bool
      */
-    public function settingsExistByTestID($test_id) : bool {
-        $query = $this->ilDB->queryF("SELECT * FROM " . self::SETTINGS_TABLE_NAME . " WHERE ".self::TEST_ID_KEY."= %s",
+    public function settingsExistByTestID($test_id) : bool
+    {
+        $query = $this->ilDB->queryF(
+            "SELECT * FROM " . self::SETTINGS_TABLE_NAME . " WHERE " . self::TEST_ID_KEY . "= %s",
             array('integer'),
             array($test_id)
         );
@@ -150,13 +163,15 @@ class ilExaminationProtocolDBConnector
      * @param $test_id
      * @return string|null
      */
-    public function getProtocolIDByTestID($test_id) : ?string {
-        $query = $this->ilDB->queryF("SELECT protocol_id FROM " . self::SETTINGS_TABLE_NAME . " WHERE ".self::TEST_ID_KEY." = %s",
+    public function getProtocolIDByTestID($test_id) : ?string
+    {
+        $query = $this->ilDB->queryF(
+            "SELECT protocol_id FROM " . self::SETTINGS_TABLE_NAME . " WHERE " . self::TEST_ID_KEY . " = %s",
             array('integer'),
             array($test_id)
         );
         $result = (array) $this->ilDB->fetchObject($query);
-        if (isset($result)){
+        if (isset($result)) {
             return $result['protocol_id'];
         }
         return null;
@@ -170,27 +185,34 @@ class ilExaminationProtocolDBConnector
      */
     public function getAllSupervisorsByProtocolID($protocol_id) : array
     {
-        $query = $this->ilDB->queryF("SELECT * FROM " . self::SUPERVISOR_TABLE_NAME . " WHERE ".self::SETTINGS_PRIMARY_KEY." = %s",
+        $query = $this->ilDB->queryF(
+            "SELECT * FROM " . self::SUPERVISOR_TABLE_NAME . " WHERE " . self::SETTINGS_PRIMARY_KEY . " = %s",
             array('integer'),
             array($protocol_id)
         );
-        return (array)$this->ilDB->fetchAll($query);
+        return (array) $this->ilDB->fetchAll($query);
     }
 
+    /**
+     * @param $supervisor_id
+     * @return array
+     */
     public function getSupervisorBySupervisorID($supervisor_id) : array
     {
-        $query = $this->ilDB->queryF("SELECT name FROM " . self::SUPERVISOR_TABLE_NAME . " WHERE ".self::SUPERVISOR_PRIMARY_KEY." = %s",
+        $query = $this->ilDB->queryF(
+            "SELECT name FROM " . self::SUPERVISOR_TABLE_NAME . " WHERE " . self::SUPERVISOR_PRIMARY_KEY . " = %s",
             array('integer'),
             array($supervisor_id)
         );
-        return (array)$this->ilDB->fetchAll($query);
+        return (array) $this->ilDB->fetchAll($query);
     }
     /**
      * Inserts a new row into the supervisor table using the provided key-value pairs.
      * @param array $values An array of values to be inserted into the settings table.
      * @return void
      */
-    public function insertSupervisor(array $values) {
+    public function insertSupervisor(array $values) : void
+    {
         // add auto increment to first array element
         $primary_key = [self::SUPERVISOR_PRIMARY_KEY => ['integer', $this->ilDB->nextId(self::SUPERVISOR_TABLE_NAME)]];
         $key_value = array_combine(self::SUPERVISOR_TABLE_FIELDS, $values);
@@ -202,8 +224,9 @@ class ilExaminationProtocolDBConnector
      * @param string $supervisor_id An array containing one or more supervisor ID(s) to be used in the SQL query's 'IN' clause.
      * @return void This function does not return anything.
      */
-    public function deleteSupervisorRows(string $supervisor_id) : void {
-        $query = "DELETE FROM ".self::SUPERVISOR_TABLE_NAME ." WHERE ".self::SUPERVISOR_PRIMARY_KEY." IN ".$supervisor_id;
+    public function deleteSupervisorRows(string $supervisor_id) : void
+    {
+        $query = "DELETE FROM " . self::SUPERVISOR_TABLE_NAME . " WHERE " . self::SUPERVISOR_PRIMARY_KEY . " IN " . $supervisor_id;
         $this->ilDB->manipulate($query);
     }
 
@@ -215,20 +238,26 @@ class ilExaminationProtocolDBConnector
      */
     public function getAllLocationsByProtocolID($protocol_id) : array
     {
-        $query = $this->ilDB->queryF("SELECT * FROM " . self::LOCATION_TABLE_NAME . " WHERE ".self::SETTINGS_PRIMARY_KEY." = %s",
+        $query = $this->ilDB->queryF(
+            "SELECT * FROM " . self::LOCATION_TABLE_NAME . " WHERE " . self::SETTINGS_PRIMARY_KEY . " = %s",
             array('integer'),
             array($protocol_id)
         );
-        return (array)$this->ilDB->fetchAll($query);
+        return (array) $this->ilDB->fetchAll($query);
     }
 
+    /**
+     * @param $location_id
+     * @return array
+     */
     public function getLocationsByLocationID($location_id) : array
     {
-        $query = $this->ilDB->queryF("SELECT location FROM " . self::LOCATION_TABLE_NAME . " WHERE ".self::LOCATION_PRIMARY_KEY." = %s",
+        $query = $this->ilDB->queryF(
+            "SELECT location FROM " . self::LOCATION_TABLE_NAME . " WHERE " . self::LOCATION_PRIMARY_KEY . " = %s",
             array('integer'),
             array($location_id)
         );
-        return (array)$this->ilDB->fetchAll($query);
+        return (array) $this->ilDB->fetchAll($query);
     }
 
     /**
@@ -236,7 +265,8 @@ class ilExaminationProtocolDBConnector
      * @param array $values An array of values to be inserted into the settings table.
      * @return void
      */
-    public function insertLocation(array $values) {
+    public function insertLocation(array $values) : void
+    {
         // add auto increment to first array element
         $primary_key = [self::LOCATION_PRIMARY_KEY => ['integer', $this->ilDB->nextId(self::LOCATION_TABLE_NAME)]];
         $key_value = array_combine(self::LOCATION_TABLE_FIELDS, $values);
@@ -248,8 +278,9 @@ class ilExaminationProtocolDBConnector
      * @param string $location_ids
      * @return void
      */
-    public function deleteLocationRows(string $location_ids) {
-        $query = "DELETE FROM ".self::LOCATION_TABLE_NAME ." WHERE ".self::LOCATION_PRIMARY_KEY." IN ".$location_ids;
+    public function deleteLocationRows(string $location_ids) : void
+    {
+        $query = "DELETE FROM " . self::LOCATION_TABLE_NAME . " WHERE " . self::LOCATION_PRIMARY_KEY . " IN " . $location_ids;
         $this->ilDB->manipulate($query);
     }
 
@@ -261,11 +292,12 @@ class ilExaminationProtocolDBConnector
      */
     public function getAllParticipantsByProtocolID($protocol_id) : array
     {
-        $query = $this->ilDB->queryF("SELECT * FROM " . self::PARTICIPANTS_TABLE_NAME . " WHERE ".self::SETTINGS_PRIMARY_KEY." = %s",
+        $query = $this->ilDB->queryF(
+            "SELECT * FROM " . self::PARTICIPANTS_TABLE_NAME . " WHERE " . self::SETTINGS_PRIMARY_KEY . " = %s",
             array('integer'),
             array($protocol_id)
         );
-        return (array)$this->ilDB->fetchAll($query);
+        return (array) $this->ilDB->fetchAll($query);
     }
 
     /**
@@ -273,7 +305,8 @@ class ilExaminationProtocolDBConnector
      * @param array $values An array of values to be inserted into the settings table.
      * @return void
      */
-    public function insertParticipant(array $values) {
+    public function insertParticipant(array $values) : void
+    {
         // add auto increment to first array element
         $primary_key = [self::PARTICIPANTS_PRIMARY_KEY => ['integer', $this->ilDB->nextId(self::PARTICIPANTS_TABLE_NAME)]];
         $key_value = array_combine(self::PARTICIPANTS_TABLE_FIELDS, $values);
@@ -285,63 +318,100 @@ class ilExaminationProtocolDBConnector
      * @param string $participant_ids
      * @return void
      */
-    public function deleteParticipantRows(string $participant_ids) {
-        $query = "DELETE FROM ".self::PARTICIPANTS_TABLE_NAME ." WHERE ".self::PARTICIPANTS_PRIMARY_KEY." IN ".$participant_ids;
+    public function deleteParticipantRows(string $participant_ids) : void
+    {
+        $query = "DELETE FROM " . self::PARTICIPANTS_TABLE_NAME . " WHERE " . self::PARTICIPANTS_PRIMARY_KEY . " IN " . $participant_ids;
         $this->ilDB->manipulate($query);
     }
 
+    /**
+     * @param $usr_ids
+     * @param $login
+     * @param $name
+     * @param $mrt
+     * @return array
+     */
     public function getAllParticipantsByUserIDandFilter($usr_ids, $login, $name, $mrt) : array
     {
         //TODO cleanup $usr_ids
-        $query = $this->ilDB->queryF("
+        $query = $this->ilDB->queryF(
+            "
             SELECT CONCAT(lastname, ', ', firstname) AS name, login, matriculation, email, usr_id
             FROM usr_data
-            WHERE usr_id IN (".$usr_ids.")
+            WHERE usr_id IN (" . $usr_ids . ")
               AND (COALESCE(%s, '') = '' OR login = %s)
               AND (COALESCE(%s, '') = '' OR matriculation LIKE CONCAT('%%', %s, '%%' ))
               AND (COALESCE(%s, '') = '' OR CONCAT(lastname, ', ', firstname) LIKE CONCAT('%%', %s, '%%' ))",
             array('string', 'string', 'string', 'string', 'string', 'string'),
             array($login, $login, $mrt, $mrt, $name, $name)
         );
-        return (array)$this->ilDB->fetchAll($query);
+        return (array) $this->ilDB->fetchAll($query);
     }
 
-    public function getUserIDbyParticipantID($participant_id) : array {
-        $query = $this->ilDB->queryF("SELECT usr_id FROM " . self::PARTICIPANTS_TABLE_NAME . " WHERE " . self::PARTICIPANTS_PRIMARY_KEY . " = %s",
+    /**
+     * @param $participant_id
+     * @return array
+     */
+    public function getUserIDbyParticipantID($participant_id) : array
+    {
+        $query = $this->ilDB->queryF(
+            "SELECT usr_id FROM " . self::PARTICIPANTS_TABLE_NAME . " WHERE " . self::PARTICIPANTS_PRIMARY_KEY . " = %s",
             array('integer'),
             array($participant_id)
         );
-        return (array)$this->ilDB->fetchAll($query);
+        return (array) $this->ilDB->fetchAll($query);
     }
 
-    public function getMatriculationByUserID($user_id) : array {
-        $query = $this->ilDB->queryF("SELECT matriculation FROM usr_data WHERE usr_id = %s",
+    /**
+     * @param $user_id
+     * @return array
+     */
+    public function getMatriculationByUserID($user_id) : array
+    {
+        $query = $this->ilDB->queryF(
+            "SELECT matriculation FROM usr_data WHERE usr_id = %s",
             array('integer'),
             array($user_id)
         );
-        return (array)$this->ilDB->fetchAll($query);
+        return (array) $this->ilDB->fetchAll($query);
     }
-    public function getLoginByUserID($user_id) : array {
-        $query = $this->ilDB->queryF("SELECT login FROM usr_data WHERE usr_id = %s",
+
+    /**
+     * @param $user_id
+     * @return array
+     */
+    public function getLoginByUserID($user_id) : array
+    {
+        $query = $this->ilDB->queryF(
+            "SELECT login FROM usr_data WHERE usr_id = %s",
             array('integer'),
             array($user_id)
         );
-        return (array)$this->ilDB->fetchAll($query);
+        return (array) $this->ilDB->fetchAll($query);
     }
-    public function getUsernameByUserID($user_id) : array {
-        $query = $this->ilDB->queryF("SELECT firstname, lastname FROM usr_data WHERE usr_id = %s",
+
+    /**
+     * @param $user_id
+     * @return array
+     */
+    public function getUsernameByUserID($user_id) : array
+    {
+        $query = $this->ilDB->queryF(
+            "SELECT firstname, lastname FROM usr_data WHERE usr_id = %s",
             array('integer'),
             array($user_id)
         );
-        return (array)$this->ilDB->fetchAll($query);
+        return (array) $this->ilDB->fetchAll($query);
     }
+
     // Examination protocol entries
     /**
      * Inserts a new row into the protocol table using the provided key-value pairs.
      * @param array $values An array of values to be inserted into the settings table.
      * @return string row index of current entry
      */
-    public function insertProtocolEntry(array $values) : string {
+    public function insertProtocolEntry(array $values) : string
+    {
         // add auto increment to first array element
         $primary_key = [self::PROTOCOL_PRIMARY_KEY => ['integer', $this->ilDB->nextId(self::PROTOCOL_TABLE_NAME)]];
         $key_value = array_combine(self::PROTOCOL_TABLE_FIELDS, $values);
@@ -353,24 +423,28 @@ class ilExaminationProtocolDBConnector
      * @param $entry_id
      * @return array
      */
-    public function getAllProtocolEntries($entry_id) : array {
-        $query = $this->ilDB->queryF("SELECT * FROM " . self::PROTOCOL_TABLE_NAME . " WHERE ".self::PROTOCOL_PRIMARY_KEY." = %s",
+    public function getAllProtocolEntries($entry_id) : array
+    {
+        $query = $this->ilDB->queryF(
+            "SELECT * FROM " . self::PROTOCOL_TABLE_NAME . " WHERE " . self::PROTOCOL_PRIMARY_KEY . " = %s",
             array('integer'),
             array($entry_id)
         );
-        return (array)$this->ilDB->fetchAll($query);
+        return (array) $this->ilDB->fetchAll($query);
     }
 
     /**
      * @param $protocol_id
      * @return array
      */
-    public function getAllProtocolEntriesByProtocolID($protocol_id) : array {
-        $query = $this->ilDB->queryF("SELECT * FROM " . self::PROTOCOL_TABLE_NAME . " WHERE protocol_id = %s",
+    public function getAllProtocolEntriesByProtocolID($protocol_id) : array
+    {
+        $query = $this->ilDB->queryF(
+            "SELECT * FROM " . self::PROTOCOL_TABLE_NAME . " WHERE protocol_id = %s",
             array('integer'),
             array($protocol_id)
         );
-        return (array)$this->ilDB->fetchAll($query);
+        return (array) $this->ilDB->fetchAll($query);
     }
 
 
@@ -380,18 +454,29 @@ class ilExaminationProtocolDBConnector
      * @param array $where An associative array of column names and their values to use as a WHERE clause to identify the row to update.
      * @return void
      */
-    public function updateProtocolEntry(array $values, array $where) {
+    public function updateProtocolEntry(array $values, array $where) : void
+    {
         $columns = array_combine(self::PROTOCOL_TABLE_FIELDS, $values);
         $this->ilDB->update(self::PROTOCOL_TABLE_NAME, $columns, $where);
     }
 
-    public function deleteProtocolEntry(string $entry_id) : void {
-        $query = "DELETE FROM ".self::PROTOCOL_TABLE_NAME ." WHERE ".self::PROTOCOL_PRIMARY_KEY." = ".$entry_id;
+    /**
+     * @param string $entry_id
+     * @return void
+     */
+    public function deleteProtocolEntry(string $entry_id) : void
+    {
+        $query = "DELETE FROM " . self::PROTOCOL_TABLE_NAME . " WHERE " . self::PROTOCOL_PRIMARY_KEY . " = " . $entry_id;
         $this->ilDB->manipulate($query);
     }
 
-    public function deleteAllProtocolEntries(string $protocol_id) : void {
-        $query = "DELETE FROM ".self::PROTOCOL_TABLE_NAME ." WHERE ".self::SETTINGS_PRIMARY_KEY." = ".$protocol_id;
+    /**
+     * @param string $protocol_id
+     * @return void
+     */
+    public function deleteAllProtocolEntries(string $protocol_id) : void
+    {
+        $query = "DELETE FROM " . self::PROTOCOL_TABLE_NAME . " WHERE " . self::SETTINGS_PRIMARY_KEY . " = " . $protocol_id;
         $this->ilDB->manipulate($query);
     }
 
@@ -400,7 +485,8 @@ class ilExaminationProtocolDBConnector
      * @param array $values An array of values to be inserted into the settings table.
      * @return void
      */
-    public function insertProtocolParticipant(array $values) {
+    public function insertProtocolParticipant(array $values) : void
+    {
         // add auto increment to first array element
         $primary_key = [self::PROTOCOL_PARTICIPANT_PRIMARY_KEY => ['integer', $this->ilDB->nextId(self::PROTOCOL_PARTICIPANT_TABLE_NAME)]];
         $key_value = array_combine(self::PROTOCOL_PARTICIPANT_FIELDS, $values);
@@ -412,18 +498,29 @@ class ilExaminationProtocolDBConnector
      * @param string $propar_id
      * @return void
      */
-    public function deleteProtocolParticipant(string $propar_id) {
-        $query = "DELETE FROM ".self::PROTOCOL_PARTICIPANT_TABLE_NAME ." WHERE " . self::PROTOCOL_PARTICIPANT_PRIMARY_KEY . " = " . $propar_id;
+    public function deleteProtocolParticipant(string $propar_id) : void
+    {
+        $query = "DELETE FROM " . self::PROTOCOL_PARTICIPANT_TABLE_NAME . " WHERE " . self::PROTOCOL_PARTICIPANT_PRIMARY_KEY . " = " . $propar_id;
         $this->ilDB->manipulate($query);
     }
 
-    public function deleteAllProtocolParticipantByEntryId(string $entry_id) {
-        $query = "DELETE FROM ".self::PROTOCOL_PARTICIPANT_TABLE_NAME ." WHERE " . self::PROTOCOL_PRIMARY_KEY . " = " . $entry_id;
+    /**
+     * @param string $entry_id
+     * @return void
+     */
+    public function deleteAllProtocolParticipantByEntryId(string $entry_id) : void
+    {
+        $query = "DELETE FROM " . self::PROTOCOL_PARTICIPANT_TABLE_NAME . " WHERE " . self::PROTOCOL_PRIMARY_KEY . " = " . $entry_id;
         $this->ilDB->manipulate($query);
     }
 
-    public function deleteAllProtocolParticipantByProtocolId(string $protocol_id) {
-        $query = "DELETE FROM ".self::PROTOCOL_PARTICIPANT_TABLE_NAME ." WHERE " . self::SETTINGS_PRIMARY_KEY . " = " . $protocol_id;
+    /**
+     * @param string $protocol_id
+     * @return void
+     */
+    public function deleteAllProtocolParticipantByProtocolId(string $protocol_id) : void
+    {
+        $query = "DELETE FROM " . self::PROTOCOL_PARTICIPANT_TABLE_NAME . " WHERE " . self::SETTINGS_PRIMARY_KEY . " = " . $protocol_id;
         $this->ilDB->manipulate($query);
     }
 
@@ -431,24 +528,28 @@ class ilExaminationProtocolDBConnector
      * @param $entry_id
      * @return array
      */
-    public function getAllProtocolParticipants($entry_id) : array {
-        $query = $this->ilDB->queryF("SELECT * FROM " . self::PROTOCOL_PARTICIPANT_TABLE_NAME . " WHERE entry_id = %s",
+    public function getAllProtocolParticipants($entry_id) : array
+    {
+        $query = $this->ilDB->queryF(
+            "SELECT * FROM " . self::PROTOCOL_PARTICIPANT_TABLE_NAME . " WHERE entry_id = %s",
             array('integer'),
             array($entry_id)
         );
-        return (array)$this->ilDB->fetchAll($query);
+        return (array) $this->ilDB->fetchAll($query);
     }
 
     /**
      * @param $entry_id
      * @return array
      */
-    public function getAllProtocolParticipantIDs($entry_id) : array {
-        $query = $this->ilDB->queryF("SELECT participant_id FROM " . self::PROTOCOL_PARTICIPANT_TABLE_NAME . " WHERE entry_id = %s",
+    public function getAllProtocolParticipantIDs($entry_id) : array
+    {
+        $query = $this->ilDB->queryF(
+            "SELECT participant_id FROM " . self::PROTOCOL_PARTICIPANT_TABLE_NAME . " WHERE entry_id = %s",
             array('integer'),
             array($entry_id)
         );
-        return array_reduce((array)$this->ilDB->fetchAll($query), function ($carry, $item){
+        return array_reduce((array) $this->ilDB->fetchAll($query), function ($carry, $item) {
             $carry[] = $item['participant_id'];
             return $carry;
         }, []);
@@ -458,11 +559,13 @@ class ilExaminationProtocolDBConnector
      * @param $protocol_id
      * @return array
      */
-    public function getAllProtocolParticipantsByProtocolID($protocol_id) : array {
-        $query = $this->ilDB->queryF("SELECT * FROM " . self::PROTOCOL_PARTICIPANT_TABLE_NAME . " WHERE protocol_id = %s",
+    public function getAllProtocolParticipantsByProtocolID($protocol_id) : array
+    {
+        $query = $this->ilDB->queryF(
+            "SELECT * FROM " . self::PROTOCOL_PARTICIPANT_TABLE_NAME . " WHERE protocol_id = %s",
             array('integer'),
             array($protocol_id)
         );
-        return (array)$this->ilDB->fetchAll($query);
+        return (array) $this->ilDB->fetchAll($query);
     }
 }

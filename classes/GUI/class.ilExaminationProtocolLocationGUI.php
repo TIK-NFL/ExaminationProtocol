@@ -22,7 +22,7 @@ declare(strict_types=1);
 use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
 
 /**
- * @author ulf Kunze <ulf.kunze@tik.uni-stuttgart.de>
+ * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
  * @version  $Id$
  * @ilCtrl_isCalledBy ilExaminationProtocolLocationGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls ilExaminationProtocolLocationGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI
@@ -32,6 +32,10 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
     /** @var ilExaminationProtocolLocationTableGUI */
     private $location_table;
 
+    /**
+     * @throws ilDatabaseException
+     * @throws ilObjectNotFoundException
+     */
     public function __construct()
     {
         parent::__construct();
@@ -41,16 +45,16 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
         $this->location_table = new ilExaminationProtocolLocationTableGUI($this, self::CMD_SHOW, "", $this->protocol_has_entries);
 
         // toolbar // no Kitchensink alternative jet
-        if(!$this->protocol_has_entries){
+        if (!$this->protocol_has_entries) {
             $this->toolbar->setFormAction($this->ctrl->getFormAction($this, self::CMD_SAVE));
             require_once 'Services/Form/classes/class.ilTextInputGUI.php';
-            $this->toolbar->addInputItem(new ilTextInputGUI($this->plugin->txt("examination_protocol_location_text_title"), 'location'), true);
+            $this->toolbar->addInputItem(new ilTextInputGUI($this->plugin->txt("location_text_title"), 'location'), true);
             $button = ilSubmitButton::getInstance();
             $button->setCaption($this->lng->txt('add'), false);
             $button->setCommand(self::CMD_SAVE);
             $this->toolbar->addButtonInstance($button);
         } else {
-            $this->tpl->setOnScreenMessage('info', $this->plugin->txt("examination_protocol_lock"));
+            $this->tpl->setOnScreenMessage('info', $this->plugin->txt("lock"));
         }
 
         // load from database
@@ -60,9 +64,12 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
         $this->tpl->setContent($this->location_table->getHTML());
     }
 
+    /**
+     * @return void
+     */
     public function executeCommand() : void
     {
-        switch ($this->ctrl->getCmd()){
+        switch ($this->ctrl->getCmd()) {
             case self::CMD_SAVE:
                 $this->save();
                 break;
@@ -72,12 +79,19 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
         }
     }
 
+    /**
+     * @return string
+     */
     public function getHTML() : string
     {
         return "";
     }
 
-    protected function delete() : void {
+    /**
+     * @return void
+     */
+    protected function delete() : void
+    {
         if (!is_null($_POST['locations'])) {
             $this->db_connector->deleteLocationRows("(" . implode(",", $_POST['locations']) . ")");
             $this->ctrl->redirectByClass(self::class);
@@ -100,5 +114,4 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
         }
         $this->ctrl->redirectByClass(self::class);
     }
-
 }

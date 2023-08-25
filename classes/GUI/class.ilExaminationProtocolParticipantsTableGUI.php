@@ -19,6 +19,10 @@ declare(strict_types=1);
  ********************************************************************
  */
 
+/**
+ * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
+ * @version  $Id$
+ */
 class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
 {
     /** @var ilExaminationProtocolPlugin */
@@ -28,6 +32,12 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
     /** @var bool  */
     private $disabled;
 
+    /**
+     * @param $a_parent_obj
+     * @param $a_parent_cmd
+     * @param $a_template_context
+     * @param $disabled
+     */
     public function __construct($a_parent_obj, $a_parent_cmd = "", $a_template_context = "", $disabled = false)
     {
         global $DIC;
@@ -64,11 +74,11 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
         $this->setFormAction($ilCtrl->getFormAction($a_parent_obj, $a_parent_cmd));
 
         // build Table
-        $this->addColumn('', 'participant',  '1px', true);
-        $this->addColumn($this->plugin->txt("examination_protocol_participant_table_column_name"), 'name');
-        $this->addColumn($this->plugin->txt("examination_protocol_participant_table_column_login"), 'login');
-        $this->addColumn($this->plugin->txt("examination_protocol_participant_table_column_mrt"), 'mrt');
-        $this->addColumn($this->plugin->txt("examination_protocol_participant_table_column_email"), 'email');
+        $this->addColumn('', 'participant', '1px', true);
+        $this->addColumn($this->plugin->txt("participant_table_column_name"), 'name');
+        $this->addColumn($this->plugin->txt("participant_table_column_login"), 'login');
+        $this->addColumn($this->plugin->txt("participant_table_column_mrt"), 'mrt');
+        $this->addColumn($this->plugin->txt("participant_table_column_email"), 'email');
         // ordering
         $this->setDefaultOrderField("mrt");
         $this->setDefaultOrderDirection("asc");
@@ -111,10 +121,10 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
      * @param array $a_set
      * @return void
      */
-    protected function fillRow($a_set)
+    protected function fillRow($a_set) : void
     {
         $checkbox = "";
-        if(!$this->disabled){
+        if (!$this->disabled) {
             $checkbox = ilUtil::formCheckbox(false, 'participants[]', $a_set['participant_id']);
         }
 
@@ -126,5 +136,4 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
             'EMAIL' => $a_set['email'],
         ]);
     }
-
 }

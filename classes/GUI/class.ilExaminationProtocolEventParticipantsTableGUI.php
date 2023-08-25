@@ -23,6 +23,10 @@ use ILIAS\Plugin\ExaminationProtocol\ilExaminationProtocolDBConnector;
 use ILIAS\UI\Factory;
 use ILIAS\UI\Renderer;
 
+/**
+ * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
+ * @version  $Id$
+ */
 class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
 {
     /** @var ilExaminationProtocolPlugin */
@@ -36,6 +40,11 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
     /** @return array */
     protected $participant_ids;
 
+    /**
+     * @param $a_parent_obj
+     * @param $a_parent_cmd
+     * @param $a_template_context
+     */
     public function __construct($a_parent_obj, $a_parent_cmd = "", $a_template_context = "")
     {
         global $DIC;
@@ -46,8 +55,10 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
         $this->setId("texa_protocol_participant");
         parent::__construct($a_parent_obj, $a_parent_cmd, $a_template_context);
         $db_connector = new ilExaminationProtocolDBConnector();
-        $this->participant_ids = array_column($db_connector->getAllProtocolParticipants($_REQUEST['entry_id']),
-            "participant_id");
+        $this->participant_ids = array_column(
+            $db_connector->getAllProtocolParticipants($_REQUEST['entry_id']),
+            "participant_id"
+        );
 
         // Build Table
         // title
@@ -77,11 +88,11 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
 
         // build Table
         $this->addColumn('', 'participant', '1px', true);
-        $this->addColumn($this->plugin->txt("examination_protocol_participant_table_column_name"), 'name');
-        $this->addColumn($this->plugin->txt("examination_protocol_participant_table_column_login"), 'login');
-        $this->addColumn($this->plugin->txt("examination_protocol_participant_table_column_mrt"), 'mrt');
-        $this->addColumn($this->plugin->txt("examination_protocol_participant_table_column_email"), 'email');
-        $this->addColumn($this->plugin->txt("examination_protocol_participant_table_column_assigned"), 'assign', 100);
+        $this->addColumn($this->plugin->txt("participant_table_column_name"), 'name');
+        $this->addColumn($this->plugin->txt("participant_table_column_login"), 'login');
+        $this->addColumn($this->plugin->txt("participant_table_column_mrt"), 'mrt');
+        $this->addColumn($this->plugin->txt("participant_table_column_email"), 'email');
+        $this->addColumn($this->plugin->txt("participant_table_column_assigned"), 'assign', 100);
         // ordering
         $this->setDefaultOrderField("mrt");
         $this->setDefaultOrderDirection("asc");
@@ -90,7 +101,7 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
     /**
      * Init table filter
      */
-    public function initFilter(): void
+    public function initFilter() : void
     {
         $this->setDefaultFilterVisiblity(true);
 
@@ -124,9 +135,9 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
      * @param array $a_set
      * @return void
      */
-    protected function fillRow($a_set)
+    protected function fillRow($a_set) : void
     {
-        if ($a_set['assigned']){
+        if ($a_set['assigned']) {
             $glyph = $this->renderer->render($this->ui_factory->symbol()->glyph()->apply());
         } else {
             $glyph = $this->renderer->render($this->ui_factory->symbol()->glyph()->close());
@@ -140,5 +151,4 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
             'CHECKED' => $glyph,
         ]);
     }
-
 }

@@ -22,7 +22,7 @@ declare(strict_types=1);
 use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
 
 /**
- * @author ulf Kunze <ulf.kunze@tik.uni-stuttgart.de>
+ * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
  * @version  $Id$
  * @ilCtrl_isCalledBy ilExaminationProtocolSupervisorGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls ilExaminationProtocolSupervisorGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI
@@ -32,6 +32,10 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseContro
     /** @var ilExaminationProtocolEventTableGUI */
     private $supervisor_table;
 
+    /**
+     * @throws ilDatabaseException
+     * @throws ilObjectNotFoundException
+     */
     public function __construct()
     {
         parent::__construct();
@@ -40,15 +44,15 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseContro
 
         // toolbar // no Kitchensink alternative jet
         require_once 'Services/Form/classes/class.ilTextInputGUI.php';
-        if(!$this->protocol_has_entries){
+        if (!$this->protocol_has_entries) {
             $this->toolbar->setFormAction($this->ctrl->getFormAction($this, self::CMD_SAVE));
-            $this->toolbar->addInputItem(new ilTextInputGUI($this->plugin->txt("examination_protocol_supervisor_text_title"), 'name'), true);
+            $this->toolbar->addInputItem(new ilTextInputGUI($this->plugin->txt("supervisor_text_title"), 'name'), true);
             $button = ilSubmitButton::getInstance();
             $button->setCaption($this->lng->txt('add'), false);
             $button->setCommand(self::CMD_SAVE);
             $this->toolbar->addButtonInstance($button);
         } else {
-            $this->tpl->setOnScreenMessage('info', $this->plugin->txt("examination_protocol_lock"));
+            $this->tpl->setOnScreenMessage('info', $this->plugin->txt("lock"));
         }
 
         // table
@@ -62,9 +66,12 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseContro
         $this->tpl->setContent($html);
     }
 
+    /**
+     * @return void
+     */
     public function executeCommand() : void
     {
-        switch ($this->ctrl->getCmd()){
+        switch ($this->ctrl->getCmd()) {
             case self::CMD_SAVE:
                 $this->save();
                 break;
@@ -74,18 +81,28 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseContro
         }
     }
 
+    /**
+     * @return string
+     */
     public function getHTML() : string
     {
         return "";
     }
 
-    protected function delete() : void {
-        if (!is_null($_POST['supervisors'])){
-            $this->db_connector->deleteSupervisorRows("(".implode(",", $_POST['supervisors']).")");
+    /**
+     * @return void
+     */
+    protected function delete() : void
+    {
+        if (!is_null($_POST['supervisors'])) {
+            $this->db_connector->deleteSupervisorRows("(" . implode(",", $_POST['supervisors']) . ")");
             $this->ctrl->redirectByClass(self::class);
         }
     }
 
+    /**
+     * @return void
+     */
     protected function save() : void
     {
         // build input Array
@@ -99,5 +116,4 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseContro
         }
         $this->ctrl->redirectByClass(self::class);
     }
-
 }

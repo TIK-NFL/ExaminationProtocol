@@ -19,6 +19,10 @@ declare(strict_types=1);
  ********************************************************************
  */
 
+/**
+ * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
+ * @version  $Id$
+ */
 class ilExaminationProtocolLocationTableGUI extends ilTable2GUI
 {
     /** @var ilExaminationProtocolPlugin */
@@ -26,7 +30,13 @@ class ilExaminationProtocolLocationTableGUI extends ilTable2GUI
     /** @var bool  */
     private $disabled;
 
-    public function __construct($a_parent_obj, string $a_parent_cmd = "", string $a_template_context = "",bool $disabled = false)
+    /**
+     * @param        $a_parent_obj
+     * @param string $a_parent_cmd
+     * @param string $a_template_context
+     * @param bool   $disabled
+     */
+    public function __construct($a_parent_obj, string $a_parent_cmd = "", string $a_template_context = "", bool $disabled = false)
     {
         global $DIC;
         $ilCtrl = $DIC['ilCtrl'];
@@ -54,12 +64,11 @@ class ilExaminationProtocolLocationTableGUI extends ilTable2GUI
         $this->setFormAction($ilCtrl->getFormAction($a_parent_obj, $a_parent_cmd));
 
         // build Table
-        $this->addColumn('', 'location_id',  '1px', true);
-        $this->addColumn($this->plugin->txt("examination_protocol_location_table_column_location"), 'location');
+        $this->addColumn('', 'location_id', '1px', true);
+        $this->addColumn($this->plugin->txt("location_table_column_location"), 'location');
         // ordering
         $this->setDefaultOrderField("location");
         $this->setDefaultOrderDirection("asc");
-
     }
 
     /**
@@ -67,10 +76,10 @@ class ilExaminationProtocolLocationTableGUI extends ilTable2GUI
      * @param array $a_set
      * @return void
      */
-    protected function fillRow($a_set)
+    protected function fillRow($a_set) : void
     {
         $checkbox = "";
-        if(!$this->disabled){
+        if (!$this->disabled) {
             $checkbox = ilUtil::formCheckbox(false, 'locations[]', $a_set['location_id']);
         }
 

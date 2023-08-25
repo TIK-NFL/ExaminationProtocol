@@ -22,7 +22,7 @@ declare(strict_types=1);
 use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
 
 /**
- * @author ulf Kunze ulf.kunze@tik.uni-stuttgart.de>
+ * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
  * @version  $Id$
  * @ilCtrl_isCalledBy ilExaminationProtocolParticipantsGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilRepositorySearchGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls ilExaminationProtocolParticipantsGUI: ilPermissionGUI, ilInfoScreenGUI, ilRepositoryGUI, ilRepositorySearchGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI
@@ -32,6 +32,10 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
     /** @var ilExaminationProtocolParticipantsTableGUI */
     private $participant_table;
 
+    /**
+     * @throws ilDatabaseException
+     * @throws ilObjectNotFoundException
+     */
     public function __construct()
     {
         parent::__construct();
@@ -43,7 +47,7 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
      */
     public function executeCommand() : void
     {
-        switch ($this->ctrl->getCmd()){
+        switch ($this->ctrl->getCmd()) {
             case self::CMD_DELETE:
                 $this->delete();
                 $this->show();
@@ -55,7 +59,7 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
             case "listUsers":
             case self::CMD_ADD_PARTICIPANTS:
                 $rep_search = new ilRepositorySearchGUI();
-                $rep_search->setCallback($this,'addUser');
+                $rep_search->setCallback($this, 'addUser');
                 $rep_search->setTitle($this->plugin->txt('examination_protocol_participant_selector_title'));
                 $this->ctrl->setReturn($this, 'show');
                 $this->ctrl->forwardCommand($rep_search);
@@ -81,8 +85,9 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
      * @param array|null $user_ids
      * @return void
      */
-    public function addUser(array $user_ids = array()){
-        if (empty($user_ids) && !empty($_POST['user'])){
+    public function addUser(array $user_ids = array()) : void
+    {
+        if (empty($user_ids) && !empty($_POST['user'])) {
             $user_ids = $_POST['user'];
         }
         foreach ($user_ids as $user_id) {
@@ -90,15 +95,23 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
         }
     }
 
-    protected function show(){
+    /**
+     * @return void
+     */
+    protected function show() : void
+    {
         $this->buildToolbar();
         $this->buildTable();
         $this->loadData();
         $this->tpl->setContent($this->participant_table->getHTML());
     }
 
-    protected function buildToolbar() {
-        if(!$this->protocol_has_entries){
+    /**
+     * @return void
+     */
+    protected function buildToolbar() : void
+    {
+        if (!$this->protocol_has_entries) {
             // toolbar // no Kitchensink alternative jet
             ilRepositorySearchGUI::fillAutoCompleteToolbar(
                 $this,
@@ -117,11 +130,15 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
             $btn->setUrl($this->ctrl->getLinkTargetByClass('ilRepositorySearchGUI'));
             $this->toolbar->addButtonInstance($btn);
         } else {
-            $this->tpl->setOnScreenMessage('info', $this->plugin->txt("examination_protocol_lock"));
+            $this->tpl->setOnScreenMessage('info', $this->plugin->txt("lock"));
         }
     }
 
-    protected function buildTable(){
+    /**
+     * @return void
+     */
+    protected function buildTable() : void
+    {
         // table
         $this->participant_table = new ilExaminationProtocolParticipantsTableGUI($this, "show", "", $this->protocol_has_entries);
         // filter
@@ -129,9 +146,13 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
         $this->participant_table->setResetCommand(self::CMD_RESET_FILTER);
     }
 
-    protected function loadData() {
+    /**
+     * @return void
+     */
+    protected function loadData() : void
+    {
         $participants = $this->db_connector->getAllParticipantsByProtocolID($this->protocol_id);
-        $usr_participant_mapping = array_reduce($participants, function($result, $item) {
+        $usr_participant_mapping = array_reduce($participants, function ($result, $item) {
             $result[$item['usr_id']] = $item['participant_id'];
             return $result;
         }, array());
@@ -140,7 +161,7 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
         $usr_login = $_SESSION['form_texa_participant']['login'] ?? "";
         $usr_name = $_SESSION['form_texa_participant']['name'] ?? "";
         $usr_mrt = $_SESSION['form_texa_participant']['mrt'] ?? "";
-        if ($usr_mrt === false){
+        if ($usr_mrt === false) {
             $usr_login = $usr_name = $usr_mrt = "";
         } else {
             $usr_login = unserialize($usr_login);
@@ -148,14 +169,22 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
             $usr_mrt = unserialize($usr_mrt);
         }
         $data = $this->db_connector->getAllParticipantsByUserIDandFilter(
-            "'". implode("', '", $usr_ids) . "'" , $usr_login, $usr_name, $usr_mrt);
+            "'" . implode("', '", $usr_ids) . "'",
+            $usr_login,
+            $usr_name,
+            $usr_mrt
+        );
         foreach ($data as $index => $entry) {
             $data[$index]['participant_id'] = $usr_participant_mapping[$entry['usr_id']];
         }
         $this->participant_table->setData($data);
     }
 
-    private function applyFilter(){
+    /**
+     * @return void
+     */
+    private function applyFilter() : void
+    {
         $this->buildToolbar();
         $this->buildTable();
         $this->participant_table->writeFilterToSession();
@@ -164,7 +193,11 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
         $this->tpl->setContent($this->participant_table->getHTML());
     }
 
-    private function resetFilter(){
+    /**
+     * @return void
+     */
+    private function resetFilter() : void
+    {
         $this->buildToolbar();
         $this->buildTable();
         $this->participant_table->resetOffset();
@@ -173,18 +206,28 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
         $this->tpl->setContent($this->participant_table->getHTML());
     }
 
+    /**
+     * @return string
+     */
     public function getHTML() : string
     {
         return "";
     }
 
-    protected function delete() : void {
+    /**
+     * @return void
+     */
+    protected function delete() : void
+    {
         if (!is_null($_POST['participants'])) {
             $this->db_connector->deleteParticipantRows("(" . implode(",", $_POST['participants']) . ")");
         }
     }
 
-
+    /**
+     * @param $user_id
+     * @return void
+     */
     protected function saveUser($user_id) : void
     {
         // build input Array
@@ -198,5 +241,4 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
             $this->db_connector->insertParticipant($values);
         }
     }
-
 }

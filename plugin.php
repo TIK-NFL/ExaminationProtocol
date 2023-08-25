@@ -32,6 +32,4 @@ $ilias_max_version = "7.999";
 
 // optional, but useful: Add one or more responsible persons and a contact email
 $responsible = "Ulf Bischoff";
-$responsible_mail = "ulf.Bischoff@tik.uni-stuttgart.de";
-
-?>
+$responsible_mail = "ulf.bischoff@tik.uni-stuttgart.de";

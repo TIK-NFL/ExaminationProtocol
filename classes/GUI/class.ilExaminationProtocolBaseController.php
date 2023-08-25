@@ -39,6 +39,10 @@ use ilUtil;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
+/**
+ * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
+ * @version  $Id$
+ */
 abstract class ilExaminationProtocolBaseController
 {
     // CMDs
@@ -130,7 +134,7 @@ abstract class ilExaminationProtocolBaseController
         $this->ctrl = $DIC['ilCtrl'];
         $this->plugin = ilExaminationProtocolPlugin::getInstance();
         // access check for all GUI pages
-        if (!$this->plugin->hasAccess()){
+        if (!$this->plugin->hasAccess()) {
             $this->ctrl->returnToParent($this);
         }
         $this->ilLocator = $DIC['ilLocator'];
@@ -147,13 +151,13 @@ abstract class ilExaminationProtocolBaseController
 
         // unified event options TODO Refactor to constant
         $this->event_options = [
-            $this->plugin->txt("examination_protocol_entry_dropdown_event_general"),
-            $this->plugin->txt("examination_protocol_entry_dropdown_event_question"),
-            $this->plugin->txt("examination_protocol_entry_dropdown_event_material"),
-            $this->plugin->txt("examination_protocol_entry_dropdown_event_toilet"),
-            $this->plugin->txt("examination_protocol_entry_dropdown_event_illness"),
-            $this->plugin->txt("examination_protocol_entry_dropdown_event_technical"),
-            $this->plugin->txt("examination_protocol_entry_dropdown_event_other"),
+            $this->plugin->txt("entry_dropdown_event_general"),
+            $this->plugin->txt("entry_dropdown_event_question"),
+            $this->plugin->txt("entry_dropdown_event_material"),
+            $this->plugin->txt("entry_dropdown_event_toilet"),
+            $this->plugin->txt("entry_dropdown_event_illness"),
+            $this->plugin->txt("entry_dropdown_event_technical"),
+            $this->plugin->txt("entry_dropdown_event_other"),
         ];
 
         // Data base
@@ -162,14 +166,18 @@ abstract class ilExaminationProtocolBaseController
         $this->settings = $this->db_connector->getSettingByTestID($this->test_object->test_id);
         $this->protocol_has_entries = !empty($this->db_connector->getAllProtocolEntriesByProtocolID($this->protocol_id));
         // create a general settings entry for the protocol ID if not already existing
-        if (is_null($this->protocol_id)){
+        if (is_null($this->protocol_id)) {
             $this->db_connector->createEmptySetting([['integer', $this->test_object->test_id]]);
         }
 
         $this->setTemplateDefaults();
     }
 
-    private function setTemplateDefaults(){
+    /**
+     * @return void
+     */
+    private function setTemplateDefaults() : void
+    {
         $this->tpl->loadStandardTemplate();
         $this->tpl->setLocator();
         $this->tpl->setTitleIcon(ilUtil::getImagePath('icon_tst.svg'));
@@ -178,14 +186,14 @@ abstract class ilExaminationProtocolBaseController
         // TODO set status
 
         $this->ilLocator->addRepositoryItems($this->test_object->getRefId());
-        $this->ilLocator->addItem($this->test_object->getTitle(),$this->ctrl->getLinkTargetByClass('ilobjtestgui'));
-        $this->ctrl->setParameterByClass('ilobjtestgui', 'ref_id',  $this->test_object->getRefId());
+        $this->ilLocator->addItem($this->test_object->getTitle(), $this->ctrl->getLinkTargetByClass('ilobjtestgui'));
+        $this->ctrl->setParameterByClass('ilobjtestgui', 'ref_id', $this->test_object->getRefId());
     }
 
     /**
      * @return string|null
      */
-    public function getProtocolId(): ?string
+    public function getProtocolId() : ?string
     {
         return $this->protocol_id;
     }
@@ -193,13 +201,15 @@ abstract class ilExaminationProtocolBaseController
     /**
      * @param boolean $a_mode default true
      */
-    public function setCreationMode(bool $a_mode = true): void
+    public function setCreationMode(bool $a_mode = true) : void
     {
         $this->creation_mode = $a_mode;
     }
 
-    public function executeCommand(): void
+    /**
+     * @return void
+     */
+    public function executeCommand() : void
     {
     }
-
 }

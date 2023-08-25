@@ -20,7 +20,7 @@ declare(strict_types=1);
  */
 
 /**
- * @author ulf Kunze <ulf.kunze@tik.uni-stuttgart.de>
+ * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
  * @version  $Id$
  */
 class ilExaminationProtocolEventTableGUI extends ilTable2GUI
@@ -28,6 +28,11 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
     /** @var ilExaminationProtocolPlugin */
     protected $plugin;
 
+    /**
+     * @param $a_parent_obj
+     * @param $a_parent_cmd
+     * @param $a_template_context
+     */
     public function __construct($a_parent_obj, $a_parent_cmd = "", $a_template_context = "")
     {
         global $DIC;
@@ -44,7 +49,7 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
      * Creates the table with columns
      * @return void
      */
-    protected function createTable()
+    protected function createTable() : void
     {
         // default no entries set
         $this->setNoEntriesText($this->plugin->txt('examination_protocol_table_empty'));
@@ -55,30 +60,33 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
         // limit
         $this->setLimit(5000);
         // build Table
-        $this->addColumn($this->plugin->txt("examination_protocol_event_table_column_start"), "start");
-        $this->addColumn($this->plugin->txt("examination_protocol_event_table_column_end"), "end");
-        $this->addColumn($this->plugin->txt("examination_protocol_event_table_column_typ"), "type");
-        $this->addColumn($this->plugin->txt("examination_protocol_description"), "desc");
-        $this->addColumn($this->plugin->txt("examination_protocol_event_table_column_location"), "location");
-        $this->addColumn($this->plugin->txt("examination_protocol_event_table_column_student_id"), "mrt");
-        $this->addColumn($this->plugin->txt("examination_protocol_event_table_column_supervisor_id"), "supervisor");
+        $this->addColumn($this->plugin->txt("event_table_column_start"), "start");
+        $this->addColumn($this->plugin->txt("event_table_column_end"), "end");
+        $this->addColumn($this->plugin->txt("event_table_column_typ"), "type");
+        $this->addColumn($this->plugin->txt("description"), "desc");
+        $this->addColumn($this->plugin->txt("event_table_column_location"), "location");
+        $this->addColumn($this->plugin->txt("event_table_column_student_id"), "mrt");
+        $this->addColumn($this->plugin->txt("event_table_column_supervisor_id"), "supervisor");
         foreach ($this->getSelectedColumns() as $column) {
-                $this->addColumn($this->getSelectableColumns()[$column]['txt'], $column);
+            $this->addColumn($this->getSelectableColumns()[$column]['txt'], $column);
         }
-        $this->addColumn($this->plugin->txt("examination_protocol_event_table_column_actions"), "", 90);
+        $this->addColumn($this->plugin->txt("event_table_column_actions"), "", 90);
         // ordering
         $this->setDefaultOrderField("start");
         $this->setDefaultOrderDirection("asc");
     }
 
-    function getSelectableColumns() : array
+    /**
+     * @return array[]
+     */
+    public function getSelectableColumns() : array
     {
         $this->plugin = ilExaminationProtocolPlugin::getInstance();
         return [
-            "edit_tstamp" => ["txt" => $this->plugin->txt("examination_protocol_event_table_column_timestamp_edit"), "default" => false],
-            "edit_user" => ["txt" => $this->plugin->txt("examination_protocol_event_table_column_supervisor_id_edit"), "default" => false],
-            "creation_tstamp" => ["txt" => $this->plugin->txt("examination_protocol_event_table_column_timestamp"), "default" => false],
-            "creation_user" => ["txt" => $this->plugin->txt("examination_protocol_event_table_column_creator_id"), "default" => false],
+            "edit_tstamp" => ["txt" => $this->plugin->txt("event_table_column_timestamp_edit"), "default" => false],
+            "edit_user" => ["txt" => $this->plugin->txt("event_table_column_supervisor_id_edit"), "default" => false],
+            "creation_tstamp" => ["txt" => $this->plugin->txt("event_table_column_timestamp"), "default" => false],
+            "creation_user" => ["txt" => $this->plugin->txt("event_table_column_creator_id"), "default" => false],
         ];
     }
 
@@ -86,7 +94,8 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
      * @param array $a_set
      * @return void
      */
-    public function fillRow($a_set){
+    public function fillRow($a_set) : void
+    {
         $columns = [
             'START' => date('H:i', strtotime($a_set['start'])),
             'END' => date('H:i', strtotime($a_set['end'])),
@@ -113,7 +122,7 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
             }
         }
         $columns['ACTION'] = $a_set['action'];
-        foreach ($columns as $column => $cell){
+        foreach ($columns as $column => $cell) {
             if (in_array($column, $this->getSelectedColumns())) {
                 $this->tpl->setCurrentBlock($column);
                 $this->tpl->setVariable($column, $cell);
@@ -122,7 +131,5 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
                 $this->tpl->setVariable($column, $cell);
             }
         }
-
     }
-
 }

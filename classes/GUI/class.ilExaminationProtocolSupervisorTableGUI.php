@@ -19,6 +19,10 @@ declare(strict_types=1);
  ********************************************************************
  */
 
+/**
+ * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
+ * @version  $Id$
+ */
 class ilExaminationProtocolSupervisorTableGUI extends ilTable2GUI
 {
     /** @var ilExaminationProtocolPlugin */
@@ -26,6 +30,12 @@ class ilExaminationProtocolSupervisorTableGUI extends ilTable2GUI
     /** @var bool  */
     private $disabled;
 
+    /**
+     * @param $a_parent_obj
+     * @param $a_parent_cmd
+     * @param $a_template_context
+     * @param $disabled
+     */
     public function __construct($a_parent_obj, $a_parent_cmd = "", $a_template_context = "", $disabled = false)
     {
         global $DIC;
@@ -56,9 +66,8 @@ class ilExaminationProtocolSupervisorTableGUI extends ilTable2GUI
         $this->setFormAction($ilCtrl->getFormAction($a_parent_obj, $a_parent_cmd));
 
         // build Table
-        $this->addColumn('', 'supervisor_id',  '1px', true);
-        $this->addColumn($this->plugin->txt("examination_protocol_supervisor_table_column_name"), 'name');
-
+        $this->addColumn('', 'supervisor_id', '1px', true);
+        $this->addColumn($this->plugin->txt("supervisor_table_column_name"), 'name');
     }
 
     /**
@@ -66,10 +75,10 @@ class ilExaminationProtocolSupervisorTableGUI extends ilTable2GUI
      * @param array $a_set
      * @return void
      */
-    protected function fillRow($a_set)
+    protected function fillRow($a_set) : void
     {
         $checkbox = "";
-        if(!$this->disabled){
+        if (!$this->disabled) {
             $checkbox = ilUtil::formCheckbox(false, 'supervisors[]', $a_set['supervisor_id']);
         }
         parent::fillRow([

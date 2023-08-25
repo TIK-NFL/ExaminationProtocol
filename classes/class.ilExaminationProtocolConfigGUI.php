@@ -31,73 +31,75 @@ use Psr\Http\Message\ServerRequestInterface;
  * Example configuration user interface class
  * Plugins -> Actions -> Configure
  * Somehow has to be here
- * @author ulf kunze <ulf.kunze@tik.uni-stuttgart.de>
- * @version $Id$
+ * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
+ * @version  $Id$
  */
 class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
 {
-	/** @var ilLanguage */
-	private $lng;
-	/** @var Container */
-	private $dic;
+    /** @var ilLanguage */
+    private $lng;
+    /** @var Container */
+    private $dic;
     /** @var RequestInterface|ServerRequestInterface */
     private $request;
     /** @var ilCtrl */
-	protected $ctrl;
-	/** @var ilGlobalTemplateInterface */
-	protected $pageTemplate;
+    protected $ctrl;
+    /** @var ilGlobalTemplateInterface */
+    protected $pageTemplate;
     /** @var ilExaminationProtocolSettings  */
     protected $settings;
     /** @var Factory */
     private $ui_factory;
-	/** @var Renderer  */
+    /** @var Renderer  */
     private $renderer;
 
+    /**
+     *
+     */
     public function __construct()
-	{
-		global $DIC;
-		$this->dic = $DIC;
-		$this->lng = $DIC->language();
-		$this->lng->loadLanguageModule('trac');
-		$this->ctrl = $DIC->ctrl();
-		$this->pageTemplate = $DIC->ui()->mainTemplate();
+    {
+        global $DIC;
+        $this->dic = $DIC;
+        $this->lng = $DIC->language();
+        $this->lng->loadLanguageModule('trac');
+        $this->ctrl = $DIC->ctrl();
+        $this->pageTemplate = $DIC->ui()->mainTemplate();
         $this->ui_factory = $DIC->ui()->factory();
         $this->renderer = $DIC->ui()->renderer();
         $this->request = $DIC->http()->request();
         $this->settings = $this->dic['plugin.examinationprotocol.settings'];
-	}
+    }
 
-	/**
-	* Handles all commmands, default is "configure"
-	*/
-	function performCommand($cmd)
-	{
-		switch ($cmd)
-		{
-			case "configure":
+    /**
+    * Handles all commmands, default is "configure"
+    */
+    public function performCommand($cmd) : void
+    {
+        switch ($cmd) {
+            case "configure":
                 $this->configure();
-		        break;
-			case "save":
-				$this->save();
-				break;
-		}
-	}
+                break;
+            case "save":
+                $this->save();
+                break;
+        }
+    }
 
-	/**
-	 * Configure screen
-	 */
-	function configure()
-	{
-		global $tpl;
-		$form = $this->renderer->render($this->initConfigurationForm());
-		$tpl->setContent($form);
-	}
+    /**
+     * Configure screen
+     */
+    public function configure() : void
+    {
+        global $tpl;
+        $form = $this->renderer->render($this->initConfigurationForm());
+        $tpl->setContent($form);
+    }
 
-	/**
-	 * Init configuration form.
-	 * @return Standard
-	 */
-	public function initConfigurationForm() : Standard
+    /**
+     * Init configuration form.
+     * @return Standard
+     */
+    public function initConfigurationForm() : Standard
     {
         $rb_operation_mode = $this->ui_factory->input()->field()->radio($this->plugin_object->txt('examination_protocol_config_radiobutton_title'))
             ->withOption('0', $this->plugin_object->txt('examination_protocol_config_radiobutton_option_off'))
@@ -106,24 +108,23 @@ class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
             ->withValue($this->settings->getOperationModeKey() ?? '0');
 
         $section_content = [$rb_operation_mode];
-        $section = $this->ui_factory->input()->field()->section($section_content, $this->plugin_object->txt('examination_protocol_config_section_title'));
+        $section = $this->ui_factory->input()->field()->section($section_content, $this->plugin_object->txt('config_section_title'));
         $form_action = $this->ctrl->getFormAction($this, 'save');
         $form = $this->ui_factory->input()->container()->form()->standard($form_action, [$section]);
-		return $form;
-	}
-	
-	/**
-	 * Save form input (currently does not save anything to db)
-	 */
-	public function save()
-	{
-		$form = $this->initConfigurationForm();
+        return $form;
+    }
+    
+    /**
+     * Save form input (currently does not save anything to db)
+     */
+    public function save() : void
+    {
+        $form = $this->initConfigurationForm();
         $form = $form->withRequest($this->request);
         $result = $form->getData();
         $this->settings->setOperationMode((int) $result[0][0]);
 
         ilUtil::sendSuccess($this->lng->txt("saved_successfully"), true);
         $this->ctrl->redirect($this, "configure");
-	}
-
+    }
 }
