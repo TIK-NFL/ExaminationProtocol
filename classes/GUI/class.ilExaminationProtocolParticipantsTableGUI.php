@@ -33,12 +33,11 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
     private $disabled;
 
     /**
-     * @param $a_parent_obj
-     * @param $a_parent_cmd
-     * @param $a_template_context
-     * @param $disabled
+     * @param object $a_parent_obj
+     * @param string $a_parent_cmd
+     * @param string $a_template_context
      */
-    public function __construct($a_parent_obj, $a_parent_cmd = "", $a_template_context = "", $disabled = false)
+    public function __construct($a_parent_obj, $a_parent_cmd = "", $a_template_context = "")
     {
         global $DIC;
         $ilCtrl = $DIC['ilCtrl'];
@@ -48,18 +47,18 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
         parent::__construct($a_parent_obj, $a_parent_cmd, $a_template_context);
 
         // title
-        $this->setTitle($this->plugin->txt('examination_protocol_participant_table_title'));
+        $this->setTitle($this->plugin->txt('participant_table_title'));
         $this->setFormName('form_texa_participant');
 
         // default no entries set
-        $this->setNoEntriesText($this->plugin->txt('examination_protocol_table_empty'));
+        $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setEnableHeader(true);
+
         // selector
-        if (!$this->disabled) {
-            $this->setShowRowsSelector(true);
-            $this->setSelectAllCheckbox('participant');
-            $this->addMultiCommand("delete", $this->lng->txt('delete'));
-        }
+        $this->setShowRowsSelector(true);
+        $this->setSelectAllCheckbox('participant');
+        $this->addMultiCommand("delete", $this->lng->txt('delete'));
+
         // row template
         $this->setRowTemplate('tpl.participant_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
 
@@ -84,9 +83,6 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
         $this->setDefaultOrderDirection("asc");
     }
 
-    /**
-     * Init table filter
-     */
     public function initFilter() : void
     {
         $this->setDefaultFilterVisiblity(true);

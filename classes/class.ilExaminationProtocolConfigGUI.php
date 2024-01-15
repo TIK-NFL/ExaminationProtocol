@@ -101,10 +101,10 @@ class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
      */
     public function initConfigurationForm() : Standard
     {
-        $rb_operation_mode = $this->ui_factory->input()->field()->radio($this->plugin_object->txt('examination_protocol_config_radiobutton_title'))
-            ->withOption('0', $this->plugin_object->txt('examination_protocol_config_radiobutton_option_off'))
+        $rb_operation_mode = $this->ui_factory->input()->field()->radio($this->plugin_object->txt('config_radiobutton_title'))
+            ->withOption('0', $this->plugin_object->txt('config_radiobutton_option_off'))
           //->withOption('1', $this->plugin_object->txt('examination_protocol_config_radiobutton_option_manual'), 'currently no effect')
-            ->withOption('2', $this->plugin_object->txt('examination_protocol_config_radiobutton_option_all'))
+            ->withOption('2', $this->plugin_object->txt('config_radiobutton_option_all'))
             ->withValue($this->settings->getOperationModeKey() ?? '0');
 
         $section_content = [$rb_operation_mode];

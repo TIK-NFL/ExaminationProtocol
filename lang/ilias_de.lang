@@ -10,12 +10,13 @@ config_radiobutton_option_manual#:#Das Prüfungsprotokoll kann manuel für jedes
 config_radiobutton_option_all#:#Schaltet das Prüfungsprotokoll für alle Test Objekte ein.
 
 // tab names
-tab_name#:#Prüfungsereignis-Protokoll
+protocol_tab_name#:#Prüfungsereignis-Protokoll
 sub_tab_settings#:#Einstellungen
 sub_tab_protocol#:#Protokoll
 sub_tab_supervisors#:#Aufsichtspersonen
 sub_tab_locations#:#Prüfungsräume
 sub_tab_participants#:#Prüfungsteilnehmer
+sub_tab_export#:#Export
 
 // general settings tab
 settings_general_settings_section_setting_title#:#Allgemeine Einstellungen
@@ -131,3 +132,4 @@ next#:#Nächste Seite
 table_empty#:#Keine Einträge gefunden.
 lock#:#Die Bearbeitung der allgemeinen Eigenschaften des Prüfprotokolls ist blockiert, da bereits ein Protokolleintrag existiert
 not_saved#:#Die aktuellen Änderungen sind nicht gespeichert
+create_export#:#Export anzeigen

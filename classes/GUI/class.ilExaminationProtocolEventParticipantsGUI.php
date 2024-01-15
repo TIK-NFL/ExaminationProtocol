@@ -47,9 +47,6 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
         }
     }
 
-    /**
-     * @return void
-     */
     public function executeCommand() : void
     {
         switch ($this->ctrl->getCmd()) {
@@ -76,28 +73,24 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
         }
     }
 
-    /**
-     * @return string
-     */
     public function getHTML() : string
     {
         return $this->html;
     }
 
-    /**
-     * @return void
-     */
     private function buildToolbar() : void
     {
+        $btn = ilLinkButton::getInstance();
+        $btn->setCaption($this->lng->txt("cancel"), false);
+        $btn->setUrl($this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventGUI::class, self::CMD_SHOW));
+        $this->toolbar->addButtonInstance($btn);
+
         $btn = ilLinkButton::getInstance();
         $btn->setCaption($this->plugin->txt("entry_button_protocol"), false);
         $btn->setUrl($this->ctrl->getLinkTargetByClass(self::class, self::CMD_SAVE));
         $this->toolbar->addButtonInstance($btn);
     }
 
-    /**
-     * @return void
-     */
     private function buildParticipantForm() : void
     {
         $this->buildToolbar();
@@ -109,9 +102,6 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
         $this->html = $this->renderer->render($page);
     }
 
-    /**
-     * @return Standard
-     */
     private function buildListing() : Standard
     {
         $event = $this->db_connector->getAllProtocolEntries($_SESSION['examination_protocol']['entry_id'])[0];
@@ -136,9 +126,6 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
         return $listing;
     }
 
-    /**
-     * @return void
-     */
     private function buildTable() : void
     {
         // table
@@ -148,9 +135,6 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
         $this->participant_table->setResetCommand(self::CMD_RESET_FILTER);
     }
 
-    /**
-     * @return void
-     */
     private function save() : void
     {
         $assigned_participant = $this->db_connector->getAllProtocolParticipants($_SESSION['examination_protocol']['entry_id']);
@@ -178,12 +162,9 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
         $this->ctrl->redirectToURL($this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventGUI::class, self::CMD_SHOW));
     }
 
-    /**
-     * @return void
-     */
     private function assign() : void
     {
-        $this->tpl->setOnScreenMessage('info', $this->plugin->txt('examination_protocol_not_saved'));
+        $this->tpl->setOnScreenMessage('info', $this->plugin->txt('not_saved'));
         foreach ($_POST['participants'] as $participant_id) {
             if (!in_array($participant_id, $_SESSION['examination_protocol']['assigned'])) {
                 $_SESSION['examination_protocol']['assigned'][] = $participant_id;
@@ -191,12 +172,9 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
         }
     }
 
-    /**
-     * @return void
-     */
     private function unassign() : void
     {
-        $this->tpl->setOnScreenMessage('info', $this->plugin->txt('examination_protocol_not_saved'));
+        $this->tpl->setOnScreenMessage('info', $this->plugin->txt('not_saved'));
         foreach ($_POST['participants'] as $participant_id) {
             if (in_array($participant_id, $_SESSION['examination_protocol']['assigned'])) {
                 $_SESSION['examination_protocol']['assigned'] = array_diff($_SESSION['examination_protocol']['assigned'], [$participant_id]);
@@ -204,9 +182,6 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
         }
     }
 
-    /**
-     * @return void
-     */
     private function applyFilter() : void
     {
         $this->buildToolbar();
@@ -220,9 +195,6 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
         $this->html = $this->renderer->render($page);
     }
 
-    /**
-     * @return void
-     */
     private function resetFilter() : void
     {
         $this->buildToolbar();
@@ -236,9 +208,6 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
         $this->html = $this->renderer->render($page);
     }
 
-    /**
-     * @return void
-     */
     private function loadDataIntoTable() : void
     {
         $usr_participant_mapping = array_reduce($this->db_connector->getAllParticipantsByProtocolID($this->protocol_id), function ($result, $item) {

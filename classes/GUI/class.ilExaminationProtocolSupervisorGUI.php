@@ -39,10 +39,40 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseContro
     public function __construct()
     {
         parent::__construct();
-
         $this->tabs->activateSubTab(self::SUPERVISOR_TAB_ID);
+        $this->buildToolbar();
+        // table
+        $this->supervisor_table = new ilExaminationProtocolSupervisorTableGUI($this, "show", "", $this->protocol_has_entries);
+        // load from database
+        $supervisors = $this->db_connector->getAllSupervisorsByProtocolID($this->protocol_id);
+        $this->supervisor_table->setData($supervisors);
+        $table_html = $this->supervisor_table->getHTML();
+        $html = $table_html;
+        $this->tpl->setContent($html);
+    }
 
-        // toolbar // no Kitchensink alternative jet
+    public function executeCommand() : void
+    {
+        switch ($this->ctrl->getCmd()) {
+            default:
+            case self::CMD_SHOW:
+                break;
+            case self::CMD_SAVE:
+                $this->save();
+                break;
+            case self::CMD_DELETE:
+                $this->delete();
+                break;
+        }
+    }
+
+    public function getHTML() : string
+    {
+        return "";
+    }
+
+    protected function buildToolbar()  : void
+    {
         require_once 'Services/Form/classes/class.ilTextInputGUI.php';
         if (!$this->protocol_has_entries) {
             $this->toolbar->setFormAction($this->ctrl->getFormAction($this, self::CMD_SAVE));
@@ -54,44 +84,8 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseContro
         } else {
             $this->tpl->setOnScreenMessage('info', $this->plugin->txt("lock"));
         }
-
-        // table
-        $this->supervisor_table = new ilExaminationProtocolSupervisorTableGUI($this, "show", "", $this->protocol_has_entries);
-
-        // load from database
-        $supervisors = $this->db_connector->getAllSupervisorsByProtocolID($this->protocol_id);
-        $this->supervisor_table->setData($supervisors);
-        $table_html = $this->supervisor_table->getHTML();
-        $html = $table_html;
-        $this->tpl->setContent($html);
     }
 
-    /**
-     * @return void
-     */
-    public function executeCommand() : void
-    {
-        switch ($this->ctrl->getCmd()) {
-            case self::CMD_SAVE:
-                $this->save();
-                break;
-            case self::CMD_DELETE:
-                $this->delete();
-                break;
-        }
-    }
-
-    /**
-     * @return string
-     */
-    public function getHTML() : string
-    {
-        return "";
-    }
-
-    /**
-     * @return void
-     */
     protected function delete() : void
     {
         if (!is_null($_POST['supervisors'])) {
@@ -100,9 +94,6 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseContro
         }
     }
 
-    /**
-     * @return void
-     */
     protected function save() : void
     {
         // build input Array

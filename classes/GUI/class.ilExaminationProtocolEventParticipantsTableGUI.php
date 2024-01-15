@@ -41,9 +41,9 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
     protected $participant_ids;
 
     /**
-     * @param $a_parent_obj
-     * @param $a_parent_cmd
-     * @param $a_template_context
+     * @param object $a_parent_obj
+     * @param string $a_parent_cmd
+     * @param string $a_template_context
      */
     public function __construct($a_parent_obj, $a_parent_cmd = "", $a_template_context = "")
     {
@@ -62,19 +62,18 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
 
         // Build Table
         // title
-        $this->setTitle($this->plugin->txt('examination_protocol_participant_table_title'));
+        $this->setTitle($this->plugin->txt('participant_table_title'));
         // default no entries set
-        $this->setNoEntriesText($this->plugin->txt('examination_protocol_table_empty'));
+        $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setEnableHeader(true);
         // selector
         $this->setShowRowsSelector(true);
         $this->setSelectAllCheckbox('participant');
         $this->addHiddenInput("entry_id", $_REQUEST['entry_id']);
-        $this->addMultiCommand("assign", $this->plugin->txt('examination_protocol_participant_assign'));
-        $this->addMultiCommand("unassign", $this->plugin->txt('examination_protocol_participant_unassign'));
+        $this->addMultiCommand("assign", $this->plugin->txt('participant_assign'));
+        $this->addMultiCommand("unassign", $this->plugin->txt('participant_unassign'));
         // row template
         $this->setRowTemplate('tpl.protocol_participant_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
-
         // filter
         $this->initFilter();
 
@@ -98,9 +97,6 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
         $this->setDefaultOrderDirection("asc");
     }
 
-    /**
-     * Init table filter
-     */
     public function initFilter() : void
     {
         $this->setDefaultFilterVisiblity(true);

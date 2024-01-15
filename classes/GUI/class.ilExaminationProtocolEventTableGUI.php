@@ -52,9 +52,9 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
     protected function createTable() : void
     {
         // default no entries set
-        $this->setNoEntriesText($this->plugin->txt('examination_protocol_table_empty'));
+        $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setEnableHeader(true);
-        $this->setTitle($this->plugin->txt('examination_protocol_tab_name'));
+        $this->setTitle($this->plugin->txt('protocol_tab_name'));
         // row template
         $this->setRowTemplate('tpl.protocol_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
         // limit

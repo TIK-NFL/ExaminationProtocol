@@ -40,11 +40,34 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
     {
         parent::__construct();
         // Tab
-        $this->tabs->activateSubTab(self::LOCATION_TAB_ID);
+        //$this->tabs->activateSubTab(self::LOCATION_TAB_ID);
         // table
         $this->location_table = new ilExaminationProtocolLocationTableGUI($this, self::CMD_SHOW, "", $this->protocol_has_entries);
+        $this->buildToolbar();
 
-        // toolbar // no Kitchensink alternative jet
+        // load from database
+        $locations = $this->db_connector->getAllLocationsByProtocolID($this->protocol_id);
+        $this->location_table->setData($locations);
+        $this->tpl->setContent($this->location_table->getHTML());
+    }
+
+    public function executeCommand() : void
+    {
+        switch ($this->ctrl->getCmd()) {
+            default:
+            case self::CMD_SHOW:
+                break;
+            case self::CMD_SAVE:
+                $this->save();
+                break;
+            case self::CMD_DELETE:
+                $this->delete();
+                break;
+        }
+    }
+
+    protected function buildToolbar() : void
+    {
         if (!$this->protocol_has_entries) {
             $this->toolbar->setFormAction($this->ctrl->getFormAction($this, self::CMD_SAVE));
             require_once 'Services/Form/classes/class.ilTextInputGUI.php';
@@ -56,40 +79,13 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
         } else {
             $this->tpl->setOnScreenMessage('info', $this->plugin->txt("lock"));
         }
-
-        // load from database
-        $locations = $this->db_connector->getAllLocationsByProtocolID($this->protocol_id);
-        $this->location_table->setData($locations);
-
-        $this->tpl->setContent($this->location_table->getHTML());
     }
 
-    /**
-     * @return void
-     */
-    public function executeCommand() : void
-    {
-        switch ($this->ctrl->getCmd()) {
-            case self::CMD_SAVE:
-                $this->save();
-                break;
-            case self::CMD_DELETE:
-                $this->delete();
-                break;
-        }
-    }
-
-    /**
-     * @return string
-     */
     public function getHTML() : string
     {
         return "";
     }
 
-    /**
-     * @return void
-     */
     protected function delete() : void
     {
         if (!is_null($_POST['locations'])) {
@@ -98,9 +94,6 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
         }
     }
 
-    /**
-     * @return void
-     */
     protected function save() : void
     {
         // build input Array

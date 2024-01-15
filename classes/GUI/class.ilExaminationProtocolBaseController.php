@@ -45,13 +45,14 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 abstract class ilExaminationProtocolBaseController
 {
-    // CMDs
     /** @var string  */
     protected const CMD_SHOW = "show";
     /** @var string  */
     protected const CMD_SAVE = "save";
     /** @var string  */
     protected const CMD_DELETE = "delete";
+    /** @var string  */
+    protected const CMD_EXPORT = "export";
     /** @var string  */
     protected const CMD_DELETE_ALL = "delete_all";
     /** @var string  */
@@ -67,7 +68,6 @@ abstract class ilExaminationProtocolBaseController
     /** @var string  */
     protected const CMD_CANCEL = "cancel";
 
-    // IDs
     /** @var string  */
     protected const PROTOCOL_TAB_ID = "examination_protocol_protocol";
     /** @var string  */
@@ -78,11 +78,12 @@ abstract class ilExaminationProtocolBaseController
     protected const LOCATION_TAB_ID = "examination_protocol_location";
     /** @var string  */
     protected const PARTICIPANT_TAB_ID = "examination_protocol_participant";
+    /** @var string */
+    protected const EXPORT_TAB_ID = "examination_protocol_export";
     /** @var string  */
     protected const PROTOCOL_INPUT_TAB_ID = "examination_protocol_input";
     /** @var string  */
     protected const PROTOCOL_PARTICIPANT_TAB_ID = "examination_protocol_participant";
-
 
     /** @var ilLocatorGUI $ilLocator */
     private $ilLocator;
@@ -140,7 +141,7 @@ abstract class ilExaminationProtocolBaseController
         $this->ilLocator = $DIC['ilLocator'];
         $this->request = $DIC->http()->request();
         $this->test_object = ilObjectFactory::getInstanceByRefId($_GET['ref_id']);
-        // UI
+
         $this->tpl = $DIC['tpl'];
         $this->lng = $DIC['lng'];
         $this->ui_factory = $DIC->ui()->factory();
@@ -173,9 +174,6 @@ abstract class ilExaminationProtocolBaseController
         $this->setTemplateDefaults();
     }
 
-    /**
-     * @return void
-     */
     private function setTemplateDefaults() : void
     {
         $this->tpl->loadStandardTemplate();
@@ -183,16 +181,11 @@ abstract class ilExaminationProtocolBaseController
         $this->tpl->setTitleIcon(ilUtil::getImagePath('icon_tst.svg'));
         $this->tpl->setTitle($this->test_object->getTitle());
         $this->tpl->setDescription($this->test_object->getDescription());
-        // TODO set status
-
         $this->ilLocator->addRepositoryItems($this->test_object->getRefId());
         $this->ilLocator->addItem($this->test_object->getTitle(), $this->ctrl->getLinkTargetByClass('ilobjtestgui'));
         $this->ctrl->setParameterByClass('ilobjtestgui', 'ref_id', $this->test_object->getRefId());
     }
 
-    /**
-     * @return string|null
-     */
     public function getProtocolId() : ?string
     {
         return $this->protocol_id;
@@ -206,9 +199,6 @@ abstract class ilExaminationProtocolBaseController
         $this->creation_mode = $a_mode;
     }
 
-    /**
-     * @return void
-     */
     public function executeCommand() : void
     {
     }

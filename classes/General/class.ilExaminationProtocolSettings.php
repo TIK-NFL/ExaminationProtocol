@@ -50,7 +50,6 @@ class ilExaminationProtocolSettings
     }
 
     /**
-     *
      * @param int $mode
      * @return void
      */

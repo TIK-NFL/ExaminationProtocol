@@ -31,12 +31,12 @@ class ilExaminationProtocolSupervisorTableGUI extends ilTable2GUI
     private $disabled;
 
     /**
-     * @param $a_parent_obj
-     * @param $a_parent_cmd
-     * @param $a_template_context
-     * @param $disabled
+     * @param object $a_parent_obj
+     * @param string $a_parent_cmd
+     * @param string $a_template_context
+     * @param bool   $disabled
      */
-    public function __construct($a_parent_obj, $a_parent_cmd = "", $a_template_context = "", $disabled = false)
+    public function __construct($a_parent_obj, $a_parent_cmd = "", $a_template_context = "", bool $disabled = false)
     {
         global $DIC;
         $ilCtrl = $DIC['ilCtrl'];
@@ -46,11 +46,11 @@ class ilExaminationProtocolSupervisorTableGUI extends ilTable2GUI
         parent::__construct($a_parent_obj, $a_parent_cmd, $a_template_context);
 
         // title
-        $this->setTitle($this->plugin->txt('examination_protocol_supervisor_table_title'));
+        $this->setTitle($this->plugin->txt('supervisor_table_title'));
         $this->setFormName('formSupervisor');
 
         // default no entries set
-        $this->setNoEntriesText($this->plugin->txt('examination_protocol_table_empty'));
+        $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setEnableHeader(true);
 
         // selector

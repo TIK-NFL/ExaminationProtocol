@@ -42,9 +42,6 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
         $this->buildForm();
     }
 
-    /**
-     * @return void
-     */
     private function buildForm() : void
     {
         // tab
@@ -175,42 +172,36 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
             $section_material,
             $section_location
         ];
+
         $form_action = $this->ctrl->getFormAction($this, self::CMD_SHOW);
         if (!$this->protocol_has_entries) {
             $form_action = $this->ctrl->getFormAction($this, self::CMD_SAVE);
         }
+
         $this->form = $this->ui_factory->input()->container()->form()->standard($form_action, $site);
         if ($this->request->getMethod() == "POST") {
             $this->form = $this->form->withRequest($this->request);
         }
     }
 
-    /**
-     * @return void
-     */
     public function executeCommand() : void
     {
         switch ($this->ctrl->getCmd()) {
             case self::CMD_SAVE:
                 $this->save();
                 break;
+            default:
             case self::CMD_SHOW:
                 $this->getHTML();
                 break;
         }
     }
 
-    /**
-     * @return string
-     */
     public function getHTML() : string
     {
         return $this->renderer->render($this->form);
     }
 
-    /**
-     * @return void
-     */
     protected function save() : void
     {
         $data = $this->form->getData();

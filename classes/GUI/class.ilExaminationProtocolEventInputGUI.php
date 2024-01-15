@@ -48,16 +48,13 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
         $this->entry = $this->db_connector->getAllProtocolEntries($_REQUEST['entry_id'])[0];
     }
 
-    /**
-     * @return void
-     */
     private function buildEventForm() : void
     {
         // info
         if (!empty($_REQUEST['info']) && $_REQUEST['info'] == 'empty_date') {
-            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('examination_protocol_entry_datetime_empty'));
+            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('entry_datetime_empty'));
         } elseif (!empty($_REQUEST['info']) && $_REQUEST['info'] == 'wrong_date') {
-            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('examination_protocol_entry_datetime_wrong'));
+            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('entry_datetime_wrong'));
         }
         $data_factory = new ILIAS\Data\Factory();
         // load existing entry
@@ -67,6 +64,9 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
             $end = date("d.m.y H:i", strtotime($this->entry['end']));
             $this->ctrl->setParameterByClass(ilExaminationProtocolEventInputGUI::class, "entry_id", $_REQUEST['entry_id']);
         }
+
+        $this->buildToolbar();
+
         // event input
         $dt_start = $this->field_factory->dateTime($this->plugin->txt("entry_datetime_start_title"))
             ->withUseTime(true)
@@ -117,6 +117,7 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
 
         $form_action = $this->ctrl->getFormAction($this, self::CMD_SAVE);
         $this->form = $this->ui_factory->input()->container()->form()->standard($form_action, $site);
+
         if ($this->request->getMethod() == "POST") {
             $this->form = $this->form->withRequest($this->request);
         }
@@ -134,32 +135,32 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
         }
     }
 
-    /**
-     * @return void
-     */
     public function executeCommand() : void
     {
         switch ($this->ctrl->getCmd()) {
             case self::CMD_SAVE:
                 $this->save();
                 break;
+            default:
             case self::CMD_SHOW:
                 $this->buildEventForm();
                 break;
         }
     }
 
-    /**
-     * @return string
-     */
     public function getHTML() : string
     {
         return $this->html;
     }
 
-    /**
-     * @return void
-     */
+    private function buildToolbar() : void
+    {
+        $btn = ilLinkButton::getInstance();
+        $btn->setCaption($this->lng->txt("cancel"), false);
+        $btn->setUrl($this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventGUI::class, self::CMD_SHOW));
+        $this->toolbar->addButtonInstance($btn);
+    }
+
     private function save() : void
     {
         if (empty($_POST['form_input_2']) || empty($_POST['form_input_3'])) {

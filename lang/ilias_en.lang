@@ -10,12 +10,13 @@ config_radiobutton_option_manual#:#The examination protocol can be switched on m
 config_radiobutton_option_all#:#Turns on the examination protocol for all test objects.
 
 // tab names
-tab_name#:#Exam Event Protocol
+protocol_tab_name#:#Exam Event Protocol
 sub_tab_settings#:#General Settings
 sub_tab_protocol#:#Exam Event Protocol
 sub_tab_supervisors#:#Supervisors
 sub_tab_locations#:#Locations
 sub_tab_participants#:#Participants
+sub_tab_export#:#Export
 
 // general settings tab
 settings_general_settings_section_setting_title#:#General Settings
@@ -132,3 +133,4 @@ next#:#Next
 table_empty#:#No entries found.
 lock#:#Editing the general properties of the test protocol is blocked because a protocol entry already exists
 not_saved#:#Current changes are not saved
+create_export#:#Show Export

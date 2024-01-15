@@ -43,41 +43,37 @@ class ilExaminationProtocolEventGUI extends ilExaminationProtocolBaseController
         parent::__construct();
         $this->configured = true;
         // tab
-        $this->tabs->activateSubTab(self::PROTOCOL_TAB_ID);
+        // $this->tabs->activateSubTab(self::PROTOCOL_TAB_ID);
         // clear session entry...
         unset($_SESSION['examination_protocol']['assigned']);
         unset($_SESSION['examination_protocol']['entry_id']);
     }
 
-    /**
-     * @return void
-     */
     private function buildGUI() : void
     {
         // notification
         $this->buildInfo();
-        // toolbar
+        $this->buildToolbar();
+        $this->protocolTable = new ilExaminationProtocolEventTableGUI($this, "show");
+        $this->loadData();
+        $this->tpl->setContent($this->protocolTable->getHTML());
+    }
+
+    protected function buildToolbar() : void
+    {
         if ($this->configured) {
             $btn = ilLinkButton::getInstance();
             $btn->setCaption($this->plugin->txt("event_table_btn_add_event"), false);
             $btn->setUrl($this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventInputGUI::class, self::CMD_SHOW));
             $this->toolbar->addButtonInstance($btn);
         }
-
         if ($this->protocol_has_entries) {
             $btn = ilLinkButton::getInstance();
             $btn->setCaption($this->plugin->txt("event_table_btn_delete_all_events"), false);
             $btn->setUrl($this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventGUI::class, self::CMD_CONFIRMATION));
             $this->toolbar->addButtonInstance($btn);
         }
-        $this->protocolTable = new ilExaminationProtocolEventTableGUI($this, "show");
-        $this->loadData();
-        $this->tpl->setContent($this->protocolTable->getHTML());
     }
-
-    /**
-     * @return void
-     */
     private function loadData() : void
     {
         $event_entries = $this->db_connector->getAllProtocolEntriesByProtocolID($this->protocol_id);
@@ -124,9 +120,6 @@ class ilExaminationProtocolEventGUI extends ilExaminationProtocolBaseController
         $this->protocolTable->setData($data);
     }
 
-    /**
-     * @return void
-     */
     private function buildInfo() : void
     {
         $info_message = "";
@@ -151,9 +144,6 @@ class ilExaminationProtocolEventGUI extends ilExaminationProtocolBaseController
         }
     }
 
-    /**
-     * @return void
-     */
     public function executeCommand() : void
     {
         switch ($this->ctrl->getCmd()) {
@@ -177,7 +167,7 @@ class ilExaminationProtocolEventGUI extends ilExaminationProtocolBaseController
     {
         require_once 'Services/Utilities/classes/class.ilConfirmationGUI.php';
         $confirmation_gui = new ilConfirmationGUI();
-        $confirmation_gui->setHeaderText($this->plugin->txt('examination_protocol_event_table_action_confirmation_question'));
+        $confirmation_gui->setHeaderText($this->plugin->txt('event_table_action_confirmation_question'));
         $confirmation_gui->setFormAction($this->ctrl->getFormAction($this, self::CMD_SHOW));
         $confirmation_gui->setCancel($this->lng->txt("cancel"), self::CMD_SHOW);
         $confirmation_gui->setConfirm($this->lng->txt("confirm"), self::CMD_DELETE);

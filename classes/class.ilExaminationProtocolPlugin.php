@@ -42,9 +42,6 @@ class ilExaminationProtocolPlugin extends ilUserInterfaceHookPlugin
     /** @var Container */
     protected $dic;
 
-    /**
-     *
-     */
     public function __construct()
     {
         global $DIC;
@@ -52,17 +49,20 @@ class ilExaminationProtocolPlugin extends ilUserInterfaceHookPlugin
         parent::__construct();
     }
 
-    /**
-     * @return string
-     */
     public function getPluginName() : string
     {
         return self::PNAME;
     }
 
-    /**
-     * @return void
-     */
+    public function hasProtocol() : bool
+    {
+        //TODO add evaluation
+    }
+
+    public function getAllFiles() {
+        //TODO add Files
+    }
+
     protected function init() : void
     {
         parent::init();
@@ -79,9 +79,6 @@ class ilExaminationProtocolPlugin extends ilUserInterfaceHookPlugin
         }
     }
 
-    /**
-     * @return void
-     */
     public function registerAutoloader() : void
     {
         require_once __DIR__ . '/../vendor/autoload.php';
@@ -106,9 +103,6 @@ class ilExaminationProtocolPlugin extends ilUserInterfaceHookPlugin
         return self::$instance;
     }
 
-    /**
-     * @return bool
-     */
     public function hasAccess() : bool
     {
         /** @var $ilAccess ilAccessHandler */

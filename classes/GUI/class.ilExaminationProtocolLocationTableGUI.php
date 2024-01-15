@@ -31,7 +31,7 @@ class ilExaminationProtocolLocationTableGUI extends ilTable2GUI
     private $disabled;
 
     /**
-     * @param        $a_parent_obj
+     * @param object $a_parent_obj
      * @param string $a_parent_cmd
      * @param string $a_template_context
      * @param bool   $disabled
@@ -44,12 +44,11 @@ class ilExaminationProtocolLocationTableGUI extends ilTable2GUI
         $this->disabled = $disabled;
         $this->setId("texa_location");
         parent::__construct($a_parent_obj, $a_parent_cmd, $a_template_context);
-
         // title
-        $this->setTitle($this->plugin->txt('examination_protocol_location_table_title'));
+        $this->setTitle($this->plugin->txt('location_table_title'));
         $this->setFormName('formLocation');
         // default no entries set
-        $this->setNoEntriesText($this->plugin->txt('examination_protocol_table_empty'));
+        $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setEnableHeader(true);
         // selector
         if (!$this->disabled) {
@@ -59,10 +58,8 @@ class ilExaminationProtocolLocationTableGUI extends ilTable2GUI
         }
         // row template
         $this->setRowTemplate('tpl.location_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
-
         // Action
         $this->setFormAction($ilCtrl->getFormAction($a_parent_obj, $a_parent_cmd));
-
         // build Table
         $this->addColumn('', 'location_id', '1px', true);
         $this->addColumn($this->plugin->txt("location_table_column_location"), 'location');
@@ -82,7 +79,6 @@ class ilExaminationProtocolLocationTableGUI extends ilTable2GUI
         if (!$this->disabled) {
             $checkbox = ilUtil::formCheckbox(false, 'locations[]', $a_set['location_id']);
         }
-
         parent::fillRow([
             'LOCATION' => $a_set['location'],
             'CHECKBOX' => $checkbox
