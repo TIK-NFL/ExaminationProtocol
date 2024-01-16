@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 /**
@@ -21,67 +20,60 @@ declare(strict_types=1);
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  */
 class ilExaminationProtocolSupervisorTableGUI extends ilTable2GUI
 {
-    /** @var ilExaminationProtocolPlugin */
-    protected $plugin;
-    /** @var bool  */
-    private $disabled;
+    protected ilExaminationProtocolPlugin $plugin;
+    private bool $disabled;
 
     /**
-     * @param $a_parent_obj
-     * @param $a_parent_cmd
-     * @param $a_template_context
-     * @param $disabled
+     * @param object $a_parent_obj
+     * @param string $a_parent_cmd
+     * @param string $a_template_context
+     * @param bool   $disabled
+     * @throws ilException
      */
-    public function __construct($a_parent_obj, $a_parent_cmd = "", $a_template_context = "", $disabled = false)
+    public function __construct($a_parent_obj, string $a_parent_cmd = "", string $a_template_context = "", bool $disabled = false)
     {
         global $DIC;
         $ilCtrl = $DIC['ilCtrl'];
         $this->plugin = ilExaminationProtocolPlugin::getInstance();
         $this->disabled = $disabled;
-        $this->setId("texa_supervisor");
+        $this->setId('texa_supervisor');
         parent::__construct($a_parent_obj, $a_parent_cmd, $a_template_context);
 
-        // title
-        $this->setTitle($this->plugin->txt('examination_protocol_supervisor_table_title'));
+        $this->setTitle($this->plugin->txt('supervisor_table_title'));
         $this->setFormName('formSupervisor');
-
-        // default no entries set
-        $this->setNoEntriesText($this->plugin->txt('examination_protocol_table_empty'));
+        $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setEnableHeader(true);
+        $this->setRowTemplate('tpl.supervisor_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
+        $this->setFormAction($ilCtrl->getFormAction($a_parent_obj, $a_parent_cmd));
 
-        // selector
         if (!$this->disabled) {
             $this->setShowRowsSelector(true);
             $this->setSelectAllCheckbox('supervisors');
-            $this->addMultiCommand("delete", $this->lng->txt('delete'));
+            $this->addMultiCommand('delete', $this->lng->txt('delete'));
         }
-        // row Template
-        $this->setRowTemplate('tpl.supervisor_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
-
-        // Action
-        $this->setFormAction($ilCtrl->getFormAction($a_parent_obj, $a_parent_cmd));
-
-        // build Table
         $this->addColumn('', 'supervisor_id', '1px', true);
         $this->addColumn($this->plugin->txt("supervisor_table_column_name"), 'name');
     }
 
     /**
      * fills an array into the tables
+     *
      * @param array $a_set
      * @return void
      */
-    protected function fillRow($a_set) : void
+    protected function fillRow(array $a_set) : void
     {
-        $checkbox = "";
+        $checkbox = '';
+        $type = 'hidden';
         if (!$this->disabled) {
-            $checkbox = ilUtil::formCheckbox(false, 'supervisors[]', $a_set['supervisor_id']);
+            $type = 'checkbox';
+            $checkbox = $a_set['supervisor_id'];
         }
         parent::fillRow([
+            'TYPE' => $type,
             'CHECKBOX' => $checkbox,
             'NAME' => $a_set['name'],
         ]);

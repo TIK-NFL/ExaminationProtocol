@@ -148,7 +148,7 @@ $protocol = [
     'location_id' => [
         'type' => 'integer',
         'length' => 4,
-        'notnull' => false
+        'notnull' => false,
     ],
     'start' => [
         'type' => 'timestamp',
@@ -247,5 +247,24 @@ if(!$ilDB->tableExists($protocol_participant_table_name)) {
     $ilDB->createTable($protocol_participant_table_name, $protocol_participant);
     $ilDB->addPrimaryKey($protocol_participant_table_name, ["propar_id"]);
     $ilDB->createSequence($protocol_participant_table_name);
+}
+?>
+
+<#2>
+<?php
+$settings_table_name = "tst_uihk_texa_general";
+
+// Define the column to be added
+$new_column = [
+    'type' => 'text',
+    'notnull' => false,
+    'length' => 64,
+    'default' => ''
+];
+
+// Check if the column already exists
+if (!$ilDB->tableColumnExists($settings_table_name, 'resource_storage_id')) {
+    // Add the new column
+    $ilDB->addTableColumn($settings_table_name, 'resource_storage_id', $new_column);
 }
 ?>

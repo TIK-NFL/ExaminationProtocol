@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 /**
@@ -20,57 +19,58 @@ declare(strict_types=1);
  */
 
 use ILIAS\DI\Container;
+use ILIAS\Plugin\ExaminationProtocol\ilExaminationProtocolExporter;
 use ILIAS\Plugin\ExaminationProtocol\ilExaminationProtocolSettings;
+use ILIAS\ResourceStorage\Identification\ResourceIdentification;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  */
 class ilExaminationProtocolPlugin extends ilUserInterfaceHookPlugin
 {
     // plugin definitions
-    public const CTYPE = IL_COMP_SERVICE;
+    public const CTYPE = "Services";
     public const CNAME = "UIComponent";
     public const SLOT_ID = "uihk";
     public const PNAME = "ExaminationProtocol";
     public const ID = "texa";
 
-    /** @var self */
-    private static $instance = null;
-    /** @var bool */
-    protected static $initialized = false;
-    /** @var Container */
-    protected $dic;
+    private static ?ilExaminationProtocolPlugin $instance = null;
+    protected static bool $initialized = false;
+    protected Container $dic;
 
-    /**
-     *
-     */
     public function __construct()
     {
         global $DIC;
+        global $ilDB;
         $this->dic = $DIC;
-        parent::__construct();
+        $cr = $DIC['component.repository'];
+        parent::__construct($ilDB, $cr, ilExaminationProtocolPlugin::ID);
     }
 
-    /**
-     * @return string
-     */
     public function getPluginName() : string
     {
         return self::PNAME;
     }
 
     /**
-     * @return void
+     * @param string $test_id id of the ILIAS test Object a protocol possibly could be created.
+     * @return ResourceIdentification the IRSS id of the protocols HTML file. the protocol might be empty if no protocol information is available
      */
+    public function getProtocolExportByTestID(string $test_id) : ResourceIdentification
+    {
+        $exporter = new ilExaminationProtocolExporter($test_id);
+        return $exporter->getLatestExportID();
+    }
+
+
+
     protected function init() : void
     {
         parent::init();
         $this->registerAutoloader();
-
         if (!self::$initialized) {
             self::$initialized = true;
-
             $this->dic['plugin.examinationprotocol.settings'] = function (Container $c) : ilExaminationProtocolSettings {
                 return new ilExaminationProtocolSettings(
                     new ilSetting($this->getId())
@@ -79,36 +79,24 @@ class ilExaminationProtocolPlugin extends ilUserInterfaceHookPlugin
         }
     }
 
-    /**
-     * @return void
-     */
     public function registerAutoloader() : void
     {
         require_once __DIR__ . '/../vendor/autoload.php';
     }
 
     /**
-     * @return self
+     * @return ilExaminationProtocolPlugin|null
      */
     public static function getInstance() : ?ilExaminationProtocolPlugin
     {
-        if (self::$instance instanceof self) {
-            return self::$instance;
+        if (null === self::$instance) {
+            global $DIC;
+            $cf = $DIC['component.factory'];
+            self::$instance = $cf->getPlugin(ilExaminationProtocolPlugin::ID);
         }
-
-        self::$instance = ilPluginAdmin::getPluginObject(
-            self::CTYPE,
-            self::CNAME,
-            self::SLOT_ID,
-            self::PNAME
-        );
-
         return self::$instance;
     }
 
-    /**
-     * @return bool
-     */
     public function hasAccess() : bool
     {
         /** @var $ilAccess ilAccessHandler */

@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 /**
@@ -23,65 +22,63 @@ use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  * @ilCtrl_isCalledBy ilExaminationProtocolEventInputGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI, ilExaminationProtocolEventTableGUI
  * @ilCtrl_Calls ilExaminationProtocolEventInputGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI, ilExaminationProtocolEventTableGUI
  */
 class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseController
 {
-    /** @var mixed */
-    private $form;
-    /** @var DateTime  */
-    private $date_now;
-    private $html;
-    private $entry;
+    private DateTime $date_now;
+    private string $htmlPage;
+    private ?array $entry;
 
-    /**
-     * @throws ilDatabaseException
-     * @throws ilObjectNotFoundException
-     */
     public function __construct()
     {
         parent::__construct();
-        // date
         $this->date_now = new DateTime('now');
-        $this->entry = $this->db_connector->getAllProtocolEntries($_REQUEST['entry_id'])[0];
+        if (isset($_REQUEST['entry_id'])){
+            $this->entry = $this->db_connector->getAllProtocolEntries($_REQUEST['entry_id'])[0];
+        }
+
     }
 
     /**
-     * @return void
+     * @throws ilCtrlException
+     * @throws Exception
      */
     private function buildEventForm() : void
     {
         // info
         if (!empty($_REQUEST['info']) && $_REQUEST['info'] == 'empty_date') {
-            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('examination_protocol_entry_datetime_empty'));
+            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('entry_datetime_empty'));
         } elseif (!empty($_REQUEST['info']) && $_REQUEST['info'] == 'wrong_date') {
-            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('examination_protocol_entry_datetime_wrong'));
+            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('entry_datetime_wrong'));
         }
         $data_factory = new ILIAS\Data\Factory();
         // load existing entry
-        $start = $end = null;
+        $start = $end = date("d.m.Y H:i");
         if (!empty($this->entry)) {
-            $start = date("d.m.Y H:i", strtotime($this->entry['start']));
-            $end = date("d.m.y H:i", strtotime($this->entry['end']));
+            $start = $this->utctolocal($this->entry['start']);
+            $end = $this->utctolocal($this->entry['end']);
             $this->ctrl->setParameterByClass(ilExaminationProtocolEventInputGUI::class, "entry_id", $_REQUEST['entry_id']);
         }
+
+        $this->buildToolbar();
         // event input
         $dt_start = $this->field_factory->dateTime($this->plugin->txt("entry_datetime_start_title"))
             ->withUseTime(true)
             ->withFormat($data_factory->dateFormat()->germanShort())
-            ->withValue($start ?? $this->date_now->format("d.m.Y H:i"))
+            ->withValue($start)
             ->withRequired(true);
         $dt_end = $this->field_factory->dateTime($this->plugin->txt("entry_datetime_end_title"))
             ->withUseTime(true)
             ->withFormat($data_factory->dateFormat()->germanShort())
-            ->withValue($end ?? $this->date_now->format("d.m.Y H:i"))
+            ->withValue($end)
             ->withRequired(true);
         $se_event_type = $this->field_factory->select($this->plugin->txt("entry_dropdown_event_title"), $this->event_options)
-            ->withValue($this->entry['event'] ?? 0);
+            ->withValue($this->entry['event'] ?? 0)
+            ->withRequired(true);
         $ta_description = $this->field_factory->textarea($this->plugin->txt("description"))
-        ->withValue($this->entry['comment'] ?? "");
+            ->withValue($this->entry['comment'] ?? "");
         $event_inputs = [
             $dt_start,
             $dt_end,
@@ -89,23 +86,25 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
             $ta_description,
         ];
 
-        if ($this->settings['supervision'] != '2') {
+        if ($this->plugin_settings['supervision'] != '2') {
             $supervisors = $this->db_connector->getAllSupervisorsByProtocolID($this->protocol_id);
             $supervisor_options = array_column($supervisors, 'name', 'supervisor_id');
             $supervisor_options[0] = $this->plugin->txt("entry_dropdown_supervisor_no_supervisor");
 
             $se_supervisor = $this->field_factory->select($this->plugin->txt("entry_dropdown_supervisor_title"), $supervisor_options)
-                ->withValue($this->entry['supervisor_id'] ?? 0);
+                ->withValue($this->entry['supervisor_id'] ?? 0)
+                ->withRequired(true);
             $event_inputs[] = $se_supervisor;
         }
 
-        if ($this->settings['location'] == '0') {
+        if ($this->plugin_settings['location'] == '0') {
             $locations = $this->db_connector->getAllLocationsByProtocolID($this->protocol_id);
             $location_options = array_column($locations, 'location', 'location_id');
             $location_options[0] = $this->plugin->txt("entry_dropdown_location_no_location");
 
             $se_location = $this->field_factory->select($this->plugin->txt("entry_dropdown_location_title"), $location_options)
-                ->withValue($this->entry['location_id'] ?? 0);
+                ->withValue($this->entry['location_id'] ?? 0)
+                ->withRequired(true);
             $event_inputs[] = $se_location;
         }
         $section_input = $this->field_factory->section($event_inputs, $this->plugin->txt("entry_event_section"));
@@ -116,51 +115,62 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
         ];
 
         $form_action = $this->ctrl->getFormAction($this, self::CMD_SAVE);
-        $this->form = $this->ui_factory->input()->container()->form()->standard($form_action, $site);
+        $form = $this->ui_factory->input()->container()->form()->standard($form_action, $site);
+
         if ($this->request->getMethod() == "POST") {
-            $this->form = $this->form->withRequest($this->request);
+            $form = $form->withRequest($this->request);
         }
-        $this->html = $this->renderer->render($this->form);
+        $this->htmlPage = $this->renderer->render($form);
         // So the kitchensink sets the default button text of the button to "save" in the renderer ILIAS 7 und 8
         // $submit_button = $f->button()->standard($this->txt("save"), "");
         // in ILIAS/src/UI/Implementation/Component/Input/Container/Form/Renderer.php
         // we need a "next" TODO remove HTML edditing when KS has an edible button
         if (empty($_REQUEST['entry_id'])) {
-            $this->html = str_replace(
+            $this->htmlPage = str_replace(
                 '<div class="il-standard-form-cmd"><button class="btn btn-default"   data-action="">Save</button>',
                 '<div class="il-standard-form-cmd"><button class="btn btn-default"   data-action="">' . $this->plugin->txt("next") . '</button>',
-                $this->html
+                $this->htmlPage
             );
         }
     }
 
     /**
-     * @return void
+     * @throws ilCtrlException
+     * @throws JsonException
      */
     public function executeCommand() : void
     {
         switch ($this->ctrl->getCmd()) {
             case self::CMD_SAVE:
-                $this->save();
+                $this->saveEvent();
                 break;
+            default:
             case self::CMD_SHOW:
                 $this->buildEventForm();
                 break;
         }
     }
 
-    /**
-     * @return string
-     */
     public function getHTML() : string
     {
-        return $this->html;
+        return $this->htmlPage;
     }
 
     /**
-     * @return void
+     * @throws ilCtrlException
      */
-    private function save() : void
+    private function buildToolbar() : void
+    {
+        $btn = $this->ui_factory->button()->standard($this->lng->txt('cancel'),
+            $this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventGUI::class, self::CMD_SHOW));
+        $this->toolbar->addComponent($btn);
+    }
+
+    /**
+     * @throws JsonException
+     * @throws ilCtrlException
+     */
+    private function saveEvent() : void
     {
         if (empty($_POST['form_input_2']) || empty($_POST['form_input_3'])) {
             $this->ctrl->setParameterByClass(ilExaminationProtocolEventInputGUI::class, "entry_id", $_REQUEST['entry_id']);
@@ -174,45 +184,34 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
         }
 
         global $ilUser;
-        $supervisor = null;
-        $location = null;
+        $supervisor = "";
+        $location = "";
         // TODO get clear input names
-        if ($this->settings['supervision'] != '2') {
+        if ($this->plugin_settings['supervision'] != '2') {
             $supervisor = $_POST["form_input_6"];
         }
-        if ($this->settings['location'] == '0') {
-            if ($this->settings['supervision'] != '2') {
+        if ($this->plugin_settings['location'] == '0') {
+            if ($this->plugin_settings['supervision'] != '2') {
                 $location = $_POST["form_input_7"];
             } else {
                 $location = $_POST["form_input_6"];
             }
         }
-        $dt_now = $this->date_now->format("Y-m-d H:i:s");
-        $start = date("Y-m-d H:i:s", strtotime($_POST["form_input_2"]));
-        $end = date("Y-m-d H:i:s", strtotime($_POST["form_input_3"]));
+        $dt_now = gmdate("Y-m-d H:i:s", strtotime($this->date_now->format("Y-m-d H:i:s")));
+        $start = gmdate("Y-m-d H:i:s", strtotime($_POST["form_input_2"]));
+        $end = gmdate("Y-m-d H:i:s", strtotime($_POST["form_input_3"]));
         $user = $ilUser->getId();
         $values = [
-            // 0 protocol_id
             ['integer', $this->protocol_id],
-            // 1 supervisor_id
             ['integer', $supervisor],
-            // 2 location_id
             ['integer', $location],
-            // 3 start
             ['date', $start],
-            // 4 end
             ['date', $end],
-            // 5 creation
             ['date', $this->entry['creation'] ?? $dt_now],
-            // 6 event type
             ['integer',$_POST["form_input_4"]],
-            // 7 comment
             ['text', $_POST["form_input_5"]],
-            // 8 last_edit
             ['date', $dt_now],
-            // 9 last_edit_by
             ['integer', $user],
-            // 10 created_by
             ['integer', $this->entry['created_by'] ?? $user],
         ];
         if (!empty($_REQUEST['entry_id'])) {
@@ -222,7 +221,6 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
             $this->db_connector->updateProtocolEntry($values, $where);
             $this->ctrl->redirectToURL($this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventGUI::class, self::CMD_SHOW));
         } else {
-            // call Participant gui
             $entry_id = $this->db_connector->insertProtocolEntry($values);
             $this->ctrl->setParameterByClass(ilExaminationProtocolEventParticipantsGUI::class, "entry_id", $entry_id);
             $this->ctrl->redirectToURL($this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventParticipantsGUI::class, self::CMD_SHOW));

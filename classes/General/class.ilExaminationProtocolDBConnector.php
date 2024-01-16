@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 /**
@@ -21,65 +20,63 @@ declare(strict_types=1);
 
 namespace ILIAS\Plugin\ExaminationProtocol;
 
+use ilDBInterface;
+
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  */
 class ilExaminationProtocolDBConnector
 {
     /** @var string */
-    const SETTINGS_PRIMARY_KEY = "protocol_id";
+    public const  SETTINGS_PRIMARY_KEY = 'protocol_id';
 
     /** @var string  */
-    const TEST_ID_KEY = "test_id";
+    public const TEST_ID_KEY = 'test_id';
     /** @var string  */
-    const SETTINGS_TABLE_NAME = "tst_uihk_texa_general";
+    public const SETTINGS_TABLE_NAME = 'tst_uihk_texa_general';
     /** @var array */
-    const SETTINGS_TABLE_FIELDS = ['test_id', 'protocol_title', 'protocol_desc', 'type_exam',
-        'type_only_ilias', 'type_desc', 'supervision', 'exam_policy', 'exam_policy_desc', 'location'];
+    public const SETTINGS_TABLE_FIELDS = ['test_id', 'protocol_title', 'protocol_desc', 'type_exam', 'type_only_ilias',
+                                          'type_desc', 'supervision', 'exam_policy', 'exam_policy_desc', 'location',
+                                          'resource_storage_id'];
 
     /** @var string  */
-    const LOCATION_TABLE_NAME = "tst_uihk_texa_location";
+    public const LOCATION_TABLE_NAME = 'tst_uihk_texa_location';
     /** @var string */
-    const LOCATION_PRIMARY_KEY = "location_id";
+    public const LOCATION_PRIMARY_KEY = 'location_id';
     /** @var array */
-    const LOCATION_TABLE_FIELDS = ['protocol_id', 'location'];
+    public const LOCATION_TABLE_FIELDS = ['protocol_id', 'location'];
 
     /** @var string  */
-    const SUPERVISOR_TABLE_NAME = "tst_uihk_texa_supvis";
+    public const SUPERVISOR_TABLE_NAME = 'tst_uihk_texa_supvis';
     /** @var string */
-    const SUPERVISOR_PRIMARY_KEY = "supervisor_id";
+    public const SUPERVISOR_PRIMARY_KEY = 'supervisor_id';
     /** @var array */
-    const SUPERVISOR_TABLE_FIELDS = ['protocol_id', 'name'];
+    public const SUPERVISOR_TABLE_FIELDS = ['protocol_id', 'name'];
 
     /** @var string  */
-    const PROTOCOL_TABLE_NAME = "tst_uihk_texa_protocol";
+    public const PROTOCOL_TABLE_NAME = 'tst_uihk_texa_protocol';
     /** @var string */
-    const PROTOCOL_PRIMARY_KEY = "entry_id";
+    public const PROTOCOL_PRIMARY_KEY = 'entry_id';
     /** @var array */
-    const PROTOCOL_TABLE_FIELDS = ['protocol_id', 'supervisor_id', 'location_id',
-        'start', 'end', 'creation', 'event', 'comment', 'last_edit', 'last_edited_by', 'created_by'];
+    public const PROTOCOL_TABLE_FIELDS = ['protocol_id', 'supervisor_id', 'location_id', 'start', 'end', 'creation',
+                                          'event', 'comment', 'last_edit', 'last_edited_by', 'created_by'];
 
     /** @var string  */
-    const PROTOCOL_PARTICIPANT_TABLE_NAME = "tst_uihk_texa_propar";
+    public const PROTOCOL_PARTICIPANT_TABLE_NAME = 'tst_uihk_texa_propar';
     /** @var string */
-    const PROTOCOL_PARTICIPANT_PRIMARY_KEY = "propar_id";
+    public const PROTOCOL_PARTICIPANT_PRIMARY_KEY = 'propar_id';
     /** @var array */
-    const PROTOCOL_PARTICIPANT_FIELDS = ['protocol_id', 'entry_id', 'participant_id'];
+    public const PROTOCOL_PARTICIPANT_FIELDS = ['protocol_id', 'entry_id', 'participant_id'];
 
     /** @var string  */
-    const PARTICIPANTS_TABLE_NAME = "tst_uihk_texa_partic";
+    public const PARTICIPANTS_TABLE_NAME = 'tst_uihk_texa_partic';
     /** @var string */
-    const PARTICIPANTS_PRIMARY_KEY = "participant_id";
+    public const PARTICIPANTS_PRIMARY_KEY = 'participant_id';
     /** @var array */
-    const PARTICIPANTS_TABLE_FIELDS = ['protocol_id', 'usr_id'];
+    public const PARTICIPANTS_TABLE_FIELDS = ['protocol_id', 'usr_id'];
 
-    /** @var $ilDB */
-    private $ilDB;
+    private ilDBInterface $ilDB;
 
-    /**
-     *
-     */
     public function __construct()
     {
         global $ilDB;
@@ -139,6 +136,23 @@ class ilExaminationProtocolDBConnector
         return (array) $this->ilDB->fetchObject($query);
     }
 
+    public function getResourceIDbyTestID($test_id) : array
+    {
+        $query = $this->ilDB->queryF(
+            "SELECT resource_storage_id FROM " . self::SETTINGS_TABLE_NAME . " WHERE " . self::TEST_ID_KEY . " = %s",
+            array('integer'),
+            array($test_id)
+        );
+
+        return (array) $this->ilDB->fetchObject($query);
+    }
+
+    public function setResourceIDbyTestID($test_id, $resource_id) : void
+    {
+        $query = "UPDATE " . self::SETTINGS_TABLE_NAME . " SET resource_storage_id = '".$resource_id."' WHERE " . self::TEST_ID_KEY . "= ".$test_id.";";
+        $this->ilDB->manipulate($query);
+    }
+    
     /**
      * Tests if a setting exists
      * @param $test_id
@@ -171,10 +185,20 @@ class ilExaminationProtocolDBConnector
             array($test_id)
         );
         $result = (array) $this->ilDB->fetchObject($query);
-        if (isset($result)) {
+        if (isset($result['protocol_id'])) {
             return $result['protocol_id'];
         }
         return null;
+    }
+
+    public function getTestTitleById($test_id) : array
+    {
+        $query = $this->ilDB->queryF(
+            "SELECT od.title FROM tst_tests AS tt, object_data AS od WHERE tt.test_id = %s AND tt.obj_fi = od.obj_id",
+            array('integer'),
+            array($test_id)
+        );
+        return (array) $this->ilDB->fetchObject($query);
     }
 
     // Examination Supervisors
@@ -190,7 +214,7 @@ class ilExaminationProtocolDBConnector
             array('integer'),
             array($protocol_id)
         );
-        return (array) $this->ilDB->fetchAll($query);
+        return $this->ilDB->fetchAll($query);
     }
 
     /**
@@ -204,7 +228,7 @@ class ilExaminationProtocolDBConnector
             array('integer'),
             array($supervisor_id)
         );
-        return (array) $this->ilDB->fetchAll($query);
+        return $this->ilDB->fetchAll($query);
     }
     /**
      * Inserts a new row into the supervisor table using the provided key-value pairs.
@@ -243,7 +267,7 @@ class ilExaminationProtocolDBConnector
             array('integer'),
             array($protocol_id)
         );
-        return (array) $this->ilDB->fetchAll($query);
+        return $this->ilDB->fetchAll($query);
     }
 
     /**
@@ -257,7 +281,7 @@ class ilExaminationProtocolDBConnector
             array('integer'),
             array($location_id)
         );
-        return (array) $this->ilDB->fetchAll($query);
+        return $this->ilDB->fetchAll($query);
     }
 
     /**
@@ -297,7 +321,7 @@ class ilExaminationProtocolDBConnector
             array('integer'),
             array($protocol_id)
         );
-        return (array) $this->ilDB->fetchAll($query);
+        return $this->ilDB->fetchAll($query);
     }
 
     /**
@@ -333,19 +357,18 @@ class ilExaminationProtocolDBConnector
      */
     public function getAllParticipantsByUserIDandFilter($usr_ids, $login, $name, $mrt) : array
     {
-        //TODO cleanup $usr_ids
         $query = $this->ilDB->queryF(
             "
             SELECT CONCAT(lastname, ', ', firstname) AS name, login, matriculation, email, usr_id
             FROM usr_data
             WHERE usr_id IN (" . $usr_ids . ")
-              AND (COALESCE(%s, '') = '' OR login = %s)
+              AND (COALESCE(%s, '') = '' OR login LIKE CONCAT('%%', %s, '%%' ))
               AND (COALESCE(%s, '') = '' OR matriculation LIKE CONCAT('%%', %s, '%%' ))
               AND (COALESCE(%s, '') = '' OR CONCAT(lastname, ', ', firstname) LIKE CONCAT('%%', %s, '%%' ))",
             array('string', 'string', 'string', 'string', 'string', 'string'),
             array($login, $login, $mrt, $mrt, $name, $name)
         );
-        return (array) $this->ilDB->fetchAll($query);
+        return $this->ilDB->fetchAll($query);
     }
 
     /**
@@ -359,7 +382,7 @@ class ilExaminationProtocolDBConnector
             array('integer'),
             array($participant_id)
         );
-        return (array) $this->ilDB->fetchAll($query);
+        return $this->ilDB->fetchAll($query);
     }
 
     /**
@@ -373,7 +396,7 @@ class ilExaminationProtocolDBConnector
             array('integer'),
             array($user_id)
         );
-        return (array) $this->ilDB->fetchAll($query);
+        return $this->ilDB->fetchAll($query);
     }
 
     /**
@@ -387,7 +410,7 @@ class ilExaminationProtocolDBConnector
             array('integer'),
             array($user_id)
         );
-        return (array) $this->ilDB->fetchAll($query);
+        return $this->ilDB->fetchAll($query);
     }
 
     /**
@@ -397,20 +420,20 @@ class ilExaminationProtocolDBConnector
     public function getUsernameByUserID($user_id) : array
     {
         $query = $this->ilDB->queryF(
-            "SELECT firstname, lastname FROM usr_data WHERE usr_id = %s",
+            "SELECT firstname, lastname, login FROM usr_data WHERE usr_id = %s",
             array('integer'),
             array($user_id)
         );
-        return (array) $this->ilDB->fetchAll($query);
+        return $this->ilDB->fetchAll($query);
     }
 
     // Examination protocol entries
     /**
      * Inserts a new row into the protocol table using the provided key-value pairs.
      * @param array $values An array of values to be inserted into the settings table.
-     * @return string row index of current entry
+     * @return int row index of current entry
      */
-    public function insertProtocolEntry(array $values) : string
+    public function insertProtocolEntry(array $values) : int
     {
         // add auto increment to first array element
         $primary_key = [self::PROTOCOL_PRIMARY_KEY => ['integer', $this->ilDB->nextId(self::PROTOCOL_TABLE_NAME)]];
@@ -430,7 +453,7 @@ class ilExaminationProtocolDBConnector
             array('integer'),
             array($entry_id)
         );
-        return (array) $this->ilDB->fetchAll($query);
+        return $this->ilDB->fetchAll($query);
     }
 
     /**
@@ -444,9 +467,8 @@ class ilExaminationProtocolDBConnector
             array('integer'),
             array($protocol_id)
         );
-        return (array) $this->ilDB->fetchAll($query);
+        return $this->ilDB->fetchAll($query);
     }
-
 
     /**
      * Update specified columns in the protocol table using the provided key-value pairs and a WHERE clause.
@@ -535,7 +557,7 @@ class ilExaminationProtocolDBConnector
             array('integer'),
             array($entry_id)
         );
-        return (array) $this->ilDB->fetchAll($query);
+        return $this->ilDB->fetchAll($query);
     }
 
     /**
@@ -549,7 +571,7 @@ class ilExaminationProtocolDBConnector
             array('integer'),
             array($entry_id)
         );
-        return array_reduce((array) $this->ilDB->fetchAll($query), function ($carry, $item) {
+        return array_reduce( $this->ilDB->fetchAll($query), function ($carry, $item) {
             $carry[] = $item['participant_id'];
             return $carry;
         }, []);
@@ -566,6 +588,6 @@ class ilExaminationProtocolDBConnector
             array('integer'),
             array($protocol_id)
         );
-        return (array) $this->ilDB->fetchAll($query);
+        return $this->ilDB->fetchAll($query);
     }
 }

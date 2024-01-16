@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 /**
@@ -25,14 +24,11 @@ use ilSetting;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  */
 class ilExaminationProtocolSettings
 {
-    /** @var ilSetting */
-    private $settings;
-    /** @var array  */
-    private $examination_protocol_settings = [];
+    private ilSetting $settings;
+    private array $examination_protocol_settings = [];
     /** @var string[]  */
     public const OPERATION_MODES = [
         0 => 'off',
@@ -50,7 +46,6 @@ class ilExaminationProtocolSettings
     }
 
     /**
-     *
      * @param int $mode
      * @return void
      */
@@ -61,12 +56,12 @@ class ilExaminationProtocolSettings
     }
 
     /**
-     * @return int
+     * @return ?int
      */
     public function getOperationModeKey() : ?int
     {
-        if (is_null($this->examination_protocol_settings['mode'])) {
-            return null;
+        if (empty($this->examination_protocol_settings) || is_null($this->examination_protocol_settings['mode'])) {
+            return 0;
         }
         return array_search($this->examination_protocol_settings['mode'], self::OPERATION_MODES);
     }

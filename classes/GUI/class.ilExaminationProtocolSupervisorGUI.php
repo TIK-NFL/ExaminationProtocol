@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 /**
@@ -23,41 +22,26 @@ use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  * @ilCtrl_isCalledBy ilExaminationProtocolSupervisorGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls ilExaminationProtocolSupervisorGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI
  */
 class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseController
 {
-    /** @var ilExaminationProtocolEventTableGUI */
-    private $supervisor_table;
+    private ilExaminationProtocolSupervisorTableGUI $supervisor_table;
 
     /**
      * @throws ilDatabaseException
      * @throws ilObjectNotFoundException
+     * @throws ilCtrlException
+     * @throws ilException
      */
     public function __construct()
     {
         parent::__construct();
-
         $this->tabs->activateSubTab(self::SUPERVISOR_TAB_ID);
-
-        // toolbar // no Kitchensink alternative jet
-        require_once 'Services/Form/classes/class.ilTextInputGUI.php';
-        if (!$this->protocol_has_entries) {
-            $this->toolbar->setFormAction($this->ctrl->getFormAction($this, self::CMD_SAVE));
-            $this->toolbar->addInputItem(new ilTextInputGUI($this->plugin->txt("supervisor_text_title"), 'name'), true);
-            $button = ilSubmitButton::getInstance();
-            $button->setCaption($this->lng->txt('add'), false);
-            $button->setCommand(self::CMD_SAVE);
-            $this->toolbar->addButtonInstance($button);
-        } else {
-            $this->tpl->setOnScreenMessage('info', $this->plugin->txt("lock"));
-        }
-
+        $this->buildToolbar();
         // table
         $this->supervisor_table = new ilExaminationProtocolSupervisorTableGUI($this, "show", "", $this->protocol_has_entries);
-
         // load from database
         $supervisors = $this->db_connector->getAllSupervisorsByProtocolID($this->protocol_id);
         $this->supervisor_table->setData($supervisors);
@@ -66,33 +50,46 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseContro
         $this->tpl->setContent($html);
     }
 
-    /**
-     * @return void
-     */
     public function executeCommand() : void
     {
         switch ($this->ctrl->getCmd()) {
+            default:
+            case self::CMD_SHOW:
+                break;
             case self::CMD_SAVE:
-                $this->save();
+                $this->saveSupervisor();
                 break;
             case self::CMD_DELETE:
-                $this->delete();
+                $this->deleteSupervisor();
                 break;
         }
     }
 
-    /**
-     * @return string
-     */
     public function getHTML() : string
     {
         return "";
     }
 
     /**
-     * @return void
+     * @throws ilCtrlException
      */
-    protected function delete() : void
+    protected function buildToolbar()  : void
+    {
+        if (!$this->protocol_has_entries) {
+            require_once 'Services/Form/classes/class.ilTextInputGUI.php';
+            $this->toolbar->setFormAction($this->ctrl->getFormAction($this, self::CMD_SAVE));
+            $this->toolbar->addInputItem(new ilTextInputGUI($this->plugin->txt("supervisor_text_title"), 'name'), true);
+            $btn = $this->ui_factory->button()->standard($this->plugin->txt('add'),"");
+            $this->toolbar->addComponent($btn);
+        } else {
+            $this->tpl->setOnScreenMessage('info', $this->plugin->txt("lock"));
+        }
+    }
+
+    /**
+     * @throws ilCtrlException
+     */
+    protected function deleteSupervisor() : void
     {
         if (!is_null($_POST['supervisors'])) {
             $this->db_connector->deleteSupervisorRows("(" . implode(",", $_POST['supervisors']) . ")");
@@ -101,9 +98,9 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseContro
     }
 
     /**
-     * @return void
+     * @throws ilCtrlException
      */
-    protected function save() : void
+    protected function saveSupervisor() : void
     {
         // build input Array
         $values = [

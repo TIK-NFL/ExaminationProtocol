@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 /**
@@ -23,45 +22,36 @@ use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  * @ilCtrl_isCalledBy ilExaminationProtocolGeneralSettingsGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls ilExaminationProtocolGeneralSettingsGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI
  */
 class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseController
 {
-    /** @var mixed */
     private $form;
 
     /**
-     * @throws ilDatabaseException
-     * @throws ilObjectNotFoundException
+     * @throws ilCtrlException
      */
     public function __construct()
     {
         parent::__construct();
+        $this->tabs->activateSubTab(self::GENERAL_SETTINGS_TAB_ID);
         $this->buildForm();
     }
 
-    /**
-     * @return void
-     */
     private function buildForm() : void
     {
-        // tab
-        $this->tabs->activateSubTab(self::GENERAL_SETTINGS_TAB_ID);
-
         // info
         if ($this->protocol_has_entries) {
             $this->tpl->setOnScreenMessage('info', $this->plugin->txt("lock"));
         }
-
         // General Settings
         $text_title = $this->field_factory->text($this->plugin->txt("settings_general_settings_text_title"))
-            ->withValue($this->settings['protocol_title'] ?? $this->test_object->getTitle())
+            ->withValue($this->plugin_settings['protocol_title'] ?? $this->test_object->getTitle())
             ->withRequired(true)
             ->withDisabled($this->protocol_has_entries);
         $ta_desc = $this->field_factory->textarea($this->lng->txt("desc"))
-            ->withValue($this->settings['protocol_desc'] ?? "")
+            ->withValue($this->plugin_settings['protocol_desc'] ?? "")
             ->withDisabled($this->protocol_has_entries);
         $sectionInputsGeneral = [
             $text_title,
@@ -70,14 +60,11 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
         $section_general = $this->field_factory->section($sectionInputsGeneral, $this->plugin->txt("sub_tab_settings"));
 
         // Type of Examination
-        // online Upload
         $rb_type = $this->field_factory->radio($this->plugin->txt("settings_examination_type_radiobutton_title"))
             ->withOption("0", $this->plugin->txt("settings_examination_type_radiobutton_option_online"))
             ->withOption("1", $this->plugin->txt("settings_examination_type_radiobutton_option_upload"))
-            ->withValue($this->settings['type_exam'] ?? "0")
+            ->withValue($this->plugin_settings['type_exam'] ?? "0")
             ->withDisabled($this->protocol_has_entries);
-
-        // Used TOOLS space
 
         // Only ILIAS
         $g_software_ilias = $this->field_factory->group(
@@ -89,7 +76,7 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
         $ta_software = $this->field_factory->textarea(
             $this->plugin->txt("settings_examination_type_textarea_additional_software_title")
         )
-            ->withValue($this->settings['type_desc'] ?? "")
+            ->withValue($this->plugin_settings['type_desc'] ?? "")
             ->withByline($this->plugin->txt("settings_examination_type_radiobutton_software_additional_software_byline"));
 
         // group software
@@ -103,8 +90,8 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
             [$g_software_ilias, $g_Software_add],
             $this->plugin->txt("settings_examination_type_radiobutton_software_title")
         )
-            ->withValue($this->settings['type_only_ilias'] ?? "0")
-            ->withDisabled($this->protocol_has_entries); // BROKEN in KITCHENSINK....
+            ->withValue($this->plugin_settings['type_only_ilias'] ?? "0")
+            ->withDisabled($this->protocol_has_entries);
 
         $section_inputs_examination = [
             $rb_type,
@@ -114,10 +101,10 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
 
         // Type of supervision
         $rb_sup_onsite = $this->field_factory->radio($this->plugin->txt("settings_supervision_radiobutton_supervision_title"))
-            ->withOption("0", $this->plugin->txt("ettings_supervision_radiobutton_option_onsite"))
+            ->withOption("0", $this->plugin->txt("settings_supervision_radiobutton_option_onsite"))
             ->withOption("1", $this->plugin->txt("settings_supervision_radiobutton_option_remote"))
             ->withOption("2", $this->plugin->txt("settings_supervision_radiobutton_option_none"))
-            ->withValue($this->settings['supervision'] ?? "0")
+            ->withValue($this->plugin_settings['supervision'] ?? "0")
             ->withDisabled($this->protocol_has_entries);
 
         $section_inputs_supervision = [
@@ -142,11 +129,11 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
                 $this->plugin->txt("settings_material_radiobutton_option_other")
             )
              // $this->plugin->txt("settings_material_radiobutton_option_other_byline"))
-            ->withValue($this->settings['exam_policy'] ?? 0)
+            ->withValue($this->plugin_settings['exam_policy'] ?? 0)
             ->withDisabled($this->protocol_has_entries);
 
         $ta_desc_material = $this->field_factory->textarea($this->plugin->txt("settings_material_textarea_additional_information_title"))
-            ->withValue($this->settings['exam_policy_desc'] ?? "")
+            ->withValue($this->plugin_settings['exam_policy_desc'] ?? "")
             ->withDisabled($this->protocol_has_entries);
 
         $section_inputs_materials = [
@@ -159,9 +146,8 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
         $rb_location = $this->field_factory->radio($this->plugin->txt("settings_location_radiobutton_title"))
         ->withOption("0", $this->plugin->txt("settings_location_radiobutton_option_on_premise"))
         ->withOption("1", $this->plugin->txt("settings_location_radiobutton_option_remote"))
-        ->withValue($this->settings['location'] ?? "0")
+        ->withValue($this->plugin_settings['location'] ?? "0")
         ->withDisabled($this->protocol_has_entries);
-
 
         $section_inputs_location = [
             $rb_location,
@@ -175,43 +161,37 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
             $section_material,
             $section_location
         ];
+
         $form_action = $this->ctrl->getFormAction($this, self::CMD_SHOW);
         if (!$this->protocol_has_entries) {
             $form_action = $this->ctrl->getFormAction($this, self::CMD_SAVE);
         }
+
         $this->form = $this->ui_factory->input()->container()->form()->standard($form_action, $site);
         if ($this->request->getMethod() == "POST") {
             $this->form = $this->form->withRequest($this->request);
         }
     }
 
-    /**
-     * @return void
-     */
     public function executeCommand() : void
     {
         switch ($this->ctrl->getCmd()) {
             case self::CMD_SAVE:
-                $this->save();
+                $this->saveSettings();
                 break;
+            default:
             case self::CMD_SHOW:
                 $this->getHTML();
                 break;
         }
     }
 
-    /**
-     * @return string
-     */
     public function getHTML() : string
     {
         return $this->renderer->render($this->form);
     }
 
-    /**
-     * @return void
-     */
-    protected function save() : void
+    protected function saveSettings() : void
     {
         $data = $this->form->getData();
         // build input Array
@@ -221,11 +201,12 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
             ['text',    $data[0][1]],
             ['integer', $data[1][0]],
             ['integer', $data[1][1][0]],
-            ['text',    $data[1][1][1][0]],
+            ['text',    $data[1][1][1][0] ?? ''],
             ['integer', $data[2][0]],
             ['integer', $data[3][0]],
             ['text',    $data[3][1]],
-            ['integer', $data[4][0]]
+            ['integer', $data[4][0]],
+            ['text',    '']
         ];
 
         // update Database

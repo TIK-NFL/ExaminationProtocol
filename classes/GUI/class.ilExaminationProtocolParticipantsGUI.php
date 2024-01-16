@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 /**
@@ -23,33 +22,24 @@ use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  * @ilCtrl_isCalledBy ilExaminationProtocolParticipantsGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilRepositorySearchGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls ilExaminationProtocolParticipantsGUI: ilPermissionGUI, ilInfoScreenGUI, ilRepositoryGUI, ilRepositorySearchGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI
  */
 class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseController
 {
-    /** @var ilExaminationProtocolParticipantsTableGUI */
-    private $participant_table;
+    private ilExaminationProtocolParticipantsTableGUI $participant_table;
 
-    /**
-     * @throws ilDatabaseException
-     * @throws ilObjectNotFoundException
-     */
     public function __construct()
     {
         parent::__construct();
         $this->tabs->activateSubTab(ilExaminationProtocolBaseController::PARTICIPANT_TAB_ID);
     }
 
-    /**
-     * @throws ilCtrlException
-     */
     public function executeCommand() : void
     {
         switch ($this->ctrl->getCmd()) {
             case self::CMD_DELETE:
-                $this->delete();
+                $this->deleteParticipant();
                 $this->show();
                 break;
             case "":
@@ -60,10 +50,11 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
             case self::CMD_ADD_PARTICIPANTS:
                 $rep_search = new ilRepositorySearchGUI();
                 $rep_search->setCallback($this, 'addUser');
-                $rep_search->setTitle($this->plugin->txt('examination_protocol_participant_selector_title'));
-                $this->ctrl->setReturn($this, 'show');
+                $rep_search->setTitle($this->plugin->txt('participant_selector_title'));
+                $this->ctrl->setReturn($this, self::CMD_SHOW);
                 $this->ctrl->forwardCommand($rep_search);
                 break;
+            case 'post':
             case self::CMD_APPLY_FILTER:
                 $this->applyFilter();
                 break;
@@ -71,24 +62,27 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
                 $this->resetFilter();
                 break;
             case 'addUser':
+            case 'showSearchSelected':
                 $this->addUser();
                 $this->show();
                 break;
-            case self::CMD_SHOW:
             default:
+            case self::CMD_SHOW:
                 $this->show();
                 break;
         }
     }
 
     /**
-     * @param array|null $user_ids
+     * @param array $user_ids
      * @return void
      */
     public function addUser(array $user_ids = array()) : void
     {
-        if (empty($user_ids) && !empty($_POST['user'])) {
-            $user_ids = $_POST['user'];
+        if (empty($user_ids) && !empty($_REQUEST['selected_id'])) {
+            $user_ids[] = $_REQUEST['selected_id'];
+        } elseif (empty($user_ids) && !empty($_REQUEST['user'])) {
+            $user_ids = $_REQUEST['user'];
         }
         foreach ($user_ids as $user_id) {
             $this->saveUser($user_id);
@@ -96,7 +90,8 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
     }
 
     /**
-     * @return void
+     * @throws ilCtrlException
+     * @throws ilException
      */
     protected function show() : void
     {
@@ -107,48 +102,34 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
     }
 
     /**
-     * @return void
+     * @throws ilCtrlException
      */
     protected function buildToolbar() : void
     {
-        if (!$this->protocol_has_entries) {
-            // toolbar // no Kitchensink alternative jet
-            ilRepositorySearchGUI::fillAutoCompleteToolbar(
-                $this,
-                $this->toolbar,
-                array(
-                    'auto_complete_name' => $this->lng->txt('user'),
-                    'submit_name' => $this->lng->txt('add'),
-                    'add_from_container' => $this->test_object->test_id
-                ),
-                true
-            );
+        ilRepositorySearchGUI::fillAutoCompleteToolbar(
+            $this,
+            $this->toolbar,
+            array(
+                'auto_complete_name' => $this->lng->txt('user'),
+                'submit_name' => $this->lng->txt('add'),
+                'add_from_container' => $this->test_object->test_id
+            ),
+            true
+        );
 
-            // search button with special name
-            $btn = ilLinkButton::getInstance();
-            $btn->setCaption($this->plugin->txt('examination_protocol_participant_btn_add_participants_title'), false);
-            $btn->setUrl($this->ctrl->getLinkTargetByClass('ilRepositorySearchGUI'));
-            $this->toolbar->addButtonInstance($btn);
-        } else {
-            $this->tpl->setOnScreenMessage('info', $this->plugin->txt("lock"));
-        }
+        $btn = $this->ui_factory->button()->standard($this->plugin->txt('participant_btn_add_participants_title'),
+            $this->ctrl->getLinkTargetByClass('ilRepositorySearchGUI'));
+
+        $this->toolbar->addComponent($btn);
     }
 
-    /**
-     * @return void
-     */
     protected function buildTable() : void
     {
-        // table
-        $this->participant_table = new ilExaminationProtocolParticipantsTableGUI($this, "show", "", $this->protocol_has_entries);
-        // filter
+        $this->participant_table = new ilExaminationProtocolParticipantsTableGUI($this, self::CMD_SHOW, "");
         $this->participant_table->setFilterCommand(self::CMD_APPLY_FILTER);
         $this->participant_table->setResetCommand(self::CMD_RESET_FILTER);
     }
 
-    /**
-     * @return void
-     */
     protected function loadData() : void
     {
         $participants = $this->db_connector->getAllParticipantsByProtocolID($this->protocol_id);
@@ -157,17 +138,9 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
             return $result;
         }, array());
         $usr_ids = array_keys($usr_participant_mapping);
-        // so when reseting the table filter the $_SESSION variables are transformed into boolen (false) since for some reason I had to implement the filter myself?
-        $usr_login = $_SESSION['form_texa_participant']['login'] ?? "";
-        $usr_name = $_SESSION['form_texa_participant']['name'] ?? "";
-        $usr_mrt = $_SESSION['form_texa_participant']['mrt'] ?? "";
-        if ($usr_mrt === false) {
-            $usr_login = $usr_name = $usr_mrt = "";
-        } else {
-            $usr_login = unserialize($usr_login);
-            $usr_name = unserialize($usr_name);
-            $usr_mrt = unserialize($usr_mrt);
-        }
+        $usr_login = unserialize($_SESSION['form_texa_participant_login']) ?? "";
+        $usr_name = unserialize($_SESSION['form_texa_participant_name']) ?? "";
+        $usr_mrt = unserialize($_SESSION['form_texa_participant_matriculation']) ?? "";
         $data = $this->db_connector->getAllParticipantsByUserIDandFilter(
             "'" . implode("', '", $usr_ids) . "'",
             $usr_login,
@@ -181,7 +154,8 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
     }
 
     /**
-     * @return void
+     * @throws ilException
+     * @throws ilCtrlException
      */
     private function applyFilter() : void
     {
@@ -194,7 +168,8 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
     }
 
     /**
-     * @return void
+     * @throws ilException
+     * @throws ilCtrlException
      */
     private function resetFilter() : void
     {
@@ -202,22 +177,19 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
         $this->buildTable();
         $this->participant_table->resetOffset();
         $this->participant_table->resetFilter();
+        $_SESSION['form_texa_participant_login'] = "";
+        $_SESSION['form_texa_participant_name'] = "";
+        $_SESSION['form_texa_participant_matriculation'] = "";
         $this->loadData();
         $this->tpl->setContent($this->participant_table->getHTML());
     }
 
-    /**
-     * @return string
-     */
     public function getHTML() : string
     {
         return "";
     }
 
-    /**
-     * @return void
-     */
-    protected function delete() : void
+    protected function deleteParticipant() : void
     {
         if (!is_null($_POST['participants'])) {
             $this->db_connector->deleteParticipantRows("(" . implode(",", $_POST['participants']) . ")");
@@ -230,12 +202,10 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
      */
     protected function saveUser($user_id) : void
     {
-        // build input Array
         $values = [
             ['integer', $this->protocol_id],
             ['integer', $user_id]
         ];
-        // update Database
         $user = $this->db_connector->getAllParticipantsByProtocolID($this->protocol_id);
         if (!is_int(array_search($user_id, array_column($user, "usr_id")))) {
             $this->db_connector->insertParticipant($values);

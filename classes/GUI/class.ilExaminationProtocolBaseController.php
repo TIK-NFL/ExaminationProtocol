@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 /**
@@ -21,37 +20,41 @@ declare(strict_types=1);
 
 namespace ILIAS\Plugin\ExaminationProtocol\GUI;
 
+use DateTime;
+use DateTimeZone;
+use Psr\Http\Message\ServerRequestInterface;
 use ilCtrl;
-use ilDatabaseException;
-use ilExaminationProtocolPlugin;
-use ilGlobalTemplateInterface;
-use ILIAS\DI\Container;
-use ILIAS\Plugin\ExaminationProtocol\ilExaminationProtocolDBConnector;
-use ILIAS\UI\Factory;
-use ILIAS\UI\Renderer;
+use ilCtrlException;
+use ilLanguage;
 use ilLocatorGUI;
+use ilObject2GUI;
 use ilObjectFactory;
-use ilObjectNotFoundException;
 use ilObjTest;
 use ilTabsGUI;
 use ilToolbarGUI;
-use ilUtil;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use ilExaminationProtocolPlugin;
+use ilGlobalTemplateInterface;
+use ILIAS\DI\Container;
+use ILIAS\UI\Renderer;
+use ILIAS\Plugin\ExaminationProtocol\ilExaminationProtocolDBConnector;
+use ILIAS\Plugin\ExaminationProtocol\ilExaminationProtocolEventEnumeration;
+use ILIAS\ResourceStorage\Services;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  */
-abstract class ilExaminationProtocolBaseController
+abstract class ilExaminationProtocolBaseController extends ilObject2GUI
 {
-    // CMDs
     /** @var string  */
     protected const CMD_SHOW = "show";
     /** @var string  */
     protected const CMD_SAVE = "save";
     /** @var string  */
     protected const CMD_DELETE = "delete";
+    /** @var string  */
+    protected const CMD_CREATE_EXPORT = "create_export";
+    /** @var string  */
+    protected const CMD_DOWNLOAD_EXPORT = "download_export";
     /** @var string  */
     protected const CMD_DELETE_ALL = "delete_all";
     /** @var string  */
@@ -67,7 +70,6 @@ abstract class ilExaminationProtocolBaseController
     /** @var string  */
     protected const CMD_CANCEL = "cancel";
 
-    // IDs
     /** @var string  */
     protected const PROTOCOL_TAB_ID = "examination_protocol_protocol";
     /** @var string  */
@@ -78,55 +80,35 @@ abstract class ilExaminationProtocolBaseController
     protected const LOCATION_TAB_ID = "examination_protocol_location";
     /** @var string  */
     protected const PARTICIPANT_TAB_ID = "examination_protocol_participant";
+    /** @var string */
+    protected const EXPORT_TAB_ID = "examination_protocol_export";
     /** @var string  */
     protected const PROTOCOL_INPUT_TAB_ID = "examination_protocol_input";
     /** @var string  */
     protected const PROTOCOL_PARTICIPANT_TAB_ID = "examination_protocol_participant";
 
 
-    /** @var ilLocatorGUI $ilLocator */
-    private $ilLocator;
-    /** @var bool  */
-    private $creation_mode;
-    /** @var Container|mixed */
-    private $dic;
-    /** @var ilGlobalTemplateInterface $tpl */
-    protected $tpl;
-    /** @var mixed */
-    protected $lng;
-    /** @var ilCtrl */
-    protected $ctrl;
-    /** @var RequestInterface|ServerRequestInterface  */
-    protected $request;
-    /** @var ilExaminationProtocolPlugin */
-    protected $plugin;
-    /** @var Factory  */
-    protected $ui_factory;
-    /** @var \ILIAS\UI\Component\Input\Field\Factory  */
-    protected $field_factory;
-    /** @var Renderer  */
-    protected $renderer;
-    /** @var ilExaminationProtocolDBConnector */
-    protected $db_connector;
-    /** @var ilTabsGUI */
-    protected $tabs;
-    /** @var ilToolbarGUI  */
-    protected $toolbar;
-    /** @var array  */
-    protected $settings;
-    /** @var ilObjTest $test_object */
-    protected $test_object = null;
-    /** @var array  */
-    protected $event_options;
-    /** @var string */
-    protected $protocol_id;
-    /** @var boolean */
-    protected $protocol_has_entries;
+    private ilLocatorGUI $ilLocator;
+    //private bool $creation_mode;
+    private Container $dic;
+    protected ilGlobalTemplateInterface $tpl;
+    protected ilLanguage $lng;
+    protected ilCtrl $ctrl;
+    protected ServerRequestInterface $request;
+    protected ilExaminationProtocolPlugin $plugin;
+    protected \ILIAS\UI\Factory $ui_factory;
+    protected \ILIAS\UI\Component\Input\Field\Factory $field_factory;
+    protected Renderer $renderer;
+    protected ilExaminationProtocolDBConnector $db_connector;
+    protected ilTabsGUI $tabs;
+    protected ilToolbarGUI $toolbar;
+    protected array $plugin_settings;
+    protected ?ilObjTest $test_object = null;
+    protected array $event_options;
+    protected ?string $protocol_id;
+    protected bool $protocol_has_entries;
+    protected Services $irss;
 
-    /**
-     * @throws ilDatabaseException
-     * @throws ilObjectNotFoundException
-     */
     public function __construct()
     {
         global $DIC;
@@ -135,12 +117,13 @@ abstract class ilExaminationProtocolBaseController
         $this->plugin = ilExaminationProtocolPlugin::getInstance();
         // access check for all GUI pages
         if (!$this->plugin->hasAccess()) {
-            $this->ctrl->returnToParent($this);
+            $path = $this->ctrl->getCurrentClassPath();
+            $this->ctrl->redirectByClass($path[count($path)-2]);
         }
         $this->ilLocator = $DIC['ilLocator'];
         $this->request = $DIC->http()->request();
-        $this->test_object = ilObjectFactory::getInstanceByRefId($_GET['ref_id']);
-        // UI
+
+        $this->irss = $DIC->resourceStorage();
         $this->tpl = $DIC['tpl'];
         $this->lng = $DIC['lng'];
         $this->ui_factory = $DIC->ui()->factory();
@@ -149,67 +132,60 @@ abstract class ilExaminationProtocolBaseController
         $this->tabs = $DIC->tabs();
         $this->toolbar = $DIC['ilToolbar'];
 
-        // unified event options TODO Refactor to constant
-        $this->event_options = [
-            $this->plugin->txt("entry_dropdown_event_general"),
-            $this->plugin->txt("entry_dropdown_event_question"),
-            $this->plugin->txt("entry_dropdown_event_material"),
-            $this->plugin->txt("entry_dropdown_event_toilet"),
-            $this->plugin->txt("entry_dropdown_event_illness"),
-            $this->plugin->txt("entry_dropdown_event_technical"),
-            $this->plugin->txt("entry_dropdown_event_other"),
-        ];
+        $this->event_options = ilExaminationProtocolEventEnumeration::getAllOptionsInLanguage($this->plugin);
 
         // Data base
         $this->db_connector = new ilExaminationProtocolDBConnector();
+        $this->test_object = ilObjectFactory::getInstanceByRefId((int)$_GET['ref_id']);
         $this->protocol_id = $this->db_connector->getProtocolIDByTestID($this->test_object->test_id);
-        $this->settings = $this->db_connector->getSettingByTestID($this->test_object->test_id);
-        $this->protocol_has_entries = !empty($this->db_connector->getAllProtocolEntriesByProtocolID($this->protocol_id));
         // create a general settings entry for the protocol ID if not already existing
         if (is_null($this->protocol_id)) {
             $this->db_connector->createEmptySetting([['integer', $this->test_object->test_id]]);
+            $this->protocol_id = $this->db_connector->getProtocolIDByTestID($this->test_object->test_id);
         }
+        $this->plugin_settings = $this->db_connector->getSettingByTestID($this->test_object->test_id);
+        $this->protocol_has_entries = !empty($this->db_connector->getAllProtocolEntriesByProtocolID($this->protocol_id));
 
         $this->setTemplateDefaults();
     }
 
     /**
-     * @return void
+     * @throws ilCtrlException
      */
     private function setTemplateDefaults() : void
     {
         $this->tpl->loadStandardTemplate();
         $this->tpl->setLocator();
-        $this->tpl->setTitleIcon(ilUtil::getImagePath('icon_tst.svg'));
+        $this->tpl->setTitleIcon("/templates/default/images/icon_tst.svg");
         $this->tpl->setTitle($this->test_object->getTitle());
         $this->tpl->setDescription($this->test_object->getDescription());
-        // TODO set status
-
         $this->ilLocator->addRepositoryItems($this->test_object->getRefId());
         $this->ilLocator->addItem($this->test_object->getTitle(), $this->ctrl->getLinkTargetByClass('ilobjtestgui'));
         $this->ctrl->setParameterByClass('ilobjtestgui', 'ref_id', $this->test_object->getRefId());
     }
 
-    /**
-     * @return string|null
-     */
     public function getProtocolId() : ?string
     {
         return $this->protocol_id;
     }
 
-    /**
-     * @param boolean $a_mode default true
-     */
-    public function setCreationMode(bool $a_mode = true) : void
+    public function getType() : string
     {
-        $this->creation_mode = $a_mode;
+        return "";
+    }
+
+    public function executeCommand() : void
+    {
     }
 
     /**
-     * @return void
+     * @throws Exception
      */
-    public function executeCommand() : void
+    public function utctolocal(string $time) : string
     {
+        $loc = (new DateTime)->getTimezone();
+        $time = new DateTime($time, new DateTimeZone('UTC'));
+        $time->setTimezone($loc);
+        return $time->format("d.m.Y H:i");
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 /**
@@ -28,34 +27,21 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Example configuration user interface class
- * Plugins -> Actions -> Configure
- * Somehow has to be here
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
+ * @ilCtrl_Calls ilExaminationProtocolConfigGUI: ilExaminationProtocolConfigGUI
+ * @ilCtrl_IsCalledBy ilExaminationProtocolConfigGUI: ilObjComponentSettingsGUI
  */
 class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
 {
-    /** @var ilLanguage */
-    private $lng;
-    /** @var Container */
-    private $dic;
-    /** @var RequestInterface|ServerRequestInterface */
-    private $request;
-    /** @var ilCtrl */
-    protected $ctrl;
-    /** @var ilGlobalTemplateInterface */
-    protected $pageTemplate;
-    /** @var ilExaminationProtocolSettings  */
-    protected $settings;
-    /** @var Factory */
-    private $ui_factory;
-    /** @var Renderer  */
-    private $renderer;
+    private ilLanguage $lng;
+    private Container $dic;
+    private RequestInterface|ServerRequestInterface $request;
+    private Factory $ui_factory;
+    private Renderer $renderer;
+    protected ilCtrl $ctrl;
+    protected ilGlobalTemplateInterface $pageTemplate;
+    protected ilExaminationProtocolSettings $settings;
 
-    /**
-     *
-     */
     public function __construct()
     {
         global $DIC;
@@ -71,8 +57,8 @@ class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
     }
 
     /**
-    * Handles all commmands, default is "configure"
-    */
+     * Handles all commmands, default is "configure"
+     */
     public function performCommand($cmd) : void
     {
         switch ($cmd) {
@@ -97,14 +83,15 @@ class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
 
     /**
      * Init configuration form.
-     * @return Standard
+     *
+     * @throws ilCtrlException
      */
     public function initConfigurationForm() : Standard
     {
-        $rb_operation_mode = $this->ui_factory->input()->field()->radio($this->plugin_object->txt('examination_protocol_config_radiobutton_title'))
-            ->withOption('0', $this->plugin_object->txt('examination_protocol_config_radiobutton_option_off'))
-          //->withOption('1', $this->plugin_object->txt('examination_protocol_config_radiobutton_option_manual'), 'currently no effect')
-            ->withOption('2', $this->plugin_object->txt('examination_protocol_config_radiobutton_option_all'))
+        $rb_operation_mode = $this->ui_factory->input()->field()->radio($this->plugin_object->txt('config_radiobutton_title'))
+            ->withOption('0', $this->plugin_object->txt('config_radiobutton_option_off'))
+          //->withOption('1', $this->plugin_object->txt('config_radiobutton_option_manual'), 'currently no effect')
+            ->withOption('2', $this->plugin_object->txt('config_radiobutton_option_all'))
             ->withValue($this->settings->getOperationModeKey() ?? '0');
 
         $section_content = [$rb_operation_mode];
@@ -113,18 +100,25 @@ class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
         $form = $this->ui_factory->input()->container()->form()->standard($form_action, [$section]);
         return $form;
     }
-    
+
+    public function successMessage() : \ILIAS\UI\Component\MessageBox\MessageBox
+    {
+        return $this->ui_factory->messageBox()->success($this->lng->txt("saved_successfully"));
+    }
+
     /**
-     * Save form input (currently does not save anything to db)
+     * Save form input to settings
+     *
+     * @throws ilCtrlException
      */
     public function save() : void
     {
+        global $tpl;
         $form = $this->initConfigurationForm();
         $form = $form->withRequest($this->request);
         $result = $form->getData();
         $this->settings->setOperationMode((int) $result[0][0]);
-
-        ilUtil::sendSuccess($this->lng->txt("saved_successfully"), true);
-        $this->ctrl->redirect($this, "configure");
+        $messages = $this->successMessage();
+        $tpl->setContent($this->renderer->render([$messages, $form]));
     }
 }

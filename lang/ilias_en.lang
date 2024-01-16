@@ -10,12 +10,13 @@ config_radiobutton_option_manual#:#The examination protocol can be switched on m
 config_radiobutton_option_all#:#Turns on the examination protocol for all test objects.
 
 // tab names
-tab_name#:#Exam Event Protocol
+protocol_tab_name#:#Exam Event Protocol
 sub_tab_settings#:#General Settings
 sub_tab_protocol#:#Exam Event Protocol
 sub_tab_supervisors#:#Supervisors
 sub_tab_locations#:#Locations
 sub_tab_participants#:#Participants
+sub_tab_export#:#Export
 
 // general settings tab
 settings_general_settings_section_setting_title#:#General Settings
@@ -79,11 +80,12 @@ event_table_btn_add_event#:#Add new entry
 event_table_btn_delete_all_events#:#Delete all entries
 event_table_column_start#:#Start time of event
 event_table_column_end#:#End time of event
-event_table_column_timestamp#:#Timestamp creation of event
 event_table_column_typ#:#Event
 event_table_column_location#:#Location
-event_table_column_student_id#:#Student name and University ID
-event_table_column_supervisor_id#:#Responsible supervisor's name and University ID
+event_table_column_student_id#:#Student information
+event_table_column_student_names#:Students
+event_table_column_supervisor_id#:#Supervisor
+event_table_column_timestamp#:#Creation Time
 event_table_column_timestamp_edit#:#Last Edited on
 event_table_column_supervisor_id_edit#:#Last Edited by
 event_table_column_creator_id#:#Created by
@@ -95,7 +97,6 @@ event_table_action#:#Action
 event_table_action_edit_event#:#Edit event
 event_table_action_edit_participant#:# Edit participants
 event_table_action_confirmation_question#:#Delete Protocol entries?
-
 
 // event table input
 entry_event_section#:#Event input
@@ -120,15 +121,28 @@ entry_datetime_wrong#:#The start of the event can not be after the end of the ev
 // event table input participants
 entry_participant_section#:#Test Participants
 entry_button_protocol#:#Save and return
-entry_type#:#Event Type:
+entry_type#:#Event Type
 entry_location#:#Location
 entry_last_update#:#Last Update
 entry_supervisor#:#Supervisor
 
+// export
+protocol_date#:#Protocol date
+protocol_creation_date#:#Generated
+protocol_show_export#:#Show Export
+protocol_create_export#:#Create Export
+protocol_download_export#:#Download Export
+protocol_export_created#:#Export created
+
 // utility
+add#:#Add
+download#:#Download
 description#:#Description
+date#:#Date
 delete#:#Delete
 next#:#Next
 table_empty#:#No entries found.
 lock#:#Editing the general properties of the test protocol is blocked because a protocol entry already exists
 not_saved#:#Current changes are not saved
+size#:#Size
+file#:#File

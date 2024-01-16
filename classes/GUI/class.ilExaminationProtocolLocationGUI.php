@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 /**
@@ -23,74 +22,69 @@ use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  * @ilCtrl_isCalledBy ilExaminationProtocolLocationGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls ilExaminationProtocolLocationGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI
  */
 class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseController
 {
-    /** @var ilExaminationProtocolLocationTableGUI */
-    private $location_table;
+    private ilExaminationProtocolLocationTableGUI $location_table;
 
     /**
-     * @throws ilDatabaseException
-     * @throws ilObjectNotFoundException
+     * @throws ilCtrlException
      */
     public function __construct()
     {
         parent::__construct();
-        // Tab
         $this->tabs->activateSubTab(self::LOCATION_TAB_ID);
-        // table
         $this->location_table = new ilExaminationProtocolLocationTableGUI($this, self::CMD_SHOW, "", $this->protocol_has_entries);
-
-        // toolbar // no Kitchensink alternative jet
-        if (!$this->protocol_has_entries) {
-            $this->toolbar->setFormAction($this->ctrl->getFormAction($this, self::CMD_SAVE));
-            require_once 'Services/Form/classes/class.ilTextInputGUI.php';
-            $this->toolbar->addInputItem(new ilTextInputGUI($this->plugin->txt("location_text_title"), 'location'), true);
-            $button = ilSubmitButton::getInstance();
-            $button->setCaption($this->lng->txt('add'), false);
-            $button->setCommand(self::CMD_SAVE);
-            $this->toolbar->addButtonInstance($button);
-        } else {
-            $this->tpl->setOnScreenMessage('info', $this->plugin->txt("lock"));
-        }
+        $this->buildToolbar();
 
         // load from database
         $locations = $this->db_connector->getAllLocationsByProtocolID($this->protocol_id);
         $this->location_table->setData($locations);
-
         $this->tpl->setContent($this->location_table->getHTML());
     }
 
-    /**
-     * @return void
-     */
     public function executeCommand() : void
     {
         switch ($this->ctrl->getCmd()) {
+            default:
+            case self::CMD_SHOW:
+                break;
             case self::CMD_SAVE:
-                $this->save();
+                $this->saveLocation();
                 break;
             case self::CMD_DELETE:
-                $this->delete();
+                $this->deleteLocation();
                 break;
         }
     }
 
     /**
-     * @return string
+     * @throws ilCtrlException
      */
+    protected function buildToolbar() : void
+    {
+        if (!$this->protocol_has_entries) {
+            require_once 'Services/Form/classes/class.ilTextInputGUI.php';
+            $this->toolbar->setFormAction($this->ctrl->getFormAction($this, self::CMD_SAVE));
+            $this->toolbar->addInputItem(new ilTextInputGUI($this->plugin->txt("location_text_title"), 'location'), true);
+            $btn = $this->ui_factory->button()->standard($this->plugin->txt('add'),'');
+            $this->toolbar->addComponent($btn);
+        } else {
+            $this->tpl->setOnScreenMessage('info', $this->plugin->txt("lock"));
+        }
+    }
+
     public function getHTML() : string
     {
         return "";
     }
 
     /**
-     * @return void
+     * @throws ilCtrlException
      */
-    protected function delete() : void
+    protected function deleteLocation() : void
     {
         if (!is_null($_POST['locations'])) {
             $this->db_connector->deleteLocationRows("(" . implode(",", $_POST['locations']) . ")");
@@ -99,16 +93,15 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
     }
 
     /**
-     * @return void
+     * @throws ilCtrlException
      */
-    protected function save() : void
+    protected function saveLocation() : void
     {
-        // build input Array
         $values = [
             ['integer', $this->protocol_id],
             ['text',    $_POST['location']],
         ];
-        // update Database
+
         if (!in_array($_POST['location'], $this->db_connector->getAllLocationsByProtocolID($this->protocol_id))) {
             $this->db_connector->insertLocation($values);
         }
