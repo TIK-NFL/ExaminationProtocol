@@ -21,7 +21,6 @@ declare(strict_types=1);
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  */
 class ilExaminationProtocolLocationTableGUI extends ilTable2GUI
 {
@@ -56,11 +55,10 @@ class ilExaminationProtocolLocationTableGUI extends ilTable2GUI
             $this->setSelectAllCheckbox('locations');
             $this->addMultiCommand("delete", $this->lng->txt('delete'));
         }
-        // row template
+
         $this->setRowTemplate('tpl.location_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
-        // Action
         $this->setFormAction($ilCtrl->getFormAction($a_parent_obj, $a_parent_cmd));
-        // build Table
+
         $this->addColumn('', 'location_id', '1px', true);
         $this->addColumn($this->plugin->txt("location_table_column_location"), 'location');
         // ordering

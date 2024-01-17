@@ -63,16 +63,16 @@ location_table_title#:#Räume
 location_table_column_location#:#Raum
 
 // participant tab
-participant_btn_add_participants_title#:#Search Participants
-participant_selector_title#:#Teilnehmer hinzufügen
+participant_btn_add_participants_title#:#Teilnehmer suchen
+participant_selector_title#:#Benutzer suchen
 participant_table_title#:#Test Teilnehmer
 participant_table_column_name#:#Name
-participant_table_column_login#:#Login
+participant_table_column_login#:#Benutzername
 participant_table_column_mrt#:#Matrikelnummer
 participant_table_column_email#:#E-Mail
 participant_table_column_assigned#:#Ist zugewiesen
 participant_back#:#Zurück zum Protokoll
-participant_assign#:#zuweisen
+participant_assign#:#Zuweisen
 participant_unassign#:#Zuweisung aufheben
 
 // event table tab
@@ -80,11 +80,11 @@ event_table_btn_add_event#:#Neuen Eintrag hinzufügen
 event_table_btn_delete_all_events#:#Alle Eintrage löschen
 event_table_column_start#:#Startzeit des Ereignisses
 event_table_column_end#:#Endzeit des Ereignisses
-event_table_column_timestamp#:#Zeitstempel der Erstellung des Ereignisses
 event_table_column_typ#:#Ereignis
 event_table_column_location#:#Prüfungsräume
-event_table_column_student_id#:#Name des Studenten und Universitäts-ID
-event_table_column_supervisor_id#:#Name der verantwortlichen Aufsichtsperson und Universitäts-ID
+event_table_column_student_id#:#Studenteninformation
+event_table_column_supervisor_id#:#Aufsichtsperson
+event_table_column_timestamp#:#Erstellt am
 event_table_column_timestamp_edit#:#Zuletzt editiert am
 event_table_column_supervisor_id_edit#:#Zuletzt editiert von
 event_table_column_creator_id#:#Erstellt von
@@ -125,11 +125,22 @@ entry_location#:#Prüfungsräume
 entry_last_update#:#Letzte Änderung
 entry_supervisor#:#Aufsichtsperson
 
+// export
+protocol_date#:#Protokoll Datum
+protocol_creation_date#:#Generiert
+protocol_show_export#:#Export anzeigen
+protocol_create_export#:#Export erstellen
+protocol_download_export#:#Export downloaden
+protocol_export_created#:#Export erstellt
+
 // utility
+download#:#Download
 description#:#Beschreibung
+date#:#Datum
 delete#:#Löschen
 next#:#Nächste Seite
 table_empty#:#Keine Einträge gefunden.
 lock#:#Die Bearbeitung der allgemeinen Eigenschaften des Prüfprotokolls ist blockiert, da bereits ein Protokolleintrag existiert
 not_saved#:#Die aktuellen Änderungen sind nicht gespeichert
-create_export#:#Export anzeigen
+size#:#Größe
+file#:#Datei

@@ -21,7 +21,6 @@ declare(strict_types=1);
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  */
 class ilExaminationProtocolSupervisorTableGUI extends ilTable2GUI
 {

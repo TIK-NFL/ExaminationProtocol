@@ -25,7 +25,6 @@ use ilSetting;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  */
 class ilExaminationProtocolSettings
 {

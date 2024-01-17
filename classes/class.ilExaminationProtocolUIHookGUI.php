@@ -25,7 +25,6 @@ use ILIAS\DI\Container;
  * User interface hook class
  *
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  * @ingroup ServicesUIComponent
  */
 class ilExaminationProtocolUIHookGUI extends ilUIHookPluginGUI

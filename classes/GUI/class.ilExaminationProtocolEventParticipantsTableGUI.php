@@ -25,7 +25,6 @@ use ILIAS\UI\Renderer;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  */
 class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
 {
@@ -89,11 +88,11 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
         $this->addColumn('', 'participant', '1px', true);
         $this->addColumn($this->plugin->txt("participant_table_column_name"), 'name');
         $this->addColumn($this->plugin->txt("participant_table_column_login"), 'login');
-        $this->addColumn($this->plugin->txt("participant_table_column_mrt"), 'mrt');
+        $this->addColumn($this->plugin->txt("participant_table_column_mrt"), 'matriculation');
         $this->addColumn($this->plugin->txt("participant_table_column_email"), 'email');
-        $this->addColumn($this->plugin->txt("participant_table_column_assigned"), 'assign', 100);
+        $this->addColumn($this->plugin->txt("participant_table_column_assigned"), 'assigned', 100);
         // ordering
-        $this->setDefaultOrderField("mrt");
+        $this->setDefaultOrderField("matriculation");
         $this->setDefaultOrderDirection("asc");
     }
 
@@ -118,12 +117,12 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
         $this->current_filter['login'] = $login->getValue();
 
         $mrt = $this->addFilterItemByMetaType(
-            'mrt',
+            'matriculation',
             ilTable2GUI::FILTER_TEXT,
             false,
             $this->lng->txt('matriculation')
         );
-        $this->current_filter['mrt'] = $mrt->getValue();
+        $this->current_filter['matriculation'] = $mrt->getValue();
     }
 
     /**
@@ -133,18 +132,13 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
      */
     protected function fillRow($a_set) : void
     {
-        if ($a_set['assigned']) {
-            $glyph = $this->renderer->render($this->ui_factory->symbol()->glyph()->apply());
-        } else {
-            $glyph = $this->renderer->render($this->ui_factory->symbol()->glyph()->close());
-        }
         parent::fillRow([
             'CHECKBOX' => ilUtil::formCheckbox(false, 'participants[]', $a_set['participant_id']),
             'NAME' => $a_set['name'],
             'LOGIN' => $a_set['login'],
-            'MRT' => $a_set['matriculation'],
+            'MATRICULATION' => $a_set['matriculation'],
             'EMAIL' => $a_set['email'],
-            'CHECKED' => $glyph,
+            'CHECKED' => $a_set['glyph']
         ]);
     }
 }

@@ -21,7 +21,6 @@ declare(strict_types=1);
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  */
 class ilExaminationProtocolEventTableGUI extends ilTable2GUI
 {
@@ -51,27 +50,24 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
      */
     protected function createTable() : void
     {
-        // default no entries set
         $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setEnableHeader(true);
         $this->setTitle($this->plugin->txt('protocol_tab_name'));
-        // row template
         $this->setRowTemplate('tpl.protocol_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
-        // limit
         $this->setLimit(5000);
-        // build Table
         $this->addColumn($this->plugin->txt("event_table_column_start"), "start");
         $this->addColumn($this->plugin->txt("event_table_column_end"), "end");
-        $this->addColumn($this->plugin->txt("event_table_column_typ"), "type");
-        $this->addColumn($this->plugin->txt("description"), "desc");
+        $this->addColumn($this->plugin->txt("event_table_column_typ"), "event_type");
+        $this->addColumn($this->plugin->txt("description"), "comment");
         $this->addColumn($this->plugin->txt("event_table_column_location"), "location");
-        $this->addColumn($this->plugin->txt("event_table_column_student_id"), "mrt");
+        $this->addColumn($this->plugin->txt("event_table_column_student_id"), "student_id");
+        $this->addColumn($this->plugin->txt("event_table_column_student_names"), "student_names");
         $this->addColumn($this->plugin->txt("event_table_column_supervisor_id"), "supervisor");
         foreach ($this->getSelectedColumns() as $column) {
             $this->addColumn($this->getSelectableColumns()[$column]['txt'], $column);
         }
         $this->addColumn($this->plugin->txt("event_table_column_actions"), "", 90);
-        // ordering
+
         $this->setDefaultOrderField("start");
         $this->setDefaultOrderDirection("asc");
     }
@@ -97,10 +93,10 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
     public function fillRow($a_set) : void
     {
         $columns = [
-            'START' => date('H:i', strtotime($a_set['start'])),
-            'END' => date('H:i', strtotime($a_set['end'])),
-            'EVENT_TYPE' => $a_set['event'],
-            'DESCRIPTION' => $a_set['comment'],
+            'START' => $a_set['start'],
+            'END' => $a_set['end'],
+            'EVENT_TYPE' => $a_set['event_type'],
+            'COMMENT' => $a_set['comment'],
             'LOCATION' => $a_set['location'],
             'STUDENT_ID' => $a_set['student_id'],
             'SUPERVISOR' => $a_set['supervisor'],
@@ -132,4 +128,5 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
             }
         }
     }
+
 }

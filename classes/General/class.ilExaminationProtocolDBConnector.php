@@ -21,9 +21,10 @@ declare(strict_types=1);
 
 namespace ILIAS\Plugin\ExaminationProtocol;
 
+use ilDBInterface;
+
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  */
 class ilExaminationProtocolDBConnector
 {
@@ -36,7 +37,8 @@ class ilExaminationProtocolDBConnector
     const SETTINGS_TABLE_NAME = "tst_uihk_texa_general";
     /** @var array */
     const SETTINGS_TABLE_FIELDS = ['test_id', 'protocol_title', 'protocol_desc', 'type_exam',
-        'type_only_ilias', 'type_desc', 'supervision', 'exam_policy', 'exam_policy_desc', 'location'];
+        'type_only_ilias', 'type_desc', 'supervision', 'exam_policy', 'exam_policy_desc', 'location',
+        'resource_storage_id'];
 
     /** @var string  */
     const LOCATION_TABLE_NAME = "tst_uihk_texa_location";
@@ -74,12 +76,9 @@ class ilExaminationProtocolDBConnector
     /** @var array */
     const PARTICIPANTS_TABLE_FIELDS = ['protocol_id', 'usr_id'];
 
-    /** @var $ilDB */
+    /** @var ilDBInterface */
     private $ilDB;
 
-    /**
-     *
-     */
     public function __construct()
     {
         global $ilDB;
@@ -175,6 +174,33 @@ class ilExaminationProtocolDBConnector
             return $result['protocol_id'];
         }
         return null;
+    }
+
+    public function getResourceIDbyTestID($test_id) : array
+    {
+        $query = $this->ilDB->queryF(
+            "SELECT resource_storage_id FROM " . self::SETTINGS_TABLE_NAME . " WHERE " . self::TEST_ID_KEY . " = %s",
+            array('integer'),
+            array($test_id)
+        );
+
+        return (array) $this->ilDB->fetchObject($query);
+    }
+
+    public function setResourceIDbyTestID($test_id, $resource_id) : void
+    {
+        $query = "UPDATE " . self::SETTINGS_TABLE_NAME . " SET resource_storage_id = '".$resource_id."' WHERE " . self::TEST_ID_KEY . "= ".$test_id.";";
+        $this->ilDB->manipulate($query);
+    }
+
+    public function getTestTitleById($test_id) : array
+    {
+        $query = $this->ilDB->queryF(
+            "SELECT od.title FROM tst_tests AS tt, object_data AS od WHERE tt.test_id = %s AND tt.obj_fi = od.obj_id",
+            array('integer'),
+            array($test_id)
+        );
+        return (array) $this->ilDB->fetchObject($query);
     }
 
     // Examination Supervisors
@@ -333,7 +359,6 @@ class ilExaminationProtocolDBConnector
      */
     public function getAllParticipantsByUserIDandFilter($usr_ids, $login, $name, $mrt) : array
     {
-        //TODO cleanup $usr_ids
         $query = $this->ilDB->queryF(
             "
             SELECT CONCAT(lastname, ', ', firstname) AS name, login, matriculation, email, usr_id
@@ -397,7 +422,7 @@ class ilExaminationProtocolDBConnector
     public function getUsernameByUserID($user_id) : array
     {
         $query = $this->ilDB->queryF(
-            "SELECT firstname, lastname FROM usr_data WHERE usr_id = %s",
+            "SELECT firstname, lastname, login FROM usr_data WHERE usr_id = %s",
             array('integer'),
             array($user_id)
         );

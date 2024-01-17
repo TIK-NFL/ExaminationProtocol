@@ -23,7 +23,6 @@ use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  * @ilCtrl_isCalledBy ilExaminationProtocolEventGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI, ilExaminationProtocolEventInput
  * @ilCtrl_Calls ilExaminationProtocolEventGUI:  ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI, ilExaminationProtocolEventInput
  */
@@ -42,10 +41,9 @@ class ilExaminationProtocolEventGUI extends ilExaminationProtocolBaseController
     {
         parent::__construct();
         $this->configured = true;
-        // tab
-        // $this->tabs->activateSubTab(self::PROTOCOL_TAB_ID);
-        // clear session entry...
-        unset($_SESSION['examination_protocol']['assigned']);
+        unset($_SESSION['examination_protocol'][$this->test_object->test_id]['assigned']);
+        unset($_SESSION['examination_protocol'][$this->test_object->test_id]['running_session']);
+        unset($_SESSION['examination_protocol'][$this->test_object->test_id]);
         unset($_SESSION['examination_protocol']['entry_id']);
     }
 
@@ -79,34 +77,50 @@ class ilExaminationProtocolEventGUI extends ilExaminationProtocolBaseController
         $event_entries = $this->db_connector->getAllProtocolEntriesByProtocolID($this->protocol_id);
         $data = [];
         foreach ($event_entries as $entry) {
+            $entry['start'] = $this->utctolocal($entry['start']);
+            $entry['end'] = $this->utctolocal($entry['end']);
+            $entry['creation'] = $this->utctolocal($entry['creation']);
+            $entry['last_edit'] = $this->utctolocal($entry['last_edit']);
             $participants = $this->db_connector->getAllProtocolParticipants($entry['entry_id']);
-            // participants
-            foreach ($participants as $participant) {
-                $il_user_id = $this->db_connector->getUserIDbyParticipantID($participant['participant_id'])[0]['usr_id'];
-                $matriculation = $this->db_connector->getMatriculationByUserID($il_user_id)[0]['matriculation'];
-                $res = $this->db_connector->getUsernameByUserID($il_user_id)[0];
-                $entry['student_id'] .= $matriculation . " (" . $res['lastname'] . ", " . $res['firstname'] . ") </br>" ;
+            if (!isset($entry['student_id'])) {
+                $entry['student_id'] = "";
+                $entry['student_names'] = "";
             }
-            // event
-            $entry['event'] = $this->event_options[$entry['event']];
-            // location
-            $entry['location'] = $this->db_connector->getLocationsByLocationID($entry['location_id'])[0]['location'];
-            // supervisor
-            $entry['supervisor'] = $this->db_connector->getSupervisorBySupervisorID($entry['supervisor_id'])[0]['name'];
-            // last edit user
+            foreach ($participants as $participant) {
+                $usr_id = $this->db_connector->getUserIDbyParticipantID($participant['participant_id']);
+                if (isset($usr_id[0]['usr_id'])){
+                    $il_user_id = $usr_id[0]['usr_id'];
+                    $matriculation = $this->db_connector->getMatriculationByUserID($il_user_id)[0]['matriculation'];
+                    if ($matriculation == '') {
+                        $matriculation = '--';
+                    }
+                    $res = $this->db_connector->getUsernameByUserID($il_user_id)[0];
+                    $entry['student_id'] .= $res['lastname'] . ", " . $res['firstname'] . "(".$matriculation .", [".$res['login']."])</br>" ;
+                }
+            }
+            $entry['event_type'] = $this->event_options[$entry['event']];
+            $location = $this->db_connector->getLocationsByLocationID($entry['location_id']);
+            if ($this->settings['location'] == '0' && isset($location[0]['location'])) {
+                $entry['location'] = $location[0]['location'];
+            } else {
+                $entry['location'] = $this->plugin->txt('entry_dropdown_location_no_location');;
+            }
+            $supervisor = $this->db_connector->getSupervisorBySupervisorID($entry['supervisor_id']);
+            if ($this->settings['supervision'] != '2' && isset($supervisor[0]['name'])) {
+                $entry['supervisor'] = $supervisor[0]['name'];
+            } else {
+                $entry['supervisor'] = $this->plugin->txt('entry_dropdown_supervisor_no_supervisor');
+            }
             $entry['last_edited_by'] = $this->db_connector->getLoginByUserID($entry['last_edited_by'])[0]['login'];
-            // creation user
             $entry['created_by'] = $this->db_connector->getLoginByUserID($entry['created_by'])[0]['login'];
-            // Action
 
             $this->ctrl->setParameterByClass(ilExaminationProtocolEventInputGUI::class, "entry_id", $entry['entry_id']);
             $edit_event_url = $this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventInputGUI::class, self::CMD_SHOW);
-
             $this->ctrl->setParameterByClass(ilExaminationProtocolEventParticipantsGUI::class, "entry_id", $entry['entry_id']);
             $edit_participants_url = $this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventParticipantsGUI::class, self::CMD_SHOW);
-
             $this->ctrl->setParameterByClass(self::class, "entry_id", $entry['entry_id']);
             $delete_event_url = $this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventGUI::class, self::CMD_CONFIRMATION);
+
             $dd_items = [
                 $this->ui_factory->button()->shy($this->plugin->txt("event_table_action_edit_event"), $edit_event_url),
                 $this->ui_factory->button()->shy($this->plugin->txt("event_table_action_edit_participant"), $edit_participants_url),
@@ -123,17 +137,14 @@ class ilExaminationProtocolEventGUI extends ilExaminationProtocolBaseController
     private function buildInfo() : void
     {
         $info_message = "";
-        // supervisors
         $supervisors = $this->db_connector->getAllSupervisorsByProtocolID($this->protocol_id);
         if ($this->settings['supervision'] != '2' && empty($supervisors)) {
             $info_message .= $this->plugin->txt("event_table_info_supervisors");
         }
-        // locations
         $location = $this->db_connector->getAllLocationsByProtocolID($this->protocol_id);
         if ($this->settings['location'] != '1' && empty($location)) {
             $info_message .= $this->plugin->txt("event_table_info_locations");
         }
-        // participants
         $participants = $this->db_connector->getAllParticipantsByProtocolID($this->protocol_id);
         if (empty($participants)) {
             $info_message .= $this->plugin->txt("event_table_info_participants");
@@ -200,4 +211,5 @@ class ilExaminationProtocolEventGUI extends ilExaminationProtocolBaseController
     {
         return "";
     }
+
 }

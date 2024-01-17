@@ -23,7 +23,6 @@ use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  * @ilCtrl_isCalledBy ilExaminationProtocolEventInputGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI, ilExaminationProtocolEventTableGUI
  * @ilCtrl_Calls ilExaminationProtocolEventInputGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI, ilExaminationProtocolEventTableGUI
  */
@@ -43,9 +42,10 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
     public function __construct()
     {
         parent::__construct();
-        // date
         $this->date_now = new DateTime('now');
-        $this->entry = $this->db_connector->getAllProtocolEntries($_REQUEST['entry_id'])[0];
+        if (isset($_REQUEST['entry_id'])){
+            $this->entry = $this->db_connector->getAllProtocolEntries($_REQUEST['entry_id'])[0];
+        }
     }
 
     private function buildEventForm() : void
@@ -60,8 +60,8 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
         // load existing entry
         $start = $end = null;
         if (!empty($this->entry)) {
-            $start = date("d.m.Y H:i", strtotime($this->entry['start']));
-            $end = date("d.m.y H:i", strtotime($this->entry['end']));
+            $start = $this->utctolocal($this->entry['start']);
+            $end = $this->utctolocal($this->entry['end']);
             $this->ctrl->setParameterByClass(ilExaminationProtocolEventInputGUI::class, "entry_id", $_REQUEST['entry_id']);
         }
 
@@ -79,9 +79,10 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
             ->withValue($end ?? $this->date_now->format("d.m.Y H:i"))
             ->withRequired(true);
         $se_event_type = $this->field_factory->select($this->plugin->txt("entry_dropdown_event_title"), $this->event_options)
-            ->withValue($this->entry['event'] ?? 0);
+            ->withValue($this->entry['event'] ?? 0)
+            ->withRequired(true);
         $ta_description = $this->field_factory->textarea($this->plugin->txt("description"))
-        ->withValue($this->entry['comment'] ?? "");
+            ->withValue($this->entry['comment'] ?? "");
         $event_inputs = [
             $dt_start,
             $dt_end,
@@ -95,7 +96,8 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
             $supervisor_options[0] = $this->plugin->txt("entry_dropdown_supervisor_no_supervisor");
 
             $se_supervisor = $this->field_factory->select($this->plugin->txt("entry_dropdown_supervisor_title"), $supervisor_options)
-                ->withValue($this->entry['supervisor_id'] ?? 0);
+                ->withValue($this->entry['supervisor_id'] ?? 0)
+                ->withRequired(true);
             $event_inputs[] = $se_supervisor;
         }
 
@@ -105,12 +107,12 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
             $location_options[0] = $this->plugin->txt("entry_dropdown_location_no_location");
 
             $se_location = $this->field_factory->select($this->plugin->txt("entry_dropdown_location_title"), $location_options)
-                ->withValue($this->entry['location_id'] ?? 0);
+                ->withValue($this->entry['location_id'] ?? 0)
+                ->withRequired(true);
             $event_inputs[] = $se_location;
         }
         $section_input = $this->field_factory->section($event_inputs, $this->plugin->txt("entry_event_section"));
 
-        // complete form
         $site = [
             $section_input,
         ];
@@ -177,7 +179,6 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
         global $ilUser;
         $supervisor = null;
         $location = null;
-        // TODO get clear input names
         if ($this->settings['supervision'] != '2') {
             $supervisor = $_POST["form_input_6"];
         }
@@ -188,32 +189,21 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
                 $location = $_POST["form_input_6"];
             }
         }
-        $dt_now = $this->date_now->format("Y-m-d H:i:s");
-        $start = date("Y-m-d H:i:s", strtotime($_POST["form_input_2"]));
-        $end = date("Y-m-d H:i:s", strtotime($_POST["form_input_3"]));
+        $dt_now = gmdate("Y-m-d H:i:s", strtotime($this->date_now->format("Y-m-d H:i:s")));
+        $start = gmdate("Y-m-d H:i:s", strtotime($_POST["form_input_2"]));
+        $end = gmdate("Y-m-d H:i:s", strtotime($_POST["form_input_3"]));
         $user = $ilUser->getId();
         $values = [
-            // 0 protocol_id
             ['integer', $this->protocol_id],
-            // 1 supervisor_id
             ['integer', $supervisor],
-            // 2 location_id
             ['integer', $location],
-            // 3 start
             ['date', $start],
-            // 4 end
             ['date', $end],
-            // 5 creation
             ['date', $this->entry['creation'] ?? $dt_now],
-            // 6 event type
             ['integer',$_POST["form_input_4"]],
-            // 7 comment
             ['text', $_POST["form_input_5"]],
-            // 8 last_edit
             ['date', $dt_now],
-            // 9 last_edit_by
             ['integer', $user],
-            // 10 created_by
             ['integer', $this->entry['created_by'] ?? $user],
         ];
         if (!empty($_REQUEST['entry_id'])) {
@@ -223,7 +213,6 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
             $this->db_connector->updateProtocolEntry($values, $where);
             $this->ctrl->redirectToURL($this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventGUI::class, self::CMD_SHOW));
         } else {
-            // call Participant gui
             $entry_id = $this->db_connector->insertProtocolEntry($values);
             $this->ctrl->setParameterByClass(ilExaminationProtocolEventParticipantsGUI::class, "entry_id", $entry_id);
             $this->ctrl->redirectToURL($this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventParticipantsGUI::class, self::CMD_SHOW));

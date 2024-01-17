@@ -21,7 +21,6 @@ declare(strict_types=1);
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  */
 class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
 {
@@ -29,8 +28,6 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
     protected $plugin;
     /** @var array */
     public $current_filter;
-    /** @var bool  */
-    private $disabled;
 
     /**
      * @param object $a_parent_obj
@@ -42,7 +39,6 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
         global $DIC;
         $ilCtrl = $DIC['ilCtrl'];
         $this->plugin = ilExaminationProtocolPlugin::getInstance();
-        $this->disabled = $disabled;
         $this->setId("texa_participant");
         parent::__construct($a_parent_obj, $a_parent_cmd, $a_template_context);
 
@@ -76,10 +72,10 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
         $this->addColumn('', 'participant', '1px', true);
         $this->addColumn($this->plugin->txt("participant_table_column_name"), 'name');
         $this->addColumn($this->plugin->txt("participant_table_column_login"), 'login');
-        $this->addColumn($this->plugin->txt("participant_table_column_mrt"), 'mrt');
+        $this->addColumn($this->plugin->txt("participant_table_column_mrt"), 'matriculation');
         $this->addColumn($this->plugin->txt("participant_table_column_email"), 'email');
         // ordering
-        $this->setDefaultOrderField("mrt");
+        $this->setDefaultOrderField("matriculation");
         $this->setDefaultOrderDirection("asc");
     }
 
@@ -90,7 +86,7 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
         $name = $this->addFilterItemByMetaType(
             'name',
             ilTable2GUI::FILTER_TEXT,
-            true,
+            false,
             $this->lng->txt('name')
         );
         $this->current_filter['name'] = $name->getValue();
@@ -98,18 +94,18 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
         $login = $this->addFilterItemByMetaType(
             'login',
             ilTable2GUI::FILTER_TEXT,
-            true,
+            false,
             $this->lng->txt('login')
         );
         $this->current_filter['login'] = $login->getValue();
 
         $mrt = $this->addFilterItemByMetaType(
-            'mrt',
+            'matriculation',
             ilTable2GUI::FILTER_TEXT,
-            true,
+            false,
             $this->lng->txt('matriculation')
         );
-        $this->current_filter['mrt'] = $mrt->getValue();
+        $this->current_filter['matriculation'] = $mrt->getValue();
     }
 
     /**
@@ -119,16 +115,13 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
      */
     protected function fillRow($a_set) : void
     {
-        $checkbox = "";
-        if (!$this->disabled) {
-            $checkbox = ilUtil::formCheckbox(false, 'participants[]', $a_set['participant_id']);
-        }
+        $checkbox = ilUtil::formCheckbox(false, 'participants[]', $a_set['participant_id']);
 
         parent::fillRow([
             'CHECKBOX' => $checkbox,
             'NAME' => $a_set['name'],
             'LOGIN' => $a_set['login'],
-            'MRT' => $a_set['matriculation'],
+            'MATRICULATION' => $a_set['matriculation'],
             'EMAIL' => $a_set['email'],
         ]);
     }

@@ -20,11 +20,12 @@ declare(strict_types=1);
  */
 
 use ILIAS\DI\Container;
+use ILIAS\Plugin\ExaminationProtocol\ilExaminationProtocolExporter;
 use ILIAS\Plugin\ExaminationProtocol\ilExaminationProtocolSettings;
+use ILIAS\ResourceStorage\Identification\ResourceIdentification;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  */
 class ilExaminationProtocolPlugin extends ilUserInterfaceHookPlugin
 {
@@ -54,13 +55,14 @@ class ilExaminationProtocolPlugin extends ilUserInterfaceHookPlugin
         return self::PNAME;
     }
 
-    public function hasProtocol() : bool
+    /**
+     * @param string $test_id id of the ILIAS test Object a protocol possibly could be created.
+     * @return ResourceIdentification the IRSS id of the protocols HTML file. the protocol might be empty if no protocol information is available
+     */
+    public function getProtocolExportIDByTestID(string $test_id) : ResourceIdentification
     {
-        //TODO add evaluation
-    }
-
-    public function getAllFiles() {
-        //TODO add Files
+        $exporter = new ilExaminationProtocolExporter($test_id);
+        return $exporter->getLatestExportID();
     }
 
     protected function init() : void

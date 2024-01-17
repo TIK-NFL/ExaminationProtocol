@@ -23,7 +23,6 @@ use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  * @ilCtrl_isCalledBy ilExaminationProtocolGeneralSettingsGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls ilExaminationProtocolGeneralSettingsGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI
  */
@@ -111,7 +110,7 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
 
         // Type of supervision
         $rb_sup_onsite = $this->field_factory->radio($this->plugin->txt("settings_supervision_radiobutton_supervision_title"))
-            ->withOption("0", $this->plugin->txt("ettings_supervision_radiobutton_option_onsite"))
+            ->withOption("0", $this->plugin->txt("settings_supervision_radiobutton_option_onsite"))
             ->withOption("1", $this->plugin->txt("settings_supervision_radiobutton_option_remote"))
             ->withOption("2", $this->plugin->txt("settings_supervision_radiobutton_option_none"))
             ->withValue($this->settings['supervision'] ?? "0")
@@ -212,11 +211,12 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
             ['text',    $data[0][1]],
             ['integer', $data[1][0]],
             ['integer', $data[1][1][0]],
-            ['text',    $data[1][1][1][0]],
+            ['text',    $data[1][1][1][0] ?? ''],
             ['integer', $data[2][0]],
             ['integer', $data[3][0]],
             ['text',    $data[3][1]],
-            ['integer', $data[4][0]]
+            ['integer', $data[4][0]],
+            ['text',    '']
         ];
 
         // update Database

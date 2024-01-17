@@ -249,3 +249,21 @@ if(!$ilDB->tableExists($protocol_participant_table_name)) {
     $ilDB->createSequence($protocol_participant_table_name);
 }
 ?>
+
+<#2>
+<?php
+$settings_table_name = "tst_uihk_texa_general";
+
+$new_column = [
+    'type' => 'text',
+    'notnull' => false,
+    'length' => 64,
+    'default' => ''
+];
+
+// Check if the column already exists
+if (!$ilDB->tableColumnExists($settings_table_name, 'resource_storage_id')) {
+    // Add the new column
+    $ilDB->addTableColumn($settings_table_name, 'resource_storage_id', $new_column);
+}
+?>

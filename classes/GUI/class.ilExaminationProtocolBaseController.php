@@ -21,12 +21,15 @@ declare(strict_types=1);
 
 namespace ILIAS\Plugin\ExaminationProtocol\GUI;
 
+use DateTime;
+use DateTimeZone;
 use ilCtrl;
 use ilDatabaseException;
 use ilExaminationProtocolPlugin;
 use ilGlobalTemplateInterface;
 use ILIAS\DI\Container;
 use ILIAS\Plugin\ExaminationProtocol\ilExaminationProtocolDBConnector;
+use ILIAS\Plugin\ExaminationProtocol\ilExaminationProtocolEventEnumeration;
 use ILIAS\UI\Factory;
 use ILIAS\UI\Renderer;
 use ilLocatorGUI;
@@ -41,7 +44,6 @@ use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  */
 abstract class ilExaminationProtocolBaseController
 {
@@ -52,7 +54,9 @@ abstract class ilExaminationProtocolBaseController
     /** @var string  */
     protected const CMD_DELETE = "delete";
     /** @var string  */
-    protected const CMD_EXPORT = "export";
+    protected const CMD_CREATE_EXPORT = "create_export";
+    /** @var string  */
+    protected const CMD_DOWNLOAD_EXPORT = "download_export";
     /** @var string  */
     protected const CMD_DELETE_ALL = "delete_all";
     /** @var string  */
@@ -124,6 +128,8 @@ abstract class ilExaminationProtocolBaseController
     /** @var boolean */
     protected $protocol_has_entries;
 
+    protected $irss;
+
     /**
      * @throws ilDatabaseException
      * @throws ilObjectNotFoundException
@@ -141,6 +147,7 @@ abstract class ilExaminationProtocolBaseController
         $this->ilLocator = $DIC['ilLocator'];
         $this->request = $DIC->http()->request();
         $this->test_object = ilObjectFactory::getInstanceByRefId($_GET['ref_id']);
+        $this->irss = $DIC->resourceStorage();
 
         $this->tpl = $DIC['tpl'];
         $this->lng = $DIC['lng'];
@@ -150,16 +157,7 @@ abstract class ilExaminationProtocolBaseController
         $this->tabs = $DIC->tabs();
         $this->toolbar = $DIC['ilToolbar'];
 
-        // unified event options TODO Refactor to constant
-        $this->event_options = [
-            $this->plugin->txt("entry_dropdown_event_general"),
-            $this->plugin->txt("entry_dropdown_event_question"),
-            $this->plugin->txt("entry_dropdown_event_material"),
-            $this->plugin->txt("entry_dropdown_event_toilet"),
-            $this->plugin->txt("entry_dropdown_event_illness"),
-            $this->plugin->txt("entry_dropdown_event_technical"),
-            $this->plugin->txt("entry_dropdown_event_other"),
-        ];
+        $this->event_options = ilExaminationProtocolEventEnumeration::getAllOptionsInLanguage($this->plugin);
 
         // Data base
         $this->db_connector = new ilExaminationProtocolDBConnector();
@@ -201,5 +199,16 @@ abstract class ilExaminationProtocolBaseController
 
     public function executeCommand() : void
     {
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function utctolocal(string $time) : string
+    {
+        $loc = (new DateTime)->getTimezone();
+        $time = new DateTime($time, new DateTimeZone('UTC'));
+        $time->setTimezone($loc);
+        return $time->format("d.m.Y H:i");
     }
 }

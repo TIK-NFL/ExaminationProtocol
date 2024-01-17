@@ -32,7 +32,6 @@ use Psr\Http\Message\ServerRequestInterface;
  * Plugins -> Actions -> Configure
  * Somehow has to be here
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  */
 class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
 {
@@ -53,9 +52,6 @@ class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
     /** @var Renderer  */
     private $renderer;
 
-    /**
-     *
-     */
     public function __construct()
     {
         global $DIC;

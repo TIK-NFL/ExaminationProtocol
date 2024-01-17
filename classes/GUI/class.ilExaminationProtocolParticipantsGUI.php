@@ -23,7 +23,6 @@ use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  * @ilCtrl_isCalledBy ilExaminationProtocolParticipantsGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilRepositorySearchGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls ilExaminationProtocolParticipantsGUI: ilPermissionGUI, ilInfoScreenGUI, ilRepositoryGUI, ilRepositorySearchGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI
  */
@@ -141,16 +140,9 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
         }, array());
         $usr_ids = array_keys($usr_participant_mapping);
         // so when reseting the table filter the $_SESSION variables are transformed into boolen (false) since for some reason I had to implement the filter myself?
-        $usr_login = $_SESSION['form_texa_participant']['login'] ?? "";
-        $usr_name = $_SESSION['form_texa_participant']['name'] ?? "";
-        $usr_mrt = $_SESSION['form_texa_participant']['mrt'] ?? "";
-        if ($usr_mrt === false) {
-            $usr_login = $usr_name = $usr_mrt = "";
-        } else {
-            $usr_login = unserialize($usr_login);
-            $usr_name = unserialize($usr_name);
-            $usr_mrt = unserialize($usr_mrt);
-        }
+        $usr_login = unserialize($_SESSION['form_texa_participant']['login'] ?? "") ;
+        $usr_name = unserialize($_SESSION['form_texa_participant']['name'] ?? "") ;
+        $usr_mrt = unserialize($_SESSION['form_texa_participant']['matriculation'] ?? "");
         $data = $this->db_connector->getAllParticipantsByUserIDandFilter(
             "'" . implode("', '", $usr_ids) . "'",
             $usr_login,
@@ -179,6 +171,9 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
         $this->buildTable();
         $this->participant_table->resetOffset();
         $this->participant_table->resetFilter();
+        $_SESSION['form_texa_participant']['login'] = '';
+        $_SESSION['form_texa_participant']['name'] = '';
+        $_SESSION['form_texa_participant']['matriculation'] = '';
         $this->loadData();
         $this->tpl->setContent($this->participant_table->getHTML());
     }

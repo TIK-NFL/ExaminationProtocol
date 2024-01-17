@@ -23,7 +23,6 @@ use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
- * @version  $Id$
  * @ilCtrl_isCalledBy ilExaminationProtocolLocationGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls ilExaminationProtocolLocationGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI
  */
@@ -39,13 +38,10 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
     public function __construct()
     {
         parent::__construct();
-        // Tab
         //$this->tabs->activateSubTab(self::LOCATION_TAB_ID);
-        // table
         $this->location_table = new ilExaminationProtocolLocationTableGUI($this, self::CMD_SHOW, "", $this->protocol_has_entries);
         $this->buildToolbar();
 
-        // load from database
         $locations = $this->db_connector->getAllLocationsByProtocolID($this->protocol_id);
         $this->location_table->setData($locations);
         $this->tpl->setContent($this->location_table->getHTML());
