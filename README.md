@@ -17,7 +17,7 @@ Examination Protocol is a plugin that streamlines the process of managing and co
 ## BETA Disclaimer
 The plugin provided herein is currently in a BETA state of development. It is not recommended for use in production environments. Users are advised that any use of the plugin in a production setting is undertaken at their own risk. The developers and maintainers of the plugin will not be responsible for any consequences arising from the use of this plugin in production systems.
 
-During this beta phase, user feedback is crucial to improve the plugin's functionality and stability. If you encounter any bugs, unexpected behaviors, or side effects while using the plugin, please let us know. You can submit your feedback by creating an issue on the associated Git repository or through some time later submission of a Mantis ticket.
+During this beta phase, user feedback is crucial to improve the plugin's functionality and stability. If you encounter any bugs, unexpected behaviors, or side effects while using the plugin, please let us know. You can submit your feedback by creating a [Mantis](https://mantis.ilias.de/) ticket.
 
 ## Installation
 
@@ -42,8 +42,8 @@ Follow these steps to install the Examination Protocol plugin:
 
 To use the Examination Protocol plugin, ensure you have the following dependencies:
 
-- **ILIAS**: Version 7 current release
-- **PHP**: Version 7.4
+- **ILIAS**: Version 8 current release
+- **PHP**: Version 8
 - **Composer**: To manage PHP dependencies
 
 ## Configuration
