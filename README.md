@@ -38,14 +38,6 @@ Follow these steps to install the Examination Protocol plugin:
    composer install --no-dev
    ```
 
-4. Since this is currently an unofficial plugin, you need to modify the `module.xml` file located at `ILIAS/Modules/Test/module.xml`. Add the following XML snippet within the `<pluginslots>` section:
-   ```xml
-   <pluginslots>
-       <!-- ... Other slots ... -->
-       <pluginslot id="texa" name="ExaminationProtocol" />
-   </pluginslots>
-   ```
-
 ## Dependencies
 
 To use the Examination Protocol plugin, ensure you have the following dependencies:
