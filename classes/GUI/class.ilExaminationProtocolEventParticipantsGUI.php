@@ -170,11 +170,16 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
 
     private function assign() : void
     {
-        $this->tpl->setOnScreenMessage('info', $this->plugin->txt('not_saved'));
-        foreach ($_POST['participants'] as $participant_id) {
-            if (!in_array($participant_id, $_SESSION['examination_protocol'][$this->test_object->test_id]['assigned'])) {
-                $_SESSION['examination_protocol'][$this->test_object->test_id]['assigned'][] = $participant_id;
+        if (isset($_POST['participants'])) {
+            $this->tpl->setOnScreenMessage('info', $this->plugin->txt('not_saved'));
+            foreach ($_POST['participants'] as $participant_id) {
+                if (!in_array($participant_id,
+                    $_SESSION['examination_protocol'][$this->test_object->test_id]['assigned'])) {
+                    $_SESSION['examination_protocol'][$this->test_object->test_id]['assigned'][] = $participant_id;
+                }
             }
+        } else {
+            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('not_participants'));
         }
     }
 

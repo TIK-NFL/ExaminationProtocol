@@ -142,5 +142,6 @@ next#:#Nächste Seite
 table_empty#:#Keine Einträge gefunden.
 lock#:#Die Bearbeitung der allgemeinen Eigenschaften des Prüfprotokolls ist blockiert, da bereits ein Protokolleintrag existiert
 not_saved#:#Die aktuellen Änderungen sind nicht gespeichert
+not_participants#:#Keine Teilnehmer ausgewählt
 size#:#Größe
 file#:#Datei

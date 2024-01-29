@@ -142,5 +142,6 @@ next#:#Next
 table_empty#:#No entries found.
 lock#:#Editing the general properties of the test protocol is blocked because a protocol entry already exists
 not_saved#:#Current changes are not saved
+not_participants#:#No participants selected
 size#:#Size
 file#:#File
