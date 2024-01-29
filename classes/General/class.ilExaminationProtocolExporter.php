@@ -103,7 +103,7 @@ class ilExaminationProtocolExporter
     public function getLatestExportID() : ResourceIdentification
     {
         $resource = $this->getResource();
-        $revision =  $resource->getCurrentRevision();
+        $revision = $resource->getCurrentRevision();
         return $revision->getIdentification();
     }
 
