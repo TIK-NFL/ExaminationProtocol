@@ -160,11 +160,22 @@ class ilExaminationProtocolUIHookGUI extends ilUIHookPluginGUI
             // save sub target
             $_SESSION['examination_protocol']['tab_sub_target'] = $this->ilTabs->sub_target;
         }
-        // add tabs
-        if (($a_part == "sub_tabs"
-            && (in_array($this->ctrl->getCmdClass(), self::SUBTABS)
-                || $this->ctrl->getCallHistory()[count($this->ctrl->getCallHistory())-1]['class'] == 'ilExaminationProtocolParticipantsGUI' )
-        )){
+        
+        if ($a_part == 'tabs'
+            &&  (in_array(strtolower($this->ctrl->getCmdClass()), self::SUBTABS)
+                || $this->ctrl->getCallHistory()[count($this->ctrl->getCallHistory())-2]['cmdClass'] == 'ilExaminationProtocolParticipantsGUI'
+                )) {
+            // Repository Search
+            if (isset($_SESSION['examination_protocol']['tab_target'])) {
+                $this->ilTabs->target = $_SESSION['examination_protocol']['tab_target'];
+                $this->ilTabs->activateTab('examination_protocol');
+            }
+        }
+
+        if ($a_part == 'sub_tabs'
+            && (in_array(strtolower($this->ctrl->getCmdClass()), self::SUBTABS)
+                || $this->ctrl->getCallHistory()[count($this->ctrl->getCallHistory())-1]['cmdClass'] == 'ilExaminationProtocolParticipantsGUI'
+            )) {
             // reuse the tabs that were saved from the GUI modification
             if (isset($_SESSION['examination_protocol']['tab_target'])) {
                 $this->ilTabs->target = $_SESSION['examination_protocol']['tab_target'];
