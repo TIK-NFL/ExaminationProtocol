@@ -250,9 +250,9 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
         {
             $_SESSION['examination_protocol'][$this->test_object->test_id]['assigned'] = $this->db_connector->getAllProtocolParticipantIDs($_SESSION['examination_protocol']['entry_id']);
         }
-        $usr_login = unserialize($_SESSION['form_texa_protocol_participant_login']) ?? "";
-        $usr_name = unserialize($_SESSION['form_texa_protocol_participant_name']) ?? "";
-        $usr_mrt = unserialize($_SESSION['form_texa_protocol_participant_matriculation']) ?? "";
+        $usr_login = unserialize($_SESSION['form_texa_protocol_participant_login'] ?? "") ?? "";
+        $usr_name = unserialize($_SESSION['form_texa_protocol_participant_name'] ?? "") ?? "";
+        $usr_mrt = unserialize($_SESSION['form_texa_protocol_participant_matriculation'] ?? "") ?? "";
         $data = $this->db_connector->getAllParticipantsByUserIDandFilter(
             "'" . implode("', '", $usr_ids) . "'",
             $usr_login,

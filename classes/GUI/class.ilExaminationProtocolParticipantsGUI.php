@@ -138,9 +138,9 @@ class ilExaminationProtocolParticipantsGUI extends ilExaminationProtocolBaseCont
             return $result;
         }, array());
         $usr_ids = array_keys($usr_participant_mapping);
-        $usr_login = unserialize($_SESSION['form_texa_participant_login']) ?? "";
-        $usr_name = unserialize($_SESSION['form_texa_participant_name']) ?? "";
-        $usr_mrt = unserialize($_SESSION['form_texa_participant_matriculation']) ?? "";
+        $usr_login = unserialize($_SESSION['form_texa_participant_login'] ?? "") ?? "";
+        $usr_name = unserialize($_SESSION['form_texa_participant_name'] ?? "") ?? "";
+        $usr_mrt = unserialize($_SESSION['form_texa_participant_matriculation'] ?? "") ?? "";
         $data = $this->db_connector->getAllParticipantsByUserIDandFilter(
             "'" . implode("', '", $usr_ids) . "'",
             $usr_login,
