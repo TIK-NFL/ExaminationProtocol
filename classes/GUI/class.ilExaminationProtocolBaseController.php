@@ -34,6 +34,7 @@ use ILIAS\UI\Factory;
 use ILIAS\UI\Renderer;
 use ilLocatorGUI;
 use ilObjectFactory;
+use ilObjectListGUIFactory;
 use ilObjectNotFoundException;
 use ilObjTest;
 use ilTabsGUI;
@@ -178,6 +179,9 @@ abstract class ilExaminationProtocolBaseController
         $this->tpl->setLocator();
         $this->tpl->setTitleIcon(ilUtil::getImagePath('icon_tst.svg'));
         $this->tpl->setTitle($this->test_object->getTitle());
+        $lgui = ilObjectListGUIFactory::_getListGUIByType($this->test_object->getType());
+        $lgui->initItem($this->test_object->getRefId(), $this->test_object->getId(), $this->test_object->getType());
+        $this->tpl->setAlertProperties($lgui->getAlertProperties());
         $this->tpl->setDescription($this->test_object->getDescription());
         $this->ilLocator->addRepositoryItems($this->test_object->getRefId());
         $this->ilLocator->addItem($this->test_object->getTitle(), $this->ctrl->getLinkTargetByClass('ilobjtestgui'));

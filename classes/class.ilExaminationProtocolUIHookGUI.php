@@ -50,7 +50,8 @@ class ilExaminationProtocolUIHookGUI extends ilUIHookPluginGUI
     /** @var string[]  */
     private const ALLOWED_BASE_CLASSES = [
         'ilobjtestgui',
-        'ilrepositorygui'
+        'ilrepositorygui',
+        'ilrepositorysearchgui'
     ];
 
     /** @var string[]  */
@@ -110,7 +111,8 @@ class ilExaminationProtocolUIHookGUI extends ilUIHookPluginGUI
             && isset($_REQUEST['cmdClass'])
             && in_array(strtolower($_REQUEST['baseClass']), self::ALLOWED_BASE_CLASSES)
             && in_array(strtolower($_REQUEST['cmdClass']), self::ALLOWED_CMD_CLASSES)
-            && !in_array(strtolower($_REQUEST['cmdClass']), self::FORBIDDEN_CMDS)) {
+            && !in_array(strtolower($_REQUEST['cmdClass']), self::FORBIDDEN_CMDS)
+        ) {
             // access check
             if (!$this->plugin_object->hasAccess()) {
                 return;
@@ -163,12 +165,9 @@ class ilExaminationProtocolUIHookGUI extends ilUIHookPluginGUI
             // save sub target
             $_SESSION['examination_protocol']['tab_sub_target'] = $this->ilTabs->sub_target;
         }
-        $callhistory = $this->ctrl->getCallHistory();
-        // add tabs
         if (($a_part == "sub_tabs"
-            && in_array($this->ctrl->getCmdClass(), self::SUBTABS)
-        //    || $a_part == "sub_tabs"
-        //    && $this->ctrl->getCallHistory()[1]['class'] == 'ilExaminationProtocolParticipantsGUI'
+            && (in_array($this->ctrl->getCmdClass(), self::SUBTABS)
+           || $this->ctrl->getCallHistory()[count($this->ctrl->getCallHistory())-1]['class'] == 'ilExaminationProtocolParticipantsGUI' )
         )) {
             //reuse the tabs that were saved from the GUI modification
             if (isset($_SESSION['examination_protocol']['tab_target'])) {
