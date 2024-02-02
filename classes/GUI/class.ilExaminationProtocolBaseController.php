@@ -22,6 +22,7 @@ namespace ILIAS\Plugin\ExaminationProtocol\GUI;
 
 use DateTime;
 use DateTimeZone;
+use ilObjectListGUIFactory;
 use Psr\Http\Message\ServerRequestInterface;
 use ilCtrl;
 use ilCtrlException;
@@ -151,6 +152,7 @@ abstract class ilExaminationProtocolBaseController extends ilObject2GUI
 
     /**
      * @throws ilCtrlException
+     * @throws \ilObjectException
      */
     private function setTemplateDefaults() : void
     {
@@ -158,6 +160,11 @@ abstract class ilExaminationProtocolBaseController extends ilObject2GUI
         $this->tpl->setLocator();
         $this->tpl->setTitleIcon("/templates/default/images/icon_tst.svg");
         $this->tpl->setTitle($this->test_object->getTitle());
+
+        $lgui = ilObjectListGUIFactory::_getListGUIByType($this->test_object->getType());
+        $lgui->initItem($this->test_object->getRefId(), $this->test_object->getId(), $this->test_object->getType());
+        $this->tpl->setAlertProperties($lgui->getAlertProperties());
+
         $this->tpl->setDescription($this->test_object->getDescription());
         $this->ilLocator->addRepositoryItems($this->test_object->getRefId());
         $this->ilLocator->addItem($this->test_object->getTitle(), $this->ctrl->getLinkTargetByClass('ilobjtestgui'));
