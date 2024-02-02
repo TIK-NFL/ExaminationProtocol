@@ -364,7 +364,7 @@ class ilExaminationProtocolDBConnector
             SELECT CONCAT(lastname, ', ', firstname) AS name, login, matriculation, email, usr_id
             FROM usr_data
             WHERE usr_id IN (" . $usr_ids . ")
-              AND (COALESCE(%s, '') = '' OR login = %s)
+              AND (COALESCE(%s, '') = '' OR login LIKE CONCAT('%%', %s, '%%' ))
               AND (COALESCE(%s, '') = '' OR matriculation LIKE CONCAT('%%', %s, '%%' ))
               AND (COALESCE(%s, '') = '' OR CONCAT(lastname, ', ', firstname) LIKE CONCAT('%%', %s, '%%' ))",
             array('string', 'string', 'string', 'string', 'string', 'string'),
