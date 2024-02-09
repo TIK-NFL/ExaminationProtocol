@@ -32,7 +32,6 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
     private $form;
     /** @var DateTime  */
     private $date_now;
-    private $html;
     private $entry;
 
     /**
@@ -48,24 +47,23 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
         }
     }
 
-    private function buildEventForm() : void
-    {
-        // info
+    private function setNotifications() {
         if (!empty($_REQUEST['info']) && $_REQUEST['info'] == 'empty_date') {
             $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('entry_datetime_empty'));
         } elseif (!empty($_REQUEST['info']) && $_REQUEST['info'] == 'wrong_date') {
             $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('entry_datetime_wrong'));
         }
+    }
+
+    private function buildEventForm() : void
+    {
         $data_factory = new ILIAS\Data\Factory();
-        // load existing entry
         $start = $end = null;
         if (!empty($this->entry)) {
             $start = $this->utctolocal($this->entry['start']);
             $end = $this->utctolocal($this->entry['end']);
             $this->ctrl->setParameterByClass(ilExaminationProtocolEventInputGUI::class, "entry_id", $_REQUEST['entry_id']);
         }
-
-        $this->buildToolbar();
 
         // event input
         $dt_start = $this->field_factory->dateTime($this->plugin->txt("entry_datetime_start_title"))
@@ -123,18 +121,19 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
         if ($this->request->getMethod() == "POST") {
             $this->form = $this->form->withRequest($this->request);
         }
-        $this->html = $this->renderer->render($this->form);
+        $html = $this->renderer->render($this->form);
         // So the kitchensink sets the default button text of the button to "save" in the renderer ILIAS 7 und 8
         // $submit_button = $f->button()->standard($this->txt("save"), "");
         // in ILIAS/src/UI/Implementation/Component/Input/Container/Form/Renderer.php
         // we need a "next" TODO remove HTML edditing when KS has an edible button
         if (empty($_REQUEST['entry_id'])) {
-            $this->html = str_replace(
+            $html = str_replace(
                 '<div class="il-standard-form-cmd"><button class="btn btn-default"   data-action="">Save</button>',
                 '<div class="il-standard-form-cmd"><button class="btn btn-default"   data-action="">' . $this->plugin->txt("next") . '</button>',
-                $this->html
+                $html
             );
         }
+        $this->tpl->setContent($html);
     }
 
     public function executeCommand() : void
@@ -145,17 +144,20 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
                 break;
             default:
             case self::CMD_SHOW:
-                $this->buildEventForm();
+                $this->buildGUI();
                 break;
         }
     }
 
-    public function getHTML() : string
+    private function buildGUI(): void
     {
-        return $this->html;
+        $this->setNotifications();
+        $this->buildToolbar();
+        $this->buildEventForm();
+        $this->tpl->printToStdout();
     }
 
-    private function buildToolbar() : void
+    private function buildToolbar(): void
     {
         $btn = ilLinkButton::getInstance();
         $btn->setCaption($this->lng->txt("cancel"), false);
@@ -163,7 +165,7 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
         $this->toolbar->addButtonInstance($btn);
     }
 
-    private function save() : void
+    private function save(): void
     {
         if (empty($_POST['form_input_2']) || empty($_POST['form_input_3'])) {
             $this->ctrl->setParameterByClass(ilExaminationProtocolEventInputGUI::class, "entry_id", $_REQUEST['entry_id']);

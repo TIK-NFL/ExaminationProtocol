@@ -38,13 +38,8 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
     public function __construct()
     {
         parent::__construct();
-        //$this->tabs->activateSubTab(self::LOCATION_TAB_ID);
+        $this->tabs->activateSubTab(self::LOCATION_TAB_ID);
         $this->location_table = new ilExaminationProtocolLocationTableGUI($this, self::CMD_SHOW, "", $this->protocol_has_entries);
-        $this->buildToolbar();
-
-        $locations = $this->db_connector->getAllLocationsByProtocolID($this->protocol_id);
-        $this->location_table->setData($locations);
-        $this->tpl->setContent($this->location_table->getHTML());
     }
 
     public function executeCommand() : void
@@ -52,6 +47,7 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
         switch ($this->ctrl->getCmd()) {
             default:
             case self::CMD_SHOW:
+                $this->buildGUI();
                 break;
             case self::CMD_SAVE:
                 $this->save();
@@ -60,6 +56,14 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
                 $this->delete();
                 break;
         }
+    }
+    protected function buildGUI()
+    {
+        $this->buildToolbar();
+        $locations = $this->db_connector->getAllLocationsByProtocolID($this->protocol_id);
+        $this->location_table->setData($locations);
+        $this->tpl->setContent($this->location_table->getHTML());
+        $this->tpl->printToStdout();
     }
 
     protected function buildToolbar() : void
@@ -77,11 +81,6 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
         }
     }
 
-    public function getHTML() : string
-    {
-        return "";
-    }
-
     protected function delete() : void
     {
         if (!is_null($_POST['locations'])) {
@@ -92,12 +91,10 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
 
     protected function save() : void
     {
-        // build input Array
         $values = [
             ['integer', $this->protocol_id],
             ['text',    $_POST['location']],
         ];
-        // update Database
         if (!in_array($_POST['location'], $this->db_connector->getAllLocationsByProtocolID($this->protocol_id))) {
             $this->db_connector->insertLocation($values);
         }

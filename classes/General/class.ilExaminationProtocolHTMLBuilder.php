@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -85,7 +86,6 @@ class ilExaminationProtocolHTMLBuilder
                     </tr>
                 </thead>
                 <tbody>";
-
 
         usort($table_content, function ($a, $b) {
             return strtotime($a['start']) - strtotime($b['start']);

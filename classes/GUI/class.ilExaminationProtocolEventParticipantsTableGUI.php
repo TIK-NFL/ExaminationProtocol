@@ -39,11 +39,6 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
     /** @return array */
     protected $participant_ids;
 
-    /**
-     * @param object $a_parent_obj
-     * @param string $a_parent_cmd
-     * @param string $a_template_context
-     */
     public function __construct($a_parent_obj, $a_parent_cmd = "", $a_template_context = "")
     {
         global $DIC;
@@ -59,39 +54,29 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
             "participant_id"
         );
 
-        // Build Table
-        // title
+
         $this->setTitle($this->plugin->txt('participant_table_title'));
-        // default no entries set
         $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setEnableHeader(true);
-        // selector
         $this->setShowRowsSelector(true);
         $this->setSelectAllCheckbox('participant');
         $this->addHiddenInput("entry_id", $_REQUEST['entry_id']);
         $this->addMultiCommand("assign", $this->plugin->txt('participant_assign'));
         $this->addMultiCommand("unassign", $this->plugin->txt('participant_unassign'));
-        // row template
         $this->setRowTemplate('tpl.protocol_participant_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
-        // filter
         $this->initFilter();
-
-        // unsure
         $this->enable('sort');
         $this->enable('header');
         $this->enable('numinfo');
         $this->enable('select_all');
         $this->setFormAction($ilCtrl->getFormAction($a_parent_obj, $a_parent_cmd));
         $this->setFormName('form_texa_protocol_participant');
-
-        // build Table
         $this->addColumn('', 'participant', '1px', true);
         $this->addColumn($this->plugin->txt("participant_table_column_name"), 'name');
         $this->addColumn($this->plugin->txt("participant_table_column_login"), 'login');
         $this->addColumn($this->plugin->txt("participant_table_column_mrt"), 'matriculation');
         $this->addColumn($this->plugin->txt("participant_table_column_email"), 'email');
         $this->addColumn($this->plugin->txt("participant_table_column_assigned"), 'assigned', 100);
-        // ordering
         $this->setDefaultOrderField("matriculation");
         $this->setDefaultOrderDirection("asc");
     }
@@ -125,11 +110,6 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
         $this->current_filter['matriculation'] = $mrt->getValue();
     }
 
-    /**
-     * fills an array into the tables
-     * @param array $a_set
-     * @return void
-     */
     protected function fillRow($a_set) : void
     {
         parent::fillRow([

@@ -31,8 +31,6 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
 {
     /** @var ilExaminationProtocolEventParticipantsTableGUI */
     private $participant_table;
-    /** @var string */
-    protected $html;
 
     /**
      * @throws ilDatabaseException
@@ -72,11 +70,6 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
         }
     }
 
-    public function getHTML() : string
-    {
-        return $this->html;
-    }
-
     private function buildToolbar() : void
     {
         $btn = ilLinkButton::getInstance();
@@ -98,7 +91,9 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
         $this->loadDataIntoTable();
         $table = $this->ui_factory->legacy($this->participant_table->getHTML());
         $page = [$listing, $table];
-        $this->html = $this->renderer->render($page);
+        $html = $this->renderer->render($page);
+        $this->tpl->setContent($html);
+        $this->tpl->printToStdout();
     }
 
     private function buildListing() : Standard
@@ -152,6 +147,7 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
                 $this->db_connector->deleteProtocolParticipant($participant['propar_id']);
             }
         }
+
         // add new assignes
         foreach ($add_ids as $participant_id) {
             $values = [
@@ -203,7 +199,9 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
         $this->loadDataIntoTable();
         $table = $this->ui_factory->legacy($this->participant_table->getHTML());
         $page = [$listing, $table];
-        $this->html = $this->renderer->render($page);
+        $html = $this->renderer->render($page);
+        $this->tpl->setContent($html);
+        $this->tpl->printToStdout();
     }
 
     private function resetFilter() : void
@@ -219,7 +217,9 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
         $this->loadDataIntoTable();
         $table = $this->ui_factory->legacy($this->participant_table->getHTML());
         $page = [$listing, $table];
-        $this->html = $this->renderer->render($page);
+        $html = $this->renderer->render($page);
+        $this->tpl->setContent($html);
+        $this->tpl->printToStdout();
     }
 
     private function loadDataIntoTable() : void

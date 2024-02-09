@@ -27,11 +27,6 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
     /** @var ilExaminationProtocolPlugin */
     protected $plugin;
 
-    /**
-     * @param $a_parent_obj
-     * @param $a_parent_cmd
-     * @param $a_template_context
-     */
     public function __construct($a_parent_obj, $a_parent_cmd = "", $a_template_context = "")
     {
         global $DIC;
@@ -44,10 +39,6 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
         $this->createTable();
     }
 
-    /**
-     * Creates the table with columns
-     * @return void
-     */
     protected function createTable() : void
     {
         $this->setNoEntriesText($this->plugin->txt('table_empty'));
@@ -61,7 +52,6 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
         $this->addColumn($this->plugin->txt("description"), "comment");
         $this->addColumn($this->plugin->txt("event_table_column_location"), "location");
         $this->addColumn($this->plugin->txt("event_table_column_student_id"), "student_id");
-        $this->addColumn($this->plugin->txt("event_table_column_student_names"), "student_names");
         $this->addColumn($this->plugin->txt("event_table_column_supervisor_id"), "supervisor");
         foreach ($this->getSelectedColumns() as $column) {
             $this->addColumn($this->getSelectableColumns()[$column]['txt'], $column);
@@ -72,9 +62,6 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
         $this->setDefaultOrderDirection("asc");
     }
 
-    /**
-     * @return array[]
-     */
     public function getSelectableColumns() : array
     {
         $this->plugin = ilExaminationProtocolPlugin::getInstance();
@@ -86,10 +73,6 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
         ];
     }
 
-    /**
-     * @param array $a_set
-     * @return void
-     */
     public function fillRow($a_set) : void
     {
         $columns = [

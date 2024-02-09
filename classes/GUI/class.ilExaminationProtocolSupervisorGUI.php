@@ -39,15 +39,6 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseContro
     {
         parent::__construct();
         $this->tabs->activateSubTab(self::SUPERVISOR_TAB_ID);
-        $this->buildToolbar();
-        // table
-        $this->supervisor_table = new ilExaminationProtocolSupervisorTableGUI($this, "show", "", $this->protocol_has_entries);
-        // load from database
-        $supervisors = $this->db_connector->getAllSupervisorsByProtocolID($this->protocol_id);
-        $this->supervisor_table->setData($supervisors);
-        $table_html = $this->supervisor_table->getHTML();
-        $html = $table_html;
-        $this->tpl->setContent($html);
     }
 
     public function executeCommand() : void
@@ -55,6 +46,7 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseContro
         switch ($this->ctrl->getCmd()) {
             default:
             case self::CMD_SHOW:
+                $this->buildGUI();
                 break;
             case self::CMD_SAVE:
                 $this->save();
@@ -65,9 +57,14 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseContro
         }
     }
 
-    public function getHTML() : string
-    {
-        return "";
+    protected function buildGUI() {
+        $this->buildToolbar();
+        $this->supervisor_table = new ilExaminationProtocolSupervisorTableGUI($this, "show", "", $this->protocol_has_entries);
+        $supervisors = $this->db_connector->getAllSupervisorsByProtocolID($this->protocol_id);
+        $this->supervisor_table->setData($supervisors);
+        $table_html = $this->supervisor_table->getHTML();
+        $this->tpl->setContent($table_html);
+        $this->tpl->printToStdout();
     }
 
     protected function buildToolbar()  : void
@@ -95,12 +92,11 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseContro
 
     protected function save() : void
     {
-        // build input Array
         $values = [
             ['integer', $this->protocol_id],
             ['text',    $_POST['name']],
         ];
-        // update Database
+
         if (!in_array($_POST['name'], $this->db_connector->getAllSupervisorsByProtocolID($this->protocol_id))) {
             $this->db_connector->insertSupervisor($values);
         }

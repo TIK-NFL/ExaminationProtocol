@@ -66,9 +66,6 @@ class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
         $this->settings = $this->dic['plugin.examinationprotocol.settings'];
     }
 
-    /**
-    * Handles all commmands, default is "configure"
-    */
     public function performCommand($cmd) : void
     {
         switch ($cmd) {
@@ -81,9 +78,6 @@ class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
         }
     }
 
-    /**
-     * Configure screen
-     */
     public function configure() : void
     {
         global $tpl;
@@ -91,10 +85,6 @@ class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
         $tpl->setContent($form);
     }
 
-    /**
-     * Init configuration form.
-     * @return Standard
-     */
     public function initConfigurationForm() : Standard
     {
         $rb_operation_mode = $this->ui_factory->input()->field()->radio($this->plugin_object->txt('config_radiobutton_title'))
@@ -109,10 +99,7 @@ class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
         $form = $this->ui_factory->input()->container()->form()->standard($form_action, [$section]);
         return $form;
     }
-    
-    /**
-     * Save form input (currently does not save anything to db)
-     */
+
     public function save() : void
     {
         $form = $this->initConfigurationForm();

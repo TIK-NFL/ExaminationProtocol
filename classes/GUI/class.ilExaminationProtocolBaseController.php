@@ -39,6 +39,7 @@ use ilObjectNotFoundException;
 use ilObjTest;
 use ilTabsGUI;
 use ilToolbarGUI;
+use ilUIPluginRouterGUI;
 use ilUtil;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -149,7 +150,6 @@ abstract class ilExaminationProtocolBaseController
         $this->request = $DIC->http()->request();
         $this->test_object = ilObjectFactory::getInstanceByRefId($_GET['ref_id']);
         $this->irss = $DIC->resourceStorage();
-
         $this->tpl = $DIC['tpl'];
         $this->lng = $DIC['lng'];
         $this->ui_factory = $DIC->ui()->factory();
@@ -185,7 +185,7 @@ abstract class ilExaminationProtocolBaseController
         $this->tpl->setDescription($this->test_object->getDescription());
         $this->ilLocator->addRepositoryItems($this->test_object->getRefId());
         $this->ilLocator->addItem($this->test_object->getTitle(), $this->ctrl->getLinkTargetByClass('ilobjtestgui'));
-        $this->ctrl->setParameterByClass('ilobjtestgui', 'ref_id', $this->test_object->getRefId());
+        $this->ctrl->saveParameterByClass(ilUIPluginRouterGUI::class, 'ref_id');
     }
 
     public function getProtocolId() : ?string
@@ -203,6 +203,7 @@ abstract class ilExaminationProtocolBaseController
 
     public function executeCommand() : void
     {
+        $tmp = 0;
     }
 
     /**

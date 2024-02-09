@@ -38,14 +38,12 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
     public function __construct()
     {
         parent::__construct();
+        $this->tabs->activateSubTab(self::GENERAL_SETTINGS_TAB_ID);
         $this->buildForm();
     }
 
     private function buildForm() : void
     {
-        // tab
-        $this->tabs->activateSubTab(self::GENERAL_SETTINGS_TAB_ID);
-
         // info
         if ($this->protocol_has_entries) {
             $this->tpl->setOnScreenMessage('info', $this->plugin->txt("lock"));
@@ -72,8 +70,6 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
             ->withOption("1", $this->plugin->txt("settings_examination_type_radiobutton_option_upload"))
             ->withValue($this->settings['type_exam'] ?? "0")
             ->withDisabled($this->protocol_has_entries);
-
-        // Used TOOLS space
 
         // Only ILIAS
         $g_software_ilias = $this->field_factory->group(
@@ -158,7 +154,6 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
         ->withValue($this->settings['location'] ?? "0")
         ->withDisabled($this->protocol_has_entries);
 
-
         $section_inputs_location = [
             $rb_location,
         ];
@@ -188,23 +183,25 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
         switch ($this->ctrl->getCmd()) {
             case self::CMD_SAVE:
                 $this->save();
+                $this->buildGUI();
                 break;
             default:
             case self::CMD_SHOW:
-                $this->getHTML();
+                $this->buildGUI();
                 break;
         }
     }
 
-    public function getHTML() : string
-    {
-        return $this->renderer->render($this->form);
+    public function buildGUI() {
+
+        $this->tpl->setContent($this->renderer->render($this->form));
+        $this->tpl->printToStdout();
     }
+
 
     protected function save() : void
     {
         $data = $this->form->getData();
-        // build input Array
         $values = [
             ['integer', $this->test_object->test_id],
             ['text',    $data[0][0]],
@@ -219,7 +216,6 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
             ['text',    '']
         ];
 
-        // update Database
         if ($this->db_connector->settingsExistByTestID($this->test_object->test_id)) {
             $where = [
                 $this->db_connector::TEST_ID_KEY => ['integer', $this->test_object->test_id]

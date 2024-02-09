@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -46,9 +47,6 @@ class ilExaminationProtocolExporter
         return $this->test_id;
     }
 
-    /**
-     * @param string $test_id
-     */
     public function setTestId(string $test_id) : void
     {
         $this->test_id = $test_id;
@@ -133,7 +131,7 @@ class ilExaminationProtocolExporter
         $resource_id = $this->db->getResourceIDbyTestID($this->test_id)['resource_storage_id'];
         $html = $this->createHTMLProtocol();
         $stream = Streams::ofString($html);
-        $stakeholder = new ilExaminationProtocolStakeholder();
+        $stakeholder = ilExaminationProtocolStakeholder::getInstance();
         $filename = "examprotocol_ " . $this->test_id . "_". strtotime("now") .".html";
         if (empty($resource_id)){
             $resource_identification = $this->irss->manage()->stream($stream, $stakeholder, $filename);

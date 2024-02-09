@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -26,14 +27,32 @@ use ILIAS\ResourceStorage\Stakeholder\AbstractResourceStakeholder;
  */
 class ilExaminationProtocolStakeholder extends AbstractResourceStakeholder
 {
+    private static ilExaminationProtocolStakeholder $instance;
+
+    private int $owner;
+    private string $plugin_id;
+
+    public function __construct()
+    {
+        $this->owner = 6;
+        $this->plugin_id = 'texa';
+    }
+
+    public static function getInstance(): ilExaminationProtocolStakeholder
+    {
+        if (!isset(self::$instance)) {
+            self::$instance = new ilExaminationProtocolStakeholder();
+        }
+        return self::$instance;
+    }
 
     public function getId() : string
     {
-        return 'texa';
+        return $this->plugin_id;
     }
 
     public function getOwnerOfNewResources() : int
     {
-        return 6;
+        return $this->owner;
     }
 }

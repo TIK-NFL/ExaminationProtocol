@@ -49,13 +49,14 @@ class ilExaminationProtocolEventGUI extends ilExaminationProtocolBaseController
 
     private function buildGUI() : void
     {
-        // notification
         $this->buildInfo();
         $this->buildToolbar();
         $this->protocolTable = new ilExaminationProtocolEventTableGUI($this, "show");
         $this->loadData();
         $this->tpl->setContent($this->protocolTable->getHTML());
+        $this->tpl->printToStdout();
     }
+
 
     protected function buildToolbar() : void
     {
@@ -171,9 +172,6 @@ class ilExaminationProtocolEventGUI extends ilExaminationProtocolBaseController
         }
     }
 
-    /**
-     * @return void
-     */
     protected function getConfirmationDialog() : void
     {
         require_once 'Services/Utilities/classes/class.ilConfirmationGUI.php';
@@ -190,9 +188,6 @@ class ilExaminationProtocolEventGUI extends ilExaminationProtocolBaseController
         $this->tpl->setContent($confirmation_gui->getHTML());
     }
 
-    /**
-     * @return void
-     */
     protected function delete() : void
     {
         if (!empty($_POST['entry_id'])) {
@@ -204,12 +199,5 @@ class ilExaminationProtocolEventGUI extends ilExaminationProtocolBaseController
         }
     }
 
-    /**
-     * @return string
-     */
-    public function getHTML() : string
-    {
-        return "";
-    }
 
 }

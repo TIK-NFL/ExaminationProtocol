@@ -39,10 +39,6 @@ class ilExaminationProtocolExportTableGUI extends ilTable2GUI
         $this->createTable();
     }
 
-    /**
-     * Creates the table with columns
-     * @return void
-     */
     protected function createTable() : void
     {
         $this->setNoEntriesText($this->plugin->txt('table_empty'));
@@ -65,10 +61,6 @@ class ilExaminationProtocolExportTableGUI extends ilTable2GUI
         $this->setDefaultOrderDirection("desc");
     }
 
-    /**
-     * @param array $a_set
-     * @return void
-     */
     public function fillRow($a_set) : void
     {
         $checkbox = ilUtil::formCheckbox(false, 'version_number[]', $a_set['version_number']);

@@ -20,6 +20,7 @@ declare(strict_types=1);
  */
 
 use ILIAS\DI\Container;
+use ILIAS\Plugin\ExaminationProtocol\ilExaminationProtocolSettings;
 
 /**
  * User interface hook class
@@ -51,7 +52,8 @@ class ilExaminationProtocolUIHookGUI extends ilUIHookPluginGUI
     private const ALLOWED_BASE_CLASSES = [
         'ilobjtestgui',
         'ilrepositorygui',
-        'ilrepositorysearchgui'
+        'ilrepositorysearchgui',
+        '',
     ];
 
     /** @var string[]  */
@@ -71,6 +73,7 @@ class ilExaminationProtocolUIHookGUI extends ilUIHookPluginGUI
         'ilpermissiongui',
         'ilobjectpermissionstatusgui',
         'ilpermissiongui',
+        'ilinfoscreengui',
     ];
 
     /** @var string[] */
@@ -104,92 +107,93 @@ class ilExaminationProtocolUIHookGUI extends ilUIHookPluginGUI
      */
     public function modifyGUI($a_comp, $a_part, $a_par = array())  : void
     {
-        // test for object type
         if ($a_part == "tabs"
             && $this->ctrl->getContextObjType() == "tst"
-            && isset($_REQUEST['baseClass'])
-            && isset($_REQUEST['cmdClass'])
-            && in_array(strtolower($_REQUEST['baseClass']), self::ALLOWED_BASE_CLASSES)
-            && in_array(strtolower($_REQUEST['cmdClass']), self::ALLOWED_CMD_CLASSES)
-            && !in_array(strtolower($_REQUEST['cmdClass']), self::FORBIDDEN_CMDS)
+            && in_array(strtolower($_REQUEST['baseClass'] ?? ''), self::ALLOWED_BASE_CLASSES)
+            && in_array(strtolower($this->ctrl->getCmdClass()), self::ALLOWED_CMD_CLASSES)
+            && !in_array(strtolower($this->ctrl->getCmd()), self::FORBIDDEN_CMDS)
         ) {
             // access check
             if (!$this->plugin_object->hasAccess()) {
                 return;
             }
             $pluginSettings = $this->dic['plugin.examinationprotocol.settings'];
-            if ($pluginSettings->getOperationModeKey() != 2) {
+            if ($pluginSettings->getOperationMode() != ilExaminationProtocolSettings::OPERATION_MODES['2']) {
                 return;
             }
-
+            $this->ctrl->saveParameterByClass(ilUIPluginRouterGUI::class, 'ref_id');
             $this->ilTabs->addTab(
                 "examination_protocol",
                 $this->plugin_object->txt("protocol_tab_name"),
-                $this->ctrl->getLinkTargetByClass([ilRepositoryGUI::class, self::SUBTABS[0]], "show")
+                $this->ctrl->getLinkTargetByClass([ilUIPluginRouterGUI::class, self::SUBTABS[0]], "show")
             );
             $examination_entry = [end($this->ilTabs->target)];
             array_pop($this->ilTabs->target);
             array_splice($this->ilTabs->target, 3, 0, $examination_entry);
             $_SESSION['examination_protocol']['tab_target'] = $this->ilTabs->target;
-        } elseif ($a_part == "sub_tabs" && in_array($this->ctrl->getCmdClass(), self::SUBTABS)) {
+        }
+        else if ($a_part == "sub_tabs" && in_array(strtolower($this->ctrl->getCmdClass()), self::SUBTABS))
+        {
             $this->ilTabs->addSubTab(
                 "examination_protocol_protocol",
                 $this->plugin_object->txt("sub_tab_protocol"),
-                $this->ctrl->getLinkTargetByClass([ilRepositoryGUI::class, self::SUBTABS[0]], "show")
+                $this->ctrl->getLinkTargetByClass([ilUIPluginRouterGUI::class, self::SUBTABS[0]], "show")
             );
             $this->ilTabs->addSubTab(
                 "examination_protocol_setting",
                 $this->plugin_object->txt("sub_tab_settings"),
-                $this->ctrl->getLinkTargetByClass([ilRepositoryGUI::class, self::SUBTABS[1]], "show")
+                $this->ctrl->getLinkTargetByClass([ilUIPluginRouterGUI::class, self::SUBTABS[1]], "show")
             );
             $this->ilTabs->addSubTab(
                 "examination_protocol_supervisor",
                 $this->plugin_object->txt("sub_tab_supervisors"),
-                $this->ctrl->getLinkTargetByClass([ilRepositoryGUI::class, self::SUBTABS[2]], "show")
+                $this->ctrl->getLinkTargetByClass([ilUIPluginRouterGUI::class, self::SUBTABS[2]], "show")
             );
             $this->ilTabs->addSubTab(
                 "examination_protocol_location",
                 $this->plugin_object->txt("sub_tab_locations"),
-                $this->ctrl->getLinkTargetByClass([ilRepositoryGUI::class, self::SUBTABS[3]], "show")
+                $this->ctrl->getLinkTargetByClass([ilUIPluginRouterGUI::class, self::SUBTABS[3]], "show")
             );
             $this->ilTabs->addSubTab(
                 "examination_protocol_participant",
                 $this->plugin_object->txt("sub_tab_participants"),
-                $this->ctrl->getLinkTargetByClass([ilRepositoryGUI::class, self::SUBTABS[4]], "show")
+                $this->ctrl->getLinkTargetByClass([ilUIPluginRouterGUI::class, self::SUBTABS[4]], "show")
             );
             $this->ilTabs->addSubTab(
                 "examination_protocol_export",
                 $this->plugin_object->txt("sub_tab_export"),
-                $this->ctrl->getLinkTargetByClass([ilRepositoryGUI::class, self::SUBTABS[5]], "show")
+                $this->ctrl->getLinkTargetByClass([ilUIPluginRouterGUI::class, self::SUBTABS[5]], "show")
             );
             // save sub target
             $_SESSION['examination_protocol']['tab_sub_target'] = $this->ilTabs->sub_target;
         }
+        // Repository Search
         if ($a_part == 'tabs'
-            &&  (in_array($this->ctrl->getCmdClass(), self::SUBTABS)
-                || $this->ctrl->getCallHistory()[count($this->ctrl->getCallHistory())-2]['class'] == 'ilExaminationProtocolParticipantsGUI')
-        ){
-            // Repository Search
-            if (isset($_SESSION['examination_protocol']['tab_target'])) {
-                $this->ilTabs->target = $_SESSION['examination_protocol']['tab_target'];
-                $this->ilTabs->activateTab('examination_protocol');
-            }
+            && !in_array(strtolower($this->ctrl->getCmdClass()), self::SUBTABS)
+            && isset($_SESSION['examination_protocol']['tab_target'])
+            && $this->ctrl->getCallHistory()[count($this->ctrl->getCallHistory())-1]['class'] == 'ilRepositorySearchGUI'
+            && $this->ctrl->getCallHistory()[count($this->ctrl->getCallHistory())-2]['class'] == 'ilExaminationProtocolParticipantsGUI')
+        {
+            $this->ilTabs->target = $_SESSION['examination_protocol']['tab_target'];
+            $this->ilTabs->activateTab('examination_protocol');
         }
 
         if (($a_part == 'sub_tabs'
-            && (in_array($this->ctrl->getCmdClass(), self::SUBTABS)
-           || $this->ctrl->getCallHistory()[count($this->ctrl->getCallHistory())-1]['class'] == 'ilExaminationProtocolParticipantsGUI' )
-        )) {
+            && (in_array(strtolower($this->ctrl->getCmdClass()), self::SUBTABS)
+           || $this->ctrl->getCallHistory()[count($this->ctrl->getCallHistory())-1]['class'] == 'ilExaminationProtocolParticipantsGUI' )))
+        {
             //reuse the tabs that were saved from the GUI modification
             if (isset($_SESSION['examination_protocol']['tab_target'])) {
                 $this->ilTabs->target = $_SESSION['examination_protocol']['tab_target'];
             }
-            if (isset($_SESSION['examination_protocol']['tab_sub_target']) && !in_array($this->ctrl->getCmdClass(), self::INPUTTABS)) {
+            if (isset($_SESSION['examination_protocol']['tab_sub_target'])
+                && !in_array(strtolower($this->ctrl->getCmdClass()), self::INPUTTABS)) {
                 $this->ilTabs->sub_target = $_SESSION['examination_protocol']['tab_sub_target'];
-            } elseif (in_array($this->ctrl->getCmdClass(), self::INPUTTABS)) {
+            } elseif (in_array(strtolower($this->ctrl->getCmdClass()), self::INPUTTABS)) {
+                // no subtabs for Event input and participant selection
                 $this->ilTabs->sub_target = [];
             }
-            // this works because the tabs are rendered after the sub tabs
+
             $this->ilTabs->activateTab('examination_protocol');
             switch ($this->ctrl->getCmdClass()) {
                 case 'ilexaminationprotocoleventgui':

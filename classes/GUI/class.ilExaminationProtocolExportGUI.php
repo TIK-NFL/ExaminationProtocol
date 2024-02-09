@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -69,7 +70,8 @@ class ilExaminationProtocolExportGUI extends ilExaminationProtocolBaseController
         $this->buildToolbar();
         $export_table = $this->buildTable();
         $page = [$export_table];
-        $this->html = $this->renderer->render($page);
+        $this->tpl->setContent($this->renderer->render($page));
+        $this->tpl->printToStdout();
     }
 
     protected function buildTable() : Legacy
@@ -77,7 +79,6 @@ class ilExaminationProtocolExportGUI extends ilExaminationProtocolBaseController
         $export_table = new ilExaminationProtocolExportTableGUI($this, self::CMD_SHOW);
         $this->loadDataIntoTable($export_table);
         return $this->ui_factory->legacy($export_table->getHTML());
-
     }
 
     private function loadDataIntoTable($export_table) : void

@@ -29,11 +29,6 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
     /** @var array */
     public $current_filter;
 
-    /**
-     * @param object $a_parent_obj
-     * @param string $a_parent_cmd
-     * @param string $a_template_context
-     */
     public function __construct($a_parent_obj, $a_parent_cmd = "", $a_template_context = "")
     {
         global $DIC;
@@ -42,39 +37,26 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
         $this->setId("texa_participant");
         parent::__construct($a_parent_obj, $a_parent_cmd, $a_template_context);
 
-        // title
         $this->setTitle($this->plugin->txt('participant_table_title'));
         $this->setFormName('form_texa_participant');
-
-        // default no entries set
         $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setEnableHeader(true);
-
-        // selector
         $this->setShowRowsSelector(true);
         $this->setSelectAllCheckbox('participant');
         $this->addMultiCommand("delete", $this->lng->txt('delete'));
-
-        // row template
         $this->setRowTemplate('tpl.participant_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
-
-        // filter
         $this->initFilter();
 
-        // unsure
         $this->enable('sort');
         $this->enable('header');
         $this->enable('numinfo');
         $this->enable('select_all');
         $this->setFormAction($ilCtrl->getFormAction($a_parent_obj, $a_parent_cmd));
-
-        // build Table
         $this->addColumn('', 'participant', '1px', true);
         $this->addColumn($this->plugin->txt("participant_table_column_name"), 'name');
         $this->addColumn($this->plugin->txt("participant_table_column_login"), 'login');
         $this->addColumn($this->plugin->txt("participant_table_column_mrt"), 'matriculation');
         $this->addColumn($this->plugin->txt("participant_table_column_email"), 'email');
-        // ordering
         $this->setDefaultOrderField("matriculation");
         $this->setDefaultOrderDirection("asc");
     }
@@ -108,15 +90,9 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
         $this->current_filter['matriculation'] = $mrt->getValue();
     }
 
-    /**
-     * fills an array into the tables
-     * @param array $a_set
-     * @return void
-     */
     protected function fillRow($a_set) : void
     {
         $checkbox = ilUtil::formCheckbox(false, 'participants[]', $a_set['participant_id']);
-
         parent::fillRow([
             'CHECKBOX' => $checkbox,
             'NAME' => $a_set['name'],
