@@ -25,7 +25,7 @@ use DateTime;
 use DateTimeZone;
 use Exception;
 use ilExaminationProtocolPlugin;
-
+use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
@@ -41,18 +41,17 @@ class ilExaminationProtocolHTMLBuilder
         $this->db_connector = new ilExaminationProtocolDBConnector();
     }
 
-    public function getHTML(array $properties ,array $protocol) : string
+    public function getHTML(array $properties ,array $protocol): string
     {
         return $this->buildPage($properties ,$protocol);
     }
 
-    private function buildPage(array $properties ,array $protocol) : string
+    private function buildPage(array $properties ,array $protocol): string
     {
         $today = date("d.m.Y H:i",strtotime("now"));
         $html_table = $this->buildTable($properties, $protocol);
         $test_title = $this->db_connector->getTestTitleById($properties['test_id'])['title'];
-        // HTML page creation
-        $html_Page = "<!DOCTYPE html>
+        return "<!DOCTYPE html>
                      <html>
                         <head>
                            <title>" . $test_title . "</title>
@@ -63,10 +62,9 @@ class ilExaminationProtocolHTMLBuilder
                            " . $html_table . " 
                            </body>
                      </html>";
-        return $html_Page;
     }
 
-    private function buildTable(array $properties, array $table_content) : string
+    private function buildTable(array $properties, array $table_content): string
     {
         $event_options = ilExaminationProtocolEventEnumeration::getAllOptionsInLanguage($this->plugin);
         $htmlTable = "<table border='1'>
@@ -86,7 +84,6 @@ class ilExaminationProtocolHTMLBuilder
                     </tr>
                 </thead>
                 <tbody>";
-
         usort($table_content, function ($a, $b) {
             return strtotime($a['start']) - strtotime($b['start']);
         });
@@ -96,7 +93,7 @@ class ilExaminationProtocolHTMLBuilder
             $participants = $this->db_connector->getAllProtocolParticipants($row['entry_id']);
             foreach ($participants as $participant) {
                 $usr_id = $this->db_connector->getUserIDbyParticipantID($participant['participant_id']);
-                if (isset($usr_id[0]['usr_id'])){
+                if (isset($usr_id[0]['usr_id'])) {
                     $il_user_id = $this->db_connector->getUserIDbyParticipantID($participant['participant_id'])[0]['usr_id'];
                     $matriculation = $this->db_connector->getMatriculationByUserID($il_user_id)[0]['matriculation'];
                     $res = $this->db_connector->getUsernameByUserID($il_user_id)[0];
@@ -117,37 +114,23 @@ class ilExaminationProtocolHTMLBuilder
             } else {
                 $location = $this->plugin->txt('entry_dropdown_location_no_location');
             }
-
             $editor = $this->db_connector->getLoginByUserID($row['last_edited_by'])[0]['login'];
             $creator = $this->db_connector->getLoginByUserID($row['last_edited_by'])[0]['login'];
-
             $htmlTable .= "<tr>
-                    <td>" . $this->utctolocal($row['start']) . "</td>
-                    <td>" . $this->utctolocal($row['end']) . "</td>
+                    <td>" . ilExaminationProtocolBaseController::utctolocal($row['start']) . "</td>
+                    <td>" . ilExaminationProtocolBaseController::utctolocal($row['end']) . "</td>
                     <td>" . $student_ids . "</td>
                     <td>" . $event_options[$row['event']] . "</td>
                     <td>" . $row['comment'] . "</td>
                     <td>" . $location . "</td>
                     <td>" . $responsible_supervisor. "</td>
-                    <td>" . $this->utctolocal($row['last_edit']) . "</td>
+                    <td>" . ilExaminationProtocolBaseController::utctolocal($row['last_edit']) . "</td>
                     <td>" . $editor  . "</td>
-                    <td>" . $this->utctolocal($row['creation'])  . "</td>
+                    <td>" . ilExaminationProtocolBaseController::utctolocal($row['creation'])  . "</td>
                     <td>" . $creator . "</td>
                    </tr>";
         }
-
         $htmlTable .= "</tbody></table>";
         return $htmlTable;
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function utctolocal(string $time) : string
-    {
-        $loc = (new DateTime)->getTimezone();
-        $time = new DateTime($time, new DateTimeZone('UTC'));
-        $time->setTimezone($loc);
-        return $time->format("d.m.Y H:i");
     }
 }

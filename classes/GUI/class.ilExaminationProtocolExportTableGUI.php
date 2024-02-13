@@ -39,29 +39,26 @@ class ilExaminationProtocolExportTableGUI extends ilTable2GUI
         $this->createTable();
     }
 
-    protected function createTable() : void
+    protected function createTable(): void
     {
         $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setEnableHeader(true);
         $this->setLimit(5000);
         $this->setTitle($this->plugin->txt('sub_tab_export'));
         $this->setRowTemplate('tpl.export_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
-
         $this->setShowRowsSelector(true);
         $this->setSelectAllCheckbox('version_number');
         $this->addMultiCommand("delete", $this->lng->txt('delete'));
-
         $this->addColumn('', "version_number", '1px',true);
         $this->addColumn($this->plugin->txt("file"), "file");
         $this->addColumn($this->plugin->txt("size"), "size");
         $this->addColumn($this->plugin->txt("date"), "date");
         $this->addColumn($this->plugin->txt("download"), "action");
-
         $this->setDefaultOrderField("date");
         $this->setDefaultOrderDirection("desc");
     }
 
-    public function fillRow($a_set) : void
+    public function fillRow($a_set): void
     {
         $checkbox = ilUtil::formCheckbox(false, 'version_number[]', $a_set['version_number']);
         parent::fillRow([

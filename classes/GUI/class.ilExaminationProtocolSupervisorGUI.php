@@ -19,17 +19,15 @@ declare(strict_types=1);
  ********************************************************************
  */
 
-use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
+use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolTableBaseController;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
  * @ilCtrl_isCalledBy ilExaminationProtocolSupervisorGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls ilExaminationProtocolSupervisorGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI
  */
-class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseController
+class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolTableBaseController
 {
-    /** @var ilExaminationProtocolEventTableGUI */
-    private $supervisor_table;
 
     /**
      * @throws ilDatabaseException
@@ -39,35 +37,19 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseContro
     {
         parent::__construct();
         $this->tabs->activateSubTab(self::SUPERVISOR_TAB_ID);
-    }
-
-    public function executeCommand() : void
-    {
-        switch ($this->ctrl->getCmd()) {
-            default:
-            case self::CMD_SHOW:
-                $this->buildGUI();
-                break;
-            case self::CMD_SAVE:
-                $this->save();
-                break;
-            case self::CMD_DELETE:
-                $this->delete();
-                break;
-        }
+        $this->table = new ilExaminationProtocolSupervisorTableGUI($this, "show", "", $this->protocol_has_entries);
     }
 
     protected function buildGUI() {
         $this->buildToolbar();
-        $this->supervisor_table = new ilExaminationProtocolSupervisorTableGUI($this, "show", "", $this->protocol_has_entries);
         $supervisors = $this->db_connector->getAllSupervisorsByProtocolID($this->protocol_id);
-        $this->supervisor_table->setData($supervisors);
-        $table_html = $this->supervisor_table->getHTML();
+        $this->table->setData($supervisors);
+        $table_html = $this->table->getHTML();
         $this->tpl->setContent($table_html);
         $this->tpl->printToStdout();
     }
 
-    protected function buildToolbar()  : void
+    protected function buildToolbar(): void
     {
         require_once 'Services/Form/classes/class.ilTextInputGUI.php';
         if (!$this->protocol_has_entries) {
@@ -82,24 +64,31 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolBaseContro
         }
     }
 
-    protected function delete() : void
+    protected function deleteContent(): void
     {
         if (!is_null($_POST['supervisors'])) {
             $this->db_connector->deleteSupervisorRows("(" . implode(",", $_POST['supervisors']) . ")");
-            $this->ctrl->redirectByClass(self::class);
         }
+        $this->ctrl->redirectByClass(self::class, self::CMD_SHOW);
     }
 
-    protected function save() : void
+    protected function saveContent(): void
     {
         $values = [
             ['integer', $this->protocol_id],
             ['text',    $_POST['name']],
         ];
-
         if (!in_array($_POST['name'], $this->db_connector->getAllSupervisorsByProtocolID($this->protocol_id))) {
             $this->db_connector->insertSupervisor($values);
         }
-        $this->ctrl->redirectByClass(self::class);
+        $this->ctrl->redirectByClass(self::class, self::CMD_SHOW);
+    }
+
+    protected function applyFilter()
+    {
+    }
+
+    protected function resetFilter()
+    {
     }
 }

@@ -43,25 +43,19 @@ class ilExaminationProtocolLocationTableGUI extends ilTable2GUI
         $this->disabled = $disabled;
         $this->setId("texa_location");
         parent::__construct($a_parent_obj, $a_parent_cmd, $a_template_context);
-        // title
         $this->setTitle($this->plugin->txt('location_table_title'));
         $this->setFormName('formLocation');
-        // default no entries set
         $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setEnableHeader(true);
-        // selector
         if (!$this->disabled) {
             $this->setShowRowsSelector(true);
             $this->setSelectAllCheckbox('locations');
             $this->addMultiCommand("delete", $this->lng->txt('delete'));
         }
-
         $this->setRowTemplate('tpl.location_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
         $this->setFormAction($ilCtrl->getFormAction($a_parent_obj, $a_parent_cmd));
-
         $this->addColumn('', 'location_id', '1px', true);
         $this->addColumn($this->plugin->txt("location_table_column_location"), 'location');
-        // ordering
         $this->setDefaultOrderField("location");
         $this->setDefaultOrderDirection("asc");
     }
@@ -71,7 +65,7 @@ class ilExaminationProtocolLocationTableGUI extends ilTable2GUI
      * @param array $a_set
      * @return void
      */
-    protected function fillRow($a_set) : void
+    protected function fillRow($a_set): void
     {
         $checkbox = "";
         if (!$this->disabled) {

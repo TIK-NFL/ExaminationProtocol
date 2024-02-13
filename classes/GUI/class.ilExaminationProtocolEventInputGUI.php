@@ -30,8 +30,7 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
 {
     /** @var mixed */
     private $form;
-    /** @var DateTime  */
-    private $date_now;
+
     private $entry;
 
     /**
@@ -41,13 +40,14 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
     public function __construct()
     {
         parent::__construct();
-        $this->date_now = new DateTime('now');
-        if (isset($_REQUEST['entry_id'])){
+        $this->tabs->activateSubTab(self::PROTOCOL_INPUT_TAB_ID);
+        if (isset($_REQUEST['entry_id'])) {
             $this->entry = $this->db_connector->getAllProtocolEntries($_REQUEST['entry_id'])[0];
         }
     }
 
-    private function setNotifications() {
+    private function buildNotifications()
+    {
         if (!empty($_REQUEST['info']) && $_REQUEST['info'] == 'empty_date') {
             $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('entry_datetime_empty'));
         } elseif (!empty($_REQUEST['info']) && $_REQUEST['info'] == 'wrong_date') {
@@ -55,26 +55,25 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
         }
     }
 
-    private function buildEventForm() : void
+    private function buildEventForm(): void
     {
         $data_factory = new ILIAS\Data\Factory();
         $start = $end = null;
+        $date_now = new DateTime('now');
         if (!empty($this->entry)) {
             $start = $this->utctolocal($this->entry['start']);
             $end = $this->utctolocal($this->entry['end']);
-            $this->ctrl->setParameterByClass(ilExaminationProtocolEventInputGUI::class, "entry_id", $_REQUEST['entry_id']);
+            $this->ctrl->setParameterByClass(self::class, "entry_id", $_REQUEST['entry_id']);
         }
-
-        // event input
         $dt_start = $this->field_factory->dateTime($this->plugin->txt("entry_datetime_start_title"))
             ->withUseTime(true)
             ->withFormat($data_factory->dateFormat()->germanShort())
-            ->withValue($start ?? $this->date_now->format("d.m.Y H:i"))
+            ->withValue($start ?? $date_now->format("d.m.Y H:i"))
             ->withRequired(true);
         $dt_end = $this->field_factory->dateTime($this->plugin->txt("entry_datetime_end_title"))
             ->withUseTime(true)
             ->withFormat($data_factory->dateFormat()->germanShort())
-            ->withValue($end ?? $this->date_now->format("d.m.Y H:i"))
+            ->withValue($end ?? $date_now->format("d.m.Y H:i"))
             ->withRequired(true);
         $se_event_type = $this->field_factory->select($this->plugin->txt("entry_dropdown_event_title"), $this->event_options)
             ->withValue($this->entry['event'] ?? 0)
@@ -87,37 +86,30 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
             $se_event_type,
             $ta_description,
         ];
-
         if ($this->settings['supervision'] != '2') {
             $supervisors = $this->db_connector->getAllSupervisorsByProtocolID($this->protocol_id);
             $supervisor_options = array_column($supervisors, 'name', 'supervisor_id');
             $supervisor_options[0] = $this->plugin->txt("entry_dropdown_supervisor_no_supervisor");
-
             $se_supervisor = $this->field_factory->select($this->plugin->txt("entry_dropdown_supervisor_title"), $supervisor_options)
                 ->withValue($this->entry['supervisor_id'] ?? 0)
                 ->withRequired(true);
             $event_inputs[] = $se_supervisor;
         }
-
         if ($this->settings['location'] == '0') {
             $locations = $this->db_connector->getAllLocationsByProtocolID($this->protocol_id);
             $location_options = array_column($locations, 'location', 'location_id');
             $location_options[0] = $this->plugin->txt("entry_dropdown_location_no_location");
-
             $se_location = $this->field_factory->select($this->plugin->txt("entry_dropdown_location_title"), $location_options)
                 ->withValue($this->entry['location_id'] ?? 0)
                 ->withRequired(true);
             $event_inputs[] = $se_location;
         }
         $section_input = $this->field_factory->section($event_inputs, $this->plugin->txt("entry_event_section"));
-
         $site = [
             $section_input,
         ];
-
         $form_action = $this->ctrl->getFormAction($this, self::CMD_SAVE);
         $this->form = $this->ui_factory->input()->container()->form()->standard($form_action, $site);
-
         if ($this->request->getMethod() == "POST") {
             $this->form = $this->form->withRequest($this->request);
         }
@@ -136,22 +128,9 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
         $this->tpl->setContent($html);
     }
 
-    public function executeCommand() : void
+    protected function buildGUI(): void
     {
-        switch ($this->ctrl->getCmd()) {
-            case self::CMD_SAVE:
-                $this->save();
-                break;
-            default:
-            case self::CMD_SHOW:
-                $this->buildGUI();
-                break;
-        }
-    }
-
-    private function buildGUI(): void
-    {
-        $this->setNotifications();
+        $this->buildNotifications();
         $this->buildToolbar();
         $this->buildEventForm();
         $this->tpl->printToStdout();
@@ -165,17 +144,18 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
         $this->toolbar->addButtonInstance($btn);
     }
 
-    private function save(): void
+    protected function saveContent(): void
     {
+        $date_now = new DateTime('now');
         if (empty($_POST['form_input_2']) || empty($_POST['form_input_3'])) {
-            $this->ctrl->setParameterByClass(ilExaminationProtocolEventInputGUI::class, "entry_id", $_REQUEST['entry_id']);
-            $this->ctrl->setParameterByClass(ilExaminationProtocolEventInputGUI::class, "info", 'empty_date');
-            $this->ctrl->redirectToURL($this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventInputGUI::class, self::CMD_SHOW));
+            $this->ctrl->setParameterByClass(self::class, "entry_id", $_REQUEST['entry_id']);
+            $this->ctrl->setParameterByClass(self::class, "info", 'empty_date');
+            $this->ctrl->redirectToURL($this->ctrl->getLinkTargetByClass(self::class, self::CMD_SHOW));
         }
         if ($_POST['form_input_3'] < $_POST['form_input_2']) {
-            $this->ctrl->setParameterByClass(ilExaminationProtocolEventInputGUI::class, "entry_id", $_REQUEST['entry_id']);
-            $this->ctrl->setParameterByClass(ilExaminationProtocolEventInputGUI::class, "info", 'wrong_date');
-            $this->ctrl->redirectToURL($this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventInputGUI::class, self::CMD_SHOW));
+            $this->ctrl->setParameterByClass(self::class, "entry_id", $_REQUEST['entry_id']);
+            $this->ctrl->setParameterByClass(self::class, "info", 'wrong_date');
+            $this->ctrl->redirectToURL($this->ctrl->getLinkTargetByClass(self::class, self::CMD_SHOW));
         }
 
         global $ilUser;
@@ -191,7 +171,8 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
                 $location = $_POST["form_input_6"];
             }
         }
-        $dt_now = gmdate("Y-m-d H:i:s", strtotime($this->date_now->format("Y-m-d H:i:s")));
+
+        $dt_now = gmdate("Y-m-d H:i:s", strtotime($date_now->format("Y-m-d H:i:s")));
         $start = gmdate("Y-m-d H:i:s", strtotime($_POST["form_input_2"]));
         $end = gmdate("Y-m-d H:i:s", strtotime($_POST["form_input_3"]));
         $user = $ilUser->getId();
@@ -219,5 +200,9 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
             $this->ctrl->setParameterByClass(ilExaminationProtocolEventParticipantsGUI::class, "entry_id", $entry_id);
             $this->ctrl->redirectToURL($this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventParticipantsGUI::class, self::CMD_SHOW));
         }
+    }
+
+    protected function deleteContent()
+    {
     }
 }

@@ -20,6 +20,7 @@ declare(strict_types=1);
  */
 
 use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
+use ILIAS\UI\Component\Input\Field\Section;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
@@ -42,123 +43,14 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
         $this->buildForm();
     }
 
-    private function buildForm() : void
+    private function buildForm(): void
     {
-        // info
-        if ($this->protocol_has_entries) {
-            $this->tpl->setOnScreenMessage('info', $this->plugin->txt("lock"));
-        }
+        $section_general = $this->buildGeneralSettingsSection();
+        $section_examination = $this->buildExaminationTypeSection();
+        $section_supervision = $this->buildSupervisionSection();
+        $section_material = $this->buildMaterialSection();
+        $section_location = $this->buildLocationSection();
 
-        // General Settings
-        $text_title = $this->field_factory->text($this->plugin->txt("settings_general_settings_text_title"))
-            ->withValue($this->settings['protocol_title'] ?? $this->test_object->getTitle())
-            ->withRequired(true)
-            ->withDisabled($this->protocol_has_entries);
-        $ta_desc = $this->field_factory->textarea($this->lng->txt("desc"))
-            ->withValue($this->settings['protocol_desc'] ?? "")
-            ->withDisabled($this->protocol_has_entries);
-        $sectionInputsGeneral = [
-            $text_title,
-            $ta_desc
-        ];
-        $section_general = $this->field_factory->section($sectionInputsGeneral, $this->plugin->txt("sub_tab_settings"));
-
-        // Type of Examination
-        // online Upload
-        $rb_type = $this->field_factory->radio($this->plugin->txt("settings_examination_type_radiobutton_title"))
-            ->withOption("0", $this->plugin->txt("settings_examination_type_radiobutton_option_online"))
-            ->withOption("1", $this->plugin->txt("settings_examination_type_radiobutton_option_upload"))
-            ->withValue($this->settings['type_exam'] ?? "0")
-            ->withDisabled($this->protocol_has_entries);
-
-        // Only ILIAS
-        $g_software_ilias = $this->field_factory->group(
-            [],
-            $this->plugin->txt("settings_examination_type_radiobutton_software_only_ilias_line")
-        );
-
-        // text area additional software
-        $ta_software = $this->field_factory->textarea(
-            $this->plugin->txt("settings_examination_type_textarea_additional_software_title")
-        )
-            ->withValue($this->settings['type_desc'] ?? "")
-            ->withByline($this->plugin->txt("settings_examination_type_radiobutton_software_additional_software_byline"));
-
-        // group software
-        $g_Software_add = $this->field_factory->group(
-            [ 0 => $ta_software],
-            $this->plugin->txt("settings_examination_type_radiobutton_software_additional_software_line")
-        );
-
-        // switchable group the "radiobutton" for the different groups
-        $sg_software = $this->field_factory->switchableGroup(
-            [$g_software_ilias, $g_Software_add],
-            $this->plugin->txt("settings_examination_type_radiobutton_software_title")
-        )
-            ->withValue($this->settings['type_only_ilias'] ?? "0")
-            ->withDisabled($this->protocol_has_entries); // BROKEN in KITCHENSINK....
-
-        $section_inputs_examination = [
-            $rb_type,
-            $sg_software
-        ];
-        $section_examination = $this->field_factory->section($section_inputs_examination, $this->plugin->txt("settings_examination_type_section_type_title"));
-
-        // Type of supervision
-        $rb_sup_onsite = $this->field_factory->radio($this->plugin->txt("settings_supervision_radiobutton_supervision_title"))
-            ->withOption("0", $this->plugin->txt("settings_supervision_radiobutton_option_onsite"))
-            ->withOption("1", $this->plugin->txt("settings_supervision_radiobutton_option_remote"))
-            ->withOption("2", $this->plugin->txt("settings_supervision_radiobutton_option_none"))
-            ->withValue($this->settings['supervision'] ?? "0")
-            ->withDisabled($this->protocol_has_entries);
-
-        $section_inputs_supervision = [
-            $rb_sup_onsite,
-        ];
-        $section_supervision = $this->field_factory->section($section_inputs_supervision, $this->plugin->txt("settings_supervision_section_title"));
-
-        // Allowed references and materials
-        $rb_material_book = $this->field_factory->radio($this->plugin->txt("settings_material_radiobutton_title"))
-            ->withOption(
-                "0",
-                $this->plugin->txt("settings_material_radiobutton_option_closed_book"),
-                $this->plugin->txt("settings_material_radiobutton_option_closed_book_byline")
-            )
-            ->withOption(
-                "1",
-                $this->plugin->txt("settings_material_radiobutton_option_open_book"),
-                $this->plugin->txt("settings_material_radiobutton_option_open_book_byline")
-            )
-            ->withOption(
-                "2",
-                $this->plugin->txt("settings_material_radiobutton_option_other")
-            )
-             // $this->plugin->txt("settings_material_radiobutton_option_other_byline"))
-            ->withValue($this->settings['exam_policy'] ?? 0)
-            ->withDisabled($this->protocol_has_entries);
-
-        $ta_desc_material = $this->field_factory->textarea($this->plugin->txt("settings_material_textarea_additional_information_title"))
-            ->withValue($this->settings['exam_policy_desc'] ?? "")
-            ->withDisabled($this->protocol_has_entries);
-
-        $section_inputs_materials = [
-            $rb_material_book,
-            $ta_desc_material
-        ];
-        $section_material = $this->field_factory->section($section_inputs_materials, $this->plugin->txt("settings_material_section_title"));
-
-        // section location
-        $rb_location = $this->field_factory->radio($this->plugin->txt("settings_location_radiobutton_title"))
-        ->withOption("0", $this->plugin->txt("settings_location_radiobutton_option_on_premise"))
-        ->withOption("1", $this->plugin->txt("settings_location_radiobutton_option_remote"))
-        ->withValue($this->settings['location'] ?? "0")
-        ->withDisabled($this->protocol_has_entries);
-
-        $section_inputs_location = [
-            $rb_location,
-        ];
-        $section_location = $this->field_factory->section($section_inputs_location, $this->plugin->txt("settings_location_section_title"));
-        // complete form
         $site = [
             $section_general,
             $section_examination,
@@ -178,28 +70,132 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
         }
     }
 
-    public function executeCommand() : void
-    {
-        switch ($this->ctrl->getCmd()) {
-            case self::CMD_SAVE:
-                $this->save();
-                $this->buildGUI();
-                break;
-            default:
-            case self::CMD_SHOW:
-                $this->buildGUI();
-                break;
+    public function buildNotification(): void {
+        if ($this->protocol_has_entries) {
+            $this->tpl->setOnScreenMessage('info', $this->plugin->txt("lock"));
         }
     }
 
-    public function buildGUI() {
+    private function buildGeneralSettingsSection(): Section
+    {
+        $text_title = $this->field_factory->text($this->plugin->txt("settings_general_settings_text_title"))
+                                          ->withValue($this->settings['protocol_title'] ?? $this->test_object->getTitle())
+                                          ->withRequired(true)
+                                          ->withDisabled($this->protocol_has_entries);
+        $ta_desc = $this->field_factory->textarea($this->lng->txt("desc"))
+                                       ->withValue($this->settings['protocol_desc'] ?? "")
+                                       ->withDisabled($this->protocol_has_entries);
+        $sectionInputsGeneral = [
+            $text_title,
+            $ta_desc
+        ];
+        return $this->field_factory->section($sectionInputsGeneral, $this->plugin->txt("sub_tab_settings"));
+    }
 
+    private function buildExaminationTypeSection(): Section
+    {
+        $rb_type = $this->field_factory->radio($this->plugin->txt("settings_examination_type_radiobutton_title"))
+                                       ->withOption("0", $this->plugin->txt("settings_examination_type_radiobutton_option_online"))
+                                       ->withOption("1", $this->plugin->txt("settings_examination_type_radiobutton_option_upload"))
+                                       ->withValue($this->settings['type_exam'] ?? "0")
+                                       ->withDisabled($this->protocol_has_entries);
+        $g_software_ilias = $this->field_factory->group(
+            [],
+            $this->plugin->txt("settings_examination_type_radiobutton_software_only_ilias_line")
+        );
+        $ta_software = $this->field_factory->textarea(
+            $this->plugin->txt("settings_examination_type_textarea_additional_software_title")
+        )
+                                           ->withValue($this->settings['type_desc'] ?? "")
+                                           ->withByline($this->plugin->txt("settings_examination_type_radiobutton_software_additional_software_byline"));
+
+        $g_Software_add = $this->field_factory->group(
+            [ 0 => $ta_software],
+            $this->plugin->txt("settings_examination_type_radiobutton_software_additional_software_line")
+        );
+        $sg_software = $this->field_factory->switchableGroup(
+            [$g_software_ilias, $g_Software_add],
+            $this->plugin->txt("settings_examination_type_radiobutton_software_title")
+        )
+                                           ->withValue($this->settings['type_only_ilias'] ?? "0")
+                                           ->withDisabled($this->protocol_has_entries); // BROKEN in KITCHENSINK....
+
+        $section_inputs_examination = [
+            $rb_type,
+            $sg_software
+        ];
+        return $this->field_factory->section($section_inputs_examination, $this->plugin->txt("settings_examination_type_section_type_title"));
+    }
+
+    private function buildSupervisionSection(): Section
+    {
+        $rb_sup_onsite = $this->field_factory->radio($this->plugin->txt("settings_supervision_radiobutton_supervision_title"))
+                                             ->withOption("0", $this->plugin->txt("settings_supervision_radiobutton_option_onsite"))
+                                             ->withOption("1", $this->plugin->txt("settings_supervision_radiobutton_option_remote"))
+                                             ->withOption("2", $this->plugin->txt("settings_supervision_radiobutton_option_none"))
+                                             ->withValue($this->settings['supervision'] ?? "0")
+                                             ->withDisabled($this->protocol_has_entries);
+
+        $section_inputs_supervision = [
+            $rb_sup_onsite,
+        ];
+        return $this->field_factory->section($section_inputs_supervision, $this->plugin->txt("settings_supervision_section_title"));
+    }
+
+    private function buildMaterialSection(): Section
+    {
+        $rb_material_book = $this->field_factory->radio($this->plugin->txt("settings_material_radiobutton_title"))
+                                                ->withOption(
+                                                    "0",
+                                                    $this->plugin->txt("settings_material_radiobutton_option_closed_book"),
+                                                    $this->plugin->txt("settings_material_radiobutton_option_closed_book_byline")
+                                                )
+                                                ->withOption(
+                                                    "1",
+                                                    $this->plugin->txt("settings_material_radiobutton_option_open_book"),
+                                                    $this->plugin->txt("settings_material_radiobutton_option_open_book_byline")
+                                                )
+                                                ->withOption(
+                                                    "2",
+                                                    $this->plugin->txt("settings_material_radiobutton_option_other")
+                                                )
+            // $this->plugin->txt("settings_material_radiobutton_option_other_byline"))
+                                                ->withValue($this->settings['exam_policy'] ?? 0)
+                                                ->withDisabled($this->protocol_has_entries);
+
+        $ta_desc_material = $this->field_factory->textarea($this->plugin->txt("settings_material_textarea_additional_information_title"))
+                                                ->withValue($this->settings['exam_policy_desc'] ?? "")
+                                                ->withDisabled($this->protocol_has_entries);
+
+        $section_inputs_materials = [
+            $rb_material_book,
+            $ta_desc_material
+        ];
+        return $this->field_factory->section($section_inputs_materials, $this->plugin->txt("settings_material_section_title"));
+    }
+
+    private function buildLocationSection(): Section
+    {
+        $rb_location = $this->field_factory->radio($this->plugin->txt("settings_location_radiobutton_title"))
+                                           ->withOption("0", $this->plugin->txt("settings_location_radiobutton_option_on_premise"))
+                                           ->withOption("1", $this->plugin->txt("settings_location_radiobutton_option_remote"))
+                                           ->withValue($this->settings['location'] ?? "0")
+                                           ->withDisabled($this->protocol_has_entries);
+
+        $section_inputs_location = [
+            $rb_location,
+        ];
+        return $this->field_factory->section($section_inputs_location, $this->plugin->txt("settings_location_section_title"));
+    }
+
+    public function buildGUI()
+    {
+        $this->buildNotification();
         $this->tpl->setContent($this->renderer->render($this->form));
         $this->tpl->printToStdout();
     }
 
-
-    protected function save() : void
+    protected function saveContent(): void
     {
         $data = $this->form->getData();
         $values = [
@@ -224,5 +220,10 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
         } else {
             $this->db_connector->insertSetting($values);
         }
+        $this->ctrl->redirectToURL($this->ctrl->getLinkTargetByClass(self::class, self::CMD_SHOW));
+    }
+
+    protected function deleteContent()
+    {
     }
 }

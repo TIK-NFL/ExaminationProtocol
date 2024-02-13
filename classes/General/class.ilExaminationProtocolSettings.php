@@ -45,36 +45,34 @@ class ilExaminationProtocolSettings
         $this->read();
     }
 
-    public function setOperationMode(int $mode) : void
+    public function setOperationMode(int $mode): void
     {
         $this->examination_protocol_settings['mode'] = self::OPERATION_MODES[$mode];
         $this->save();
     }
 
-    public function getOperationModeKey() : ?int
+    public function getOperationModeKey(): ?int
     {
-        if (is_null($this->examination_protocol_settings['mode']))
-        {
+        if (is_null($this->examination_protocol_settings['mode'])) {
             return null;
         }
         return array_search($this->examination_protocol_settings['mode'], self::OPERATION_MODES);
     }
 
-    public function getOperationMode() : ?string
+    public function getOperationMode(): ?string
     {
-        if (is_null($this->examination_protocol_settings['mode']))
-        {
+        if (is_null($this->examination_protocol_settings['mode'])) {
             return null;
         }
         return $this->examination_protocol_settings['mode'];
     }
 
-    public function save() : void
+    public function save(): void
     {
         $this->settings->set('examination_protocol_settings', json_encode($this->examination_protocol_settings));
     }
 
-    private function read() : void
+    private function read(): void
     {
         $examination_protocol_setting = $this->settings->get('examination_protocol_settings', null);
         if ($examination_protocol_setting !== null && $examination_protocol_setting !== '') {

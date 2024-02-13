@@ -105,7 +105,7 @@ class ilExaminationProtocolUIHookGUI extends ilUIHookPluginGUI
      * @param string $a_par  array of parameters (depend on $a_comp and $a_part)
      * @throws ilCtrlException
      */
-    public function modifyGUI($a_comp, $a_part, $a_par = array())  : void
+    public function modifyGUI($a_comp, $a_part, $a_par = array()): void
     {
         if ($a_part == "tabs"
             && $this->ctrl->getContextObjType() == "tst"
@@ -113,7 +113,6 @@ class ilExaminationProtocolUIHookGUI extends ilUIHookPluginGUI
             && in_array(strtolower($this->ctrl->getCmdClass()), self::ALLOWED_CMD_CLASSES)
             && !in_array(strtolower($this->ctrl->getCmd()), self::FORBIDDEN_CMDS)
         ) {
-            // access check
             if (!$this->plugin_object->hasAccess()) {
                 return;
             }
@@ -131,9 +130,7 @@ class ilExaminationProtocolUIHookGUI extends ilUIHookPluginGUI
             array_pop($this->ilTabs->target);
             array_splice($this->ilTabs->target, 3, 0, $examination_entry);
             $_SESSION['examination_protocol']['tab_target'] = $this->ilTabs->target;
-        }
-        else if ($a_part == "sub_tabs" && in_array(strtolower($this->ctrl->getCmdClass()), self::SUBTABS))
-        {
+        } else if ($a_part == "sub_tabs" && in_array(strtolower($this->ctrl->getCmdClass()), self::SUBTABS)) {
             $this->ilTabs->addSubTab(
                 "examination_protocol_protocol",
                 $this->plugin_object->txt("sub_tab_protocol"),
@@ -164,10 +161,9 @@ class ilExaminationProtocolUIHookGUI extends ilUIHookPluginGUI
                 $this->plugin_object->txt("sub_tab_export"),
                 $this->ctrl->getLinkTargetByClass([ilUIPluginRouterGUI::class, self::SUBTABS[5]], "show")
             );
-            // save sub target
             $_SESSION['examination_protocol']['tab_sub_target'] = $this->ilTabs->sub_target;
         }
-        // Repository Search
+
         if ($a_part == 'tabs'
             && !in_array(strtolower($this->ctrl->getCmdClass()), self::SUBTABS)
             && isset($_SESSION['examination_protocol']['tab_target'])
@@ -182,7 +178,6 @@ class ilExaminationProtocolUIHookGUI extends ilUIHookPluginGUI
             && (in_array(strtolower($this->ctrl->getCmdClass()), self::SUBTABS)
            || $this->ctrl->getCallHistory()[count($this->ctrl->getCallHistory())-1]['class'] == 'ilExaminationProtocolParticipantsGUI' )))
         {
-            //reuse the tabs that were saved from the GUI modification
             if (isset($_SESSION['examination_protocol']['tab_target'])) {
                 $this->ilTabs->target = $_SESSION['examination_protocol']['tab_target'];
             }
@@ -190,10 +185,8 @@ class ilExaminationProtocolUIHookGUI extends ilUIHookPluginGUI
                 && !in_array(strtolower($this->ctrl->getCmdClass()), self::INPUTTABS)) {
                 $this->ilTabs->sub_target = $_SESSION['examination_protocol']['tab_sub_target'];
             } elseif (in_array(strtolower($this->ctrl->getCmdClass()), self::INPUTTABS)) {
-                // no subtabs for Event input and participant selection
                 $this->ilTabs->sub_target = [];
             }
-
             $this->ilTabs->activateTab('examination_protocol');
             switch ($this->ctrl->getCmdClass()) {
                 case 'ilexaminationprotocoleventgui':

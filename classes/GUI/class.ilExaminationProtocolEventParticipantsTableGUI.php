@@ -20,7 +20,6 @@ declare(strict_types = 1);
  */
 
 use ILIAS\Plugin\ExaminationProtocol\ilExaminationProtocolDBConnector;
-use ILIAS\UI\Factory;
 use ILIAS\UI\Renderer;
 
 /**
@@ -32,8 +31,6 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
     protected $plugin;
     /** @var array */
     public $current_filter;
-    /** @var Factory */
-    private $ui_factory;
     /** @var Renderer */
     protected $renderer;
     /** @return array */
@@ -44,7 +41,6 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
         global $DIC;
         $ilCtrl = $DIC['ilCtrl'];
         $this->plugin = ilExaminationProtocolPlugin::getInstance();
-        $this->ui_factory = $DIC->ui()->factory();
         $this->renderer = $DIC->ui()->renderer();
         $this->setId("texa_protocol_participant");
         parent::__construct($a_parent_obj, $a_parent_cmd, $a_template_context);
@@ -53,7 +49,6 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
             $db_connector->getAllProtocolParticipants($_REQUEST['entry_id']),
             "participant_id"
         );
-
 
         $this->setTitle($this->plugin->txt('participant_table_title'));
         $this->setNoEntriesText($this->plugin->txt('table_empty'));
@@ -81,10 +76,9 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
         $this->setDefaultOrderDirection("asc");
     }
 
-    public function initFilter() : void
+    public function initFilter(): void
     {
         $this->setDefaultFilterVisiblity(true);
-
         $name = $this->addFilterItemByMetaType(
             'name',
             ilTable2GUI::FILTER_TEXT,
@@ -92,7 +86,6 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
             $this->lng->txt('name')
         );
         $this->current_filter['name'] = $name->getValue();
-
         $login = $this->addFilterItemByMetaType(
             'login',
             ilTable2GUI::FILTER_TEXT,
@@ -100,7 +93,6 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
             $this->lng->txt('login')
         );
         $this->current_filter['login'] = $login->getValue();
-
         $mrt = $this->addFilterItemByMetaType(
             'matriculation',
             ilTable2GUI::FILTER_TEXT,
@@ -110,7 +102,7 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
         $this->current_filter['matriculation'] = $mrt->getValue();
     }
 
-    protected function fillRow($a_set) : void
+    protected function fillRow($a_set): void
     {
         parent::fillRow([
             'CHECKBOX' => ilUtil::formCheckbox(false, 'participants[]', $a_set['participant_id']),

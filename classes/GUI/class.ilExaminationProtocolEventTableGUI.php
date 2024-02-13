@@ -39,7 +39,7 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
         $this->createTable();
     }
 
-    protected function createTable() : void
+    protected function createTable(): void
     {
         $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setEnableHeader(true);
@@ -62,7 +62,7 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
         $this->setDefaultOrderDirection("asc");
     }
 
-    public function getSelectableColumns() : array
+    public function getSelectableColumns(): array
     {
         $this->plugin = ilExaminationProtocolPlugin::getInstance();
         return [
@@ -73,7 +73,7 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
         ];
     }
 
-    public function fillRow($a_set) : void
+    public function fillRow($a_set): void
     {
         $columns = [
             'START' => $a_set['start'],

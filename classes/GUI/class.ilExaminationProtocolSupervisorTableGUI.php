@@ -59,7 +59,7 @@ class ilExaminationProtocolSupervisorTableGUI extends ilTable2GUI
         $this->addColumn($this->plugin->txt("supervisor_table_column_name"), 'name');
     }
 
-    protected function fillRow($a_set) : void
+    protected function fillRow($a_set): void
     {
         $checkbox = "";
         if (!$this->disabled) {

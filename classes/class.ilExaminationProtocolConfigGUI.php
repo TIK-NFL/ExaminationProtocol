@@ -66,7 +66,7 @@ class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
         $this->settings = $this->dic['plugin.examinationprotocol.settings'];
     }
 
-    public function performCommand($cmd) : void
+    public function performCommand($cmd): void
     {
         switch ($cmd) {
             case "configure":
@@ -78,14 +78,14 @@ class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
         }
     }
 
-    public function configure() : void
+    public function configure(): void
     {
         global $tpl;
         $form = $this->renderer->render($this->initConfigurationForm());
         $tpl->setContent($form);
     }
 
-    public function initConfigurationForm() : Standard
+    public function initConfigurationForm(): Standard
     {
         $rb_operation_mode = $this->ui_factory->input()->field()->radio($this->plugin_object->txt('config_radiobutton_title'))
             ->withOption('0', $this->plugin_object->txt('config_radiobutton_option_off'))
@@ -96,11 +96,10 @@ class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
         $section_content = [$rb_operation_mode];
         $section = $this->ui_factory->input()->field()->section($section_content, $this->plugin_object->txt('config_section_title'));
         $form_action = $this->ctrl->getFormAction($this, 'save');
-        $form = $this->ui_factory->input()->container()->form()->standard($form_action, [$section]);
-        return $form;
+        return $this->ui_factory->input()->container()->form()->standard($form_action, [$section]);
     }
 
-    public function save() : void
+    public function save(): void
     {
         $form = $this->initConfigurationForm();
         $form = $form->withRequest($this->request);

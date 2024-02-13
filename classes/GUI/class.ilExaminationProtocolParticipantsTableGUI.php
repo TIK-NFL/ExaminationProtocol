@@ -36,7 +36,6 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
         $this->plugin = ilExaminationProtocolPlugin::getInstance();
         $this->setId("texa_participant");
         parent::__construct($a_parent_obj, $a_parent_cmd, $a_template_context);
-
         $this->setTitle($this->plugin->txt('participant_table_title'));
         $this->setFormName('form_texa_participant');
         $this->setNoEntriesText($this->plugin->txt('table_empty'));
@@ -46,7 +45,6 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
         $this->addMultiCommand("delete", $this->lng->txt('delete'));
         $this->setRowTemplate('tpl.participant_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
         $this->initFilter();
-
         $this->enable('sort');
         $this->enable('header');
         $this->enable('numinfo');
@@ -61,10 +59,9 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
         $this->setDefaultOrderDirection("asc");
     }
 
-    public function initFilter() : void
+    public function initFilter(): void
     {
         $this->setDefaultFilterVisiblity(true);
-
         $name = $this->addFilterItemByMetaType(
             'name',
             ilTable2GUI::FILTER_TEXT,
@@ -72,7 +69,6 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
             $this->lng->txt('name')
         );
         $this->current_filter['name'] = $name->getValue();
-
         $login = $this->addFilterItemByMetaType(
             'login',
             ilTable2GUI::FILTER_TEXT,
@@ -80,7 +76,6 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
             $this->lng->txt('login')
         );
         $this->current_filter['login'] = $login->getValue();
-
         $mrt = $this->addFilterItemByMetaType(
             'matriculation',
             ilTable2GUI::FILTER_TEXT,
@@ -90,7 +85,7 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
         $this->current_filter['matriculation'] = $mrt->getValue();
     }
 
-    protected function fillRow($a_set) : void
+    protected function fillRow($a_set): void
     {
         $checkbox = ilUtil::formCheckbox(false, 'participants[]', $a_set['participant_id']);
         parent::fillRow([

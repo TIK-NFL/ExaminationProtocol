@@ -38,7 +38,7 @@ class ilExaminationProtocolEventEnumeration
     const TECHNICAL = 'entry_dropdown_event_technical';
     const OTHER = 'entry_dropdown_event_other';
 
-    public static function getAllOptions() : array {
+    public static function getAllOptions(): array {
         return [
             self::GENERAL,
             self::QUESTION,
@@ -54,7 +54,7 @@ class ilExaminationProtocolEventEnumeration
      * @param $plugin ilExaminationProtocolPlugin the plugin for easy access to the language module
      * @return array of strings containing the event options in the correct interface langauge.
      */
-    public static function getAllOptionsInLanguage(ilExaminationProtocolPlugin $plugin) : array
+    public static function getAllOptionsInLanguage(ilExaminationProtocolPlugin $plugin): array
     {
         return [
             $plugin->txt(self::GENERAL),

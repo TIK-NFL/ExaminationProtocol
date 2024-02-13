@@ -19,18 +19,15 @@ declare(strict_types=1);
  ********************************************************************
  */
 
-use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
+use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolTableBaseController;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
  * @ilCtrl_isCalledBy ilExaminationProtocolLocationGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls ilExaminationProtocolLocationGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI
  */
-class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseController
+class ilExaminationProtocolLocationGUI extends ilExaminationProtocolTableBaseController
 {
-    /** @var ilExaminationProtocolLocationTableGUI */
-    private $location_table;
-
     /**
      * @throws ilDatabaseException
      * @throws ilObjectNotFoundException
@@ -39,34 +36,19 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
     {
         parent::__construct();
         $this->tabs->activateSubTab(self::LOCATION_TAB_ID);
-        $this->location_table = new ilExaminationProtocolLocationTableGUI($this, self::CMD_SHOW, "", $this->protocol_has_entries);
+        $this->table = new ilExaminationProtocolLocationTableGUI($this, self::CMD_SHOW, "", $this->protocol_has_entries);
     }
 
-    public function executeCommand() : void
-    {
-        switch ($this->ctrl->getCmd()) {
-            default:
-            case self::CMD_SHOW:
-                $this->buildGUI();
-                break;
-            case self::CMD_SAVE:
-                $this->save();
-                break;
-            case self::CMD_DELETE:
-                $this->delete();
-                break;
-        }
-    }
-    protected function buildGUI()
+    protected function buildGUI(): void
     {
         $this->buildToolbar();
         $locations = $this->db_connector->getAllLocationsByProtocolID($this->protocol_id);
-        $this->location_table->setData($locations);
-        $this->tpl->setContent($this->location_table->getHTML());
+        $this->table->setData($locations);
+        $this->tpl->setContent($this->table->getHTML());
         $this->tpl->printToStdout();
     }
 
-    protected function buildToolbar() : void
+    protected function buildToolbar(): void
     {
         if (!$this->protocol_has_entries) {
             $this->toolbar->setFormAction($this->ctrl->getFormAction($this, self::CMD_SAVE));
@@ -81,15 +63,15 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
         }
     }
 
-    protected function delete() : void
+    protected function deleteContent(): void
     {
         if (!is_null($_POST['locations'])) {
             $this->db_connector->deleteLocationRows("(" . implode(",", $_POST['locations']) . ")");
-            $this->ctrl->redirectByClass(self::class);
         }
+        $this->ctrl->redirectByClass(self::class, self::CMD_SHOW);
     }
 
-    protected function save() : void
+    protected function saveContent(): void
     {
         $values = [
             ['integer', $this->protocol_id],
@@ -98,6 +80,14 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
         if (!in_array($_POST['location'], $this->db_connector->getAllLocationsByProtocolID($this->protocol_id))) {
             $this->db_connector->insertLocation($values);
         }
-        $this->ctrl->redirectByClass(self::class);
+        $this->ctrl->redirectByClass(self::class, self::CMD_SHOW);
+    }
+
+    protected function applyFilter()
+    {
+    }
+
+    protected function resetFilter()
+    {
     }
 }
