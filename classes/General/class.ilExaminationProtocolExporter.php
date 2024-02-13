@@ -25,7 +25,6 @@ use ILIAS\Filesystem\Stream\Streams;
 use ILIAS\ResourceStorage\Identification\ResourceIdentification;
 use ILIAS\ResourceStorage\Resource\StorableResource;
 use ILIAS\ResourceStorage\Services;
-use function PHPUnit\Framework\isEmpty;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
@@ -34,40 +33,34 @@ class ilExaminationProtocolExporter
 {
     private ilExaminationProtocolDBConnector $db;
     private Services $irss;
-    private string $test_id;
+    private int $test_id;
     private array $properties;
-    /**
-     * @return string
-     */
-    public function getTestId() : string
+
+    public function getTestId(): int
     {
         return $this->test_id;
     }
 
-    /**
-     * @param string $test_id
-     */
-    public function setTestId(string $test_id) : void
+    public function setTestId(int $test_id): void
     {
         $this->test_id = $test_id;
     }
 
-    public function __construct(string $test_id)
+    public function __construct(int $test_id)
     {
         global $DIC;
         $this->irss = $DIC->resourceStorage();
         $this->db = new ilExaminationProtocolDBConnector();
-        $this->test_id = $test_id;
-        $this->properties = $this->db->getSettingByTestID($test_id);
+        $this->test_id = intval($test_id);
+        $this->properties = $this->db->getSettingByTestID($this->test_id);
     }
 
     /**
-     * @return StorableResource
      * @throws Exception
      */
-    public function getResource() : StorableResource
+    public function getResource(): StorableResource
     {
-        if (!$this->hasRevision()){
+        if (!$this->hasRevision()) {
             $resource_id = $this->createResource();
         } else  {
             $resource_id = $this->db->getResourceIDbyTestID($this->test_id);
@@ -77,15 +70,15 @@ class ilExaminationProtocolExporter
         return $this->irss->manage()->getResource($resource_id);
     }
 
-    public function hasRevision() : bool
+    public function hasRevision(): bool
     {
         $resource_id = $this->db->getResourceIDbyTestID($this->test_id);
         if (isset($resource_id['resource_storage_id']) || is_null($resource_id['resource_storage_id']) ) {
-            if (is_null($resource_id['resource_storage_id'])){
+            if (is_null($resource_id['resource_storage_id'])) {
                 return false;
             }
             $resource_id = $this->irss->manage()->find($resource_id['resource_storage_id']);
-            if (!isset($resource_id) || $resource_id == ''){
+            if (!isset($resource_id) || $resource_id == '') {
                 return false;
             }
             $resource = $this->irss->manage()->getResource($resource_id);
@@ -100,7 +93,7 @@ class ilExaminationProtocolExporter
     /**
      * @throws Exception
      */
-    public function getLatestExportID() : ResourceIdentification
+    public function getLatestExportID(): ResourceIdentification
     {
         $resource = $this->getResource();
         $revision = $resource->getCurrentRevision();
@@ -110,20 +103,20 @@ class ilExaminationProtocolExporter
     /**
      * @throws Exception
      */
-    public function deleteProtocolRevisions(array $ids)
+    public function deleteProtocolRevisions(array $ids): void
     {
         $resource = $this->getResource();
-        foreach ($resource->getAllRevisions() as $revision){
+        foreach ($resource->getAllRevisions() as $revision) {
             if (in_array($revision->getVersionNumber(), $ids)) {
                 $this->irss->manage()->removeRevision($resource->getIdentification(), $revision->getVersionNumber());
             }
         }
     }
 
-    public function createHTMLProtocol() : string
+    public function createHTMLProtocol(): string
     {
         $html_builder = new ilExaminationProtocolHTMLBuilder();
-        $protocol_id = $this->db->getProtocolIDByTestID($this->test_id);
+        $protocol_id = intval($this->db->getProtocolIDByTestID($this->test_id));
         $table_data = $this->db->getAllProtocolEntriesByProtocolID($protocol_id);
         return $html_builder->getHTML($this->properties, $table_data);
     }
@@ -131,18 +124,18 @@ class ilExaminationProtocolExporter
     /**
      * @throws Exception
      */
-    public function createResource() : ?ResourceIdentification
+    public function createResource(): ?ResourceIdentification
     {
         $resource_id = $this->db->getResourceIDbyTestID($this->test_id)['resource_storage_id'];
         $html = $this->createHTMLProtocol();
         $stream = Streams::ofString($html);
         $stakeholder = new ilExaminationProtocolStakeholder();
         $filename = "examprotocol_ " . $this->test_id . "_". strtotime("now") .".html";
-        if (empty($resource_id)){
+        if (empty($resource_id)) {
             $resource_identification = $this->irss->manage()->stream($stream, $stakeholder, $filename);
             $resource_id = $resource_identification->serialize();
         }
-        else if (isset($resource_id)){
+        else if (isset($resource_id)) {
             $resource_identification = $this->irss->manage()->find($resource_id);
             $this->irss->manage()->appendNewRevisionFromStream($resource_identification, $stream, $stakeholder, $filename);
         } else {

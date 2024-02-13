@@ -18,7 +18,7 @@ declare(strict_types=1);
  ********************************************************************
  */
 
-use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
+use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolTableBaseController;
 use ILIAS\UI\Component\Panel\Listing\Standard;
 
 /**
@@ -26,55 +26,35 @@ use ILIAS\UI\Component\Panel\Listing\Standard;
  * @ilCtrl_isCalledBy ilExaminationProtocolEventParticipantsGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls ilExaminationProtocolEventParticipantsGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI
  */
-class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBaseController
+class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolTableBaseController
 {
-    private ilExaminationProtocolEventParticipantsTableGUI $participant_table;
-    protected string $html;
 
     public function __construct()
     {
         parent::__construct();
+        $this->tabs->activateSubTab(self::PROTOCOL_PARTICIPANT_TAB_ID);
         if (!empty($_REQUEST['entry_id']) && empty($_SESSION['examination_protocol']['entry_id'])) {
             $_SESSION['examination_protocol']['entry_id'] = $_REQUEST['entry_id'];
         }
     }
 
-    public function executeCommand() : void
+    public function executeCommand(): void
     {
+        parent::executeCommand();
         switch ($this->ctrl->getCmd()) {
-            case self::CMD_SHOW:
-                $this->buildParticipantForm();
-                break;
-            case 'post':
-            case self::CMD_APPLY_FILTER:
-                $this->applyFilter();
-                break;
-            case self::CMD_RESET_FILTER:
-                $this->resetFilter();
-                break;
-            case self::CMD_SAVE:
-                $this->saveParticipants();
-                break;
             case 'assign':
                 $this->assign();
-                $this->buildParticipantForm();
                 break;
             case 'unassign':
                 $this->unassign();
-                $this->buildParticipantForm();
                 break;
         }
-    }
-
-    public function getHTML() : string
-    {
-        return $this->html;
     }
 
     /**
      * @throws ilCtrlException
      */
-    private function buildToolbar() : void
+    private function buildToolbar(): void
     {
         $btn = $this->ui_factory->button()->standard($this->lng->txt('cancel'),
             $this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventGUI::class, self::CMD_SHOW));
@@ -88,29 +68,41 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
      * @throws ilException
      * @throws ilCtrlException
      */
-    private function buildParticipantForm() : void
+    protected function buildGUI(): void
     {
         $this->buildToolbar();
+        $this->buildNotification();
         $listing = $this->buildListing();
         $this->buildTable();
         $this->loadDataIntoTable();
-        $table = $this->ui_factory->legacy($this->participant_table->getHTML());
-        $page = [$listing, $table];
-        $this->html = $this->renderer->render($page);
+        $tableContent = $this->ui_factory->legacy($this->table->getHTML());
+        $page = [$listing, $tableContent];
+        $html = $this->renderer->render($page);
+        $this->tpl->setContent($html);
+        $this->tpl->printToStdout();
     }
 
-    private function buildListing() : Standard
+    protected function buildNotification(): void
     {
-        $event = $this->db_connector->getAllProtocolEntries($_SESSION['examination_protocol']['entry_id'])[0];
+        if ($_REQUEST['notification'] == 'assigned') {
+            $this->tpl->setOnScreenMessage('info', $this->plugin->txt('not_saved'));
+        } elseif ($_REQUEST['notification'] == 'failure') {
+            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('not_participants'));
+        }
+    }
+
+    private function buildListing(): Standard
+    {
+        $event = $this->db_connector->getAllProtocolEntries(intval($_SESSION['examination_protocol']['entry_id']))[0];
         $properties = [
-            $this->plugin->txt("entry_type") => $this->event_options[$event['event']],
-            $this->plugin->txt("description") => $event['comment'],
-            $this->plugin->txt("entry_last_update") => $this->utctolocal($event['last_edit']),
+            $this->plugin->txt('entry_type') => $this->event_options[$event['event']],
+            $this->plugin->txt('description') => $event['comment'],
+            $this->plugin->txt('entry_last_update') => $this->utctolocal($event['last_edit']),
         ];
         if ($this->plugin_settings['supervision'] != '2') {
-            $supervisor = $this->db_connector->getSupervisorBySupervisorID($event['supervisor_id']);
-            $supervisor = $supervisor[0]['name'] ?? "";
-            $properties[$this->plugin->txt("entry_supervisor")] = $supervisor;
+            $supervisor = $this->db_connector->getSupervisorBySupervisorID(intval($event['supervisor_id']));
+            $supervisor = $supervisor[0]['name'] ?? '';
+            $properties[$this->plugin->txt('entry_supervisor')] = $supervisor;
         }
         if ($this->plugin_settings['location'] == '0') {
             $db_result = $this->db_connector->getLocationsByLocationID($event['location_id']);
@@ -119,45 +111,40 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
             } else {
                 $location = '';
             }
-
-            $properties[$this->plugin->txt("entry_location")] = $location;
+            $properties[$this->plugin->txt('entry_location')] = $location;
         }
         $list_item = $this->ui_factory->item()->standard($this->event_options[$event['event']])
             ->withDescription($event['comment'])
             ->withProperties($properties);
-        $listing = $this->ui_factory->panel()->listing()->standard("Examination Event", [
-            $this->ui_factory->item()->group("", [$list_item])]);
-        return $listing;
+        return $this->ui_factory->panel()->listing()->standard('Examination Event', [
+            $this->ui_factory->item()->group('', [$list_item])]);
     }
 
     /**
      * @throws ilException
      */
-    private function buildTable() : void
+    private function buildTable(): void
     {
-        $this->participant_table = new ilExaminationProtocolEventParticipantsTableGUI($this, "show");
-        $this->participant_table->setFilterCommand(self::CMD_APPLY_FILTER);
-        $this->participant_table->setResetCommand(self::CMD_RESET_FILTER);
+        $this->table = new ilExaminationProtocolEventParticipantsTableGUI($this, self::CMD_SHOW);
+        $this->table->setFilterCommand(self::CMD_APPLY_FILTER);
+        $this->table->setResetCommand(self::CMD_RESET_FILTER);
     }
 
     /**
      * @throws ilCtrlException|JsonException
      */
-    private function saveParticipants() : void
+    protected function saveContent(): void
     {
-        $assigned_participant = $this->db_connector->getAllProtocolParticipants($_SESSION['examination_protocol']['entry_id']);
-        $assigned_participant_ids = $this->db_connector->getAllProtocolParticipantIDs($_SESSION['examination_protocol']['entry_id']);
+        $assigned_participant = $this->db_connector->getAllProtocolParticipants(intval($_SESSION['examination_protocol']['entry_id']));
+        $assigned_participant_ids = $this->db_connector->getAllProtocolParticipantIDs(intval($_SESSION['examination_protocol']['entry_id']));
         $intersect_ids = array_intersect($assigned_participant_ids, $_SESSION['examination_protocol'][$this->test_object->test_id]['assigned']);
         $add_ids = array_diff($_SESSION['examination_protocol'][$this->test_object->test_id]['assigned'], $intersect_ids);
         $del_ids = array_diff($assigned_participant_ids, $intersect_ids);
-
-        // delete assignes
         foreach ($assigned_participant as $participant) {
             if (in_array($participant['participant_id'], $del_ids)) {
                 $this->db_connector->deleteProtocolParticipant($participant['propar_id']);
             }
         }
-        // add new assignes
         foreach ($add_ids as $participant_id) {
             $values = [
                     ['integer', $this->protocol_id],
@@ -173,7 +160,7 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
         $this->ctrl->redirectToURL($this->ctrl->getLinkTargetByClass(ilExaminationProtocolEventGUI::class, self::CMD_SHOW));
     }
 
-    private function assign() : void
+    private function assign(): void
     {
         if (isset($_POST['participants'])) {
             $this->tpl->setOnScreenMessage('info', $this->plugin->txt('not_saved'));
@@ -183,61 +170,75 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
                     $_SESSION['examination_protocol'][$this->test_object->test_id]['assigned'][] = $participant_id;
                 }
             }
+            $this->ctrl->setParameterByClass(self::class, 'notification', 'assigned');
         } else {
-            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('not_participants'));
+            $this->ctrl->setParameterByClass(self::class, 'notification', 'failure');
         }
+        $this->ctrl->setParameterByClass(self::class, 'entry_id', $_REQUEST['entry_id']);
+        $this->ctrl->redirectByClass(self::class, self::CMD_SHOW);
     }
 
-    private function unassign() : void
+    private function unassign(): void
     {
-        $this->tpl->setOnScreenMessage('info', $this->plugin->txt('not_saved'));
+        if (isset($_POST['participants'])) {
         foreach ($_POST['participants'] as $participant_id) {
             if (in_array($participant_id, $_SESSION['examination_protocol'][$this->test_object->test_id]['assigned'])) {
-                $dif = array_diff($_SESSION['examination_protocol'][$this->test_object->test_id]['assigned'], [$participant_id]);
+                $dif = array_diff($_SESSION['examination_protocol'][$this->test_object->test_id]['assigned'],
+                    [$participant_id]);
                 $_SESSION['examination_protocol'][$this->test_object->test_id]['assigned'] = $dif;
                 $_SESSION['examination_protocol'][$this->test_object->test_id]['running_session'] = true;
             }
         }
+            $this->ctrl->setParameterByClass(self::class, 'notification', 'assigned');
+        } else {
+            $this->ctrl->setParameterByClass(self::class, 'notification', 'failure');
+        }
+        $this->ctrl->setParameterByClass(self::class, 'entry_id', $_REQUEST['entry_id']);
+        $this->ctrl->redirectByClass(self::class, self::CMD_SHOW);
     }
 
     /**
      * @throws ilCtrlException
      * @throws ilException
      */
-    private function applyFilter() : void
+    protected function applyFilter(): void
     {
         $this->buildToolbar();
         $listing = $this->buildListing();
         $this->buildTable();
-        $this->participant_table->writeFilterToSession();
-        $this->participant_table->resetOffset();
+        $this->table->writeFilterToSession();
+        $this->table->resetOffset();
         $this->loadDataIntoTable();
-        $table = $this->ui_factory->legacy($this->participant_table->getHTML());
-        $page = [$listing, $table];
-        $this->html = $this->renderer->render($page);
+        $tableContent = $this->ui_factory->legacy($this->table->getHTML());
+        $page = [$listing, $tableContent];
+        $html = $this->renderer->render($page);
+        $this->tpl->setContent($html);
+        $this->tpl->printToStdout();
     }
 
     /**
      * @throws ilCtrlException
      * @throws ilException
      */
-    private function resetFilter() : void
+    protected function resetFilter(): void
     {
         $this->buildToolbar();
         $listing = $this->buildListing();
         $this->buildTable();
-        $this->participant_table->resetOffset();
-        $this->participant_table->resetFilter();
+        $this->table->resetOffset();
+        $this->table->resetFilter();
         $_SESSION['form_texa_protocol_participant_login'] = '';
         $_SESSION['form_texa_protocol_participant_name'] = '';
         $_SESSION['form_texa_protocol_participant_matriculation']  = '';
         $this->loadDataIntoTable();
-        $table = $this->ui_factory->legacy($this->participant_table->getHTML());
+        $table = $this->ui_factory->legacy($this->table->getHTML());
         $page = [$listing, $table];
-        $this->html = $this->renderer->render($page);
+        $html = $this->renderer->render($page);
+        $this->tpl->setContent($html);
+        $this->tpl->printToStdout();
     }
 
-    private function loadDataIntoTable() : void
+    private function loadDataIntoTable(): void
     {
         $usr_participant_mapping = array_reduce($this->db_connector->getAllParticipantsByProtocolID($this->protocol_id), function ($result, $item) {
             $result[$item['usr_id']] = $item['participant_id'];
@@ -248,11 +249,24 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
             && (empty($_SESSION['examination_protocol'][$this->test_object->test_id]['running_session'])
                 || !$_SESSION['examination_protocol'][$this->test_object->test_id]['running_session']))
         {
-            $_SESSION['examination_protocol'][$this->test_object->test_id]['assigned'] = $this->db_connector->getAllProtocolParticipantIDs($_SESSION['examination_protocol']['entry_id']);
+            $_SESSION['examination_protocol'][$this->test_object->test_id]['assigned'] = $this->db_connector->getAllProtocolParticipantIDs(intval($_SESSION['examination_protocol']['entry_id']));
         }
-        $usr_login = unserialize($_SESSION['form_texa_protocol_participant_login'] ?? "") ?? "";
-        $usr_name = unserialize($_SESSION['form_texa_protocol_participant_name'] ?? "") ?? "";
-        $usr_mrt = unserialize($_SESSION['form_texa_protocol_participant_matriculation'] ?? "") ?? "";
+
+        if (isset($_SESSION['form_texa_protocol_participant_login']) && $_SESSION['form_texa_protocol_participant_login'] != ''){
+            $usr_login = unserialize($_SESSION['form_texa_protocol_participant_login']);
+        } else {
+            $usr_login = '';
+        }
+        if (isset($_SESSION['form_texa_protocol_participant_name']) && $_SESSION['form_texa_protocol_participant_name'] != ''){
+            $usr_name = unserialize($_SESSION['form_texa_protocol_participant_name']);
+        } else {
+            $usr_name = '';
+        }
+        if (isset($_SESSION['form_texa_protocol_participant_matriculation']) && $_SESSION['form_texa_protocol_participant_matriculation'] != ''){
+            $usr_mrt = unserialize($_SESSION['form_texa_protocol_participant_matriculation']);
+        } else {
+            $usr_mrt = '';
+        }
         $data = $this->db_connector->getAllParticipantsByUserIDandFilter(
             "'" . implode("', '", $usr_ids) . "'",
             $usr_login,
@@ -268,6 +282,10 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolBas
                 $data[$index]['glyph']  = $this->renderer->render($this->ui_factory->symbol()->glyph()->close());
             }
         }
-        $this->participant_table->setData($data);
+        $this->table->setData($data);
+    }
+
+    protected function deleteContent()
+    {
     }
 }

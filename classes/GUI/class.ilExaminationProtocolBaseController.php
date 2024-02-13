@@ -23,6 +23,7 @@ namespace ILIAS\Plugin\ExaminationProtocol\GUI;
 use DateTime;
 use DateTimeZone;
 use ilObjectListGUIFactory;
+use ilUIPluginRouterGUI;
 use Psr\Http\Message\ServerRequestInterface;
 use ilCtrl;
 use ilCtrlException;
@@ -47,51 +48,40 @@ use ILIAS\ResourceStorage\Services;
 abstract class ilExaminationProtocolBaseController extends ilObject2GUI
 {
     /** @var string  */
-    protected const CMD_SHOW = "show";
+    protected const CMD_SHOW = 'show';
     /** @var string  */
-    protected const CMD_SAVE = "save";
+    protected const CMD_SAVE = 'save';
     /** @var string  */
-    protected const CMD_DELETE = "delete";
+    protected const CMD_DELETE = 'delete';
     /** @var string  */
-    protected const CMD_CREATE_EXPORT = "create_export";
+    protected const CMD_CREATE_EXPORT = 'create_export';
     /** @var string  */
-    protected const CMD_DOWNLOAD_EXPORT = "download_export";
+    protected const CMD_DOWNLOAD_EXPORT = 'download_export';
     /** @var string  */
-    protected const CMD_DELETE_ALL = "delete_all";
+    protected const CMD_CONFIRMATION = 'confirmation';
     /** @var string  */
-    protected const CMD_CONFIRMATION = "confirmation";
-    /** @var string  */
-    protected const CMD_ADD_PARTICIPANTS = "add_participants";
-    /** @var string  */
-    protected const CMD_APPLY_FILTER = "apply_filter";
-    /** @var string  */
-    protected const CMD_RESET_FILTER = "reset_filter";
-    /** @var string  */
-    protected const CMD_NEXT = "next";
-    /** @var string  */
-    protected const CMD_CANCEL = "cancel";
+    protected const CMD_ADD_PARTICIPANTS = 'add_participants';
 
     /** @var string  */
-    protected const PROTOCOL_TAB_ID = "examination_protocol_protocol";
+    protected const PROTOCOL_TAB_ID = 'examination_protocol_protocol';
     /** @var string  */
-    protected const GENERAL_SETTINGS_TAB_ID = "examination_protocol_setting";
+    protected const GENERAL_SETTINGS_TAB_ID = 'examination_protocol_setting';
     /** @var string  */
-    protected const SUPERVISOR_TAB_ID = "examination_protocol_supervisor";
+    protected const SUPERVISOR_TAB_ID = 'examination_protocol_supervisor';
     /** @var string  */
-    protected const LOCATION_TAB_ID = "examination_protocol_location";
+    protected const LOCATION_TAB_ID = 'examination_protocol_location';
     /** @var string  */
-    protected const PARTICIPANT_TAB_ID = "examination_protocol_participant";
+    protected const PARTICIPANT_TAB_ID = 'examination_protocol_participant';
     /** @var string */
-    protected const EXPORT_TAB_ID = "examination_protocol_export";
+    protected const EXPORT_TAB_ID = 'examination_protocol_export';
     /** @var string  */
-    protected const PROTOCOL_INPUT_TAB_ID = "examination_protocol_input";
+    protected const PROTOCOL_INPUT_TAB_ID = 'examination_protocol_input';
     /** @var string  */
-    protected const PROTOCOL_PARTICIPANT_TAB_ID = "examination_protocol_participant";
+    protected const PROTOCOL_PARTICIPANT_TAB_ID = 'examination_protocol_participant';
 
 
     private ilLocatorGUI $ilLocator;
-    //private bool $creation_mode;
-    private Container $dic;
+    protected Container $dic;
     protected ilGlobalTemplateInterface $tpl;
     protected ilLanguage $lng;
     protected ilCtrl $ctrl;
@@ -106,7 +96,7 @@ abstract class ilExaminationProtocolBaseController extends ilObject2GUI
     protected array $plugin_settings;
     protected ?ilObjTest $test_object = null;
     protected array $event_options;
-    protected ?string $protocol_id;
+    protected ?int $protocol_id;
     protected bool $protocol_has_entries;
     protected Services $irss;
 
@@ -116,14 +106,12 @@ abstract class ilExaminationProtocolBaseController extends ilObject2GUI
         $this->dic = $DIC;
         $this->ctrl = $DIC['ilCtrl'];
         $this->plugin = ilExaminationProtocolPlugin::getInstance();
-        // access check for all GUI pages
         if (!$this->plugin->hasAccess()) {
             $path = $this->ctrl->getCurrentClassPath();
             $this->ctrl->redirectByClass($path[count($path)-2]);
         }
         $this->ilLocator = $DIC['ilLocator'];
         $this->request = $DIC->http()->request();
-
         $this->irss = $DIC->resourceStorage();
         $this->tpl = $DIC['tpl'];
         $this->lng = $DIC['lng'];
@@ -132,67 +120,83 @@ abstract class ilExaminationProtocolBaseController extends ilObject2GUI
         $this->renderer = $DIC->ui()->renderer();
         $this->tabs = $DIC->tabs();
         $this->toolbar = $DIC['ilToolbar'];
-
         $this->event_options = ilExaminationProtocolEventEnumeration::getAllOptionsInLanguage($this->plugin);
-
-        // Data base
-        $this->db_connector = new ilExaminationProtocolDBConnector();
-        $this->test_object = ilObjectFactory::getInstanceByRefId((int)$_GET['ref_id']);
-        $this->protocol_id = $this->db_connector->getProtocolIDByTestID($this->test_object->test_id);
-        // create a general settings entry for the protocol ID if not already existing
-        if (is_null($this->protocol_id)) {
-            $this->db_connector->createEmptySetting([['integer', $this->test_object->test_id]]);
-            $this->protocol_id = $this->db_connector->getProtocolIDByTestID($this->test_object->test_id);
-        }
-        $this->plugin_settings = $this->db_connector->getSettingByTestID($this->test_object->test_id);
-        $this->protocol_has_entries = !empty($this->db_connector->getAllProtocolEntriesByProtocolID($this->protocol_id));
-
+        $this->setDefaultsFromDatabase();
         $this->setTemplateDefaults();
     }
 
+    private function setDefaultsFromDatabase(): void
+    {
+        $this->db_connector = new ilExaminationProtocolDBConnector();
+        $this->test_object = ilObjectFactory::getInstanceByRefId((int)$_GET['ref_id']);
+        $this->protocol_id = intval($this->db_connector->getProtocolIDByTestID($this->test_object->test_id));
+        if ($this->protocol_id == 0) {
+            $this->db_connector->createEmptySetting([['integer', $this->test_object->test_id]]);
+            $this->protocol_id = intval($this->db_connector->getProtocolIDByTestID($this->test_object->test_id));
+        }
+        $this->plugin_settings = $this->db_connector->getSettingByTestID($this->test_object->test_id);
+        $this->protocol_has_entries = !empty($this->db_connector->getAllProtocolEntriesByProtocolID($this->protocol_id));
+    }
     /**
      * @throws ilCtrlException
      * @throws \ilObjectException
      */
-    private function setTemplateDefaults() : void
+    private function setTemplateDefaults(): void
     {
         $this->tpl->loadStandardTemplate();
         $this->tpl->setLocator();
-        $this->tpl->setTitleIcon("/templates/default/images/icon_tst.svg");
+        $this->tpl->setTitleIcon('/templates/default/images/icon_tst.svg');
         $this->tpl->setTitle($this->test_object->getTitle());
-
         $lgui = ilObjectListGUIFactory::_getListGUIByType($this->test_object->getType());
         $lgui->initItem($this->test_object->getRefId(), $this->test_object->getId(), $this->test_object->getType());
         $this->tpl->setAlertProperties($lgui->getAlertProperties());
-
         $this->tpl->setDescription($this->test_object->getDescription());
         $this->ilLocator->addRepositoryItems($this->test_object->getRefId());
         $this->ilLocator->addItem($this->test_object->getTitle(), $this->ctrl->getLinkTargetByClass('ilobjtestgui'));
-        $this->ctrl->setParameterByClass('ilobjtestgui', 'ref_id', $this->test_object->getRefId());
+        $this->ctrl->saveParameterByClass(ilUIPluginRouterGUI::class, 'ref_id');
     }
 
-    public function getProtocolId() : ?string
+    public function getProtocolId(): ?string
     {
         return $this->protocol_id;
     }
 
     public function getType() : string
     {
-        return "";
+        return 'texa';
     }
 
-    public function executeCommand() : void
+    public function executeCommand(): void
     {
+        $cmd = $this->ctrl->getCmd();
+        switch ($this->ctrl->getCmd())
+        {
+            case self::CMD_DELETE:
+                $this->deleteContent();
+                break;
+            case self::CMD_SAVE:
+                $this->saveContent();
+                break;
+            case self::CMD_SHOW:
+                $this->buildGUI();
+                break;
+        }
     }
+
+    abstract protected function buildGUI();
+
+    abstract protected function deleteContent();
+
+    abstract protected function saveContent();
 
     /**
      * @throws Exception
      */
-    public function utctolocal(string $time) : string
+    public static function utctolocal(string $time): string
     {
         $loc = (new DateTime)->getTimezone();
         $time = new DateTime($time, new DateTimeZone('UTC'));
         $time->setTimezone($loc);
-        return $time->format("d.m.Y H:i");
+        return $time->format('d.m.Y H:i');
     }
 }

@@ -26,48 +26,38 @@ class ilExaminationProtocolLocationTableGUI extends ilTable2GUI
     protected ilExaminationProtocolPlugin $plugin;
     private bool $disabled;
 
-    /**
-     * @param object $a_parent_obj
-     * @param string $a_parent_cmd
-     * @param string $a_template_context
-     * @param bool   $disabled
-     */
-    public function __construct($a_parent_obj, string $a_parent_cmd = "", string $a_template_context = "", bool $disabled = false)
+    public function __construct($a_parent_obj, string $a_parent_cmd = '', string $a_template_context = '', bool $disabled = false)
     {
         global $DIC;
         $ilCtrl = $DIC['ilCtrl'];
         $this->plugin = ilExaminationProtocolPlugin::getInstance();
         $this->disabled = $disabled;
-        $this->setId("texa_location");
+        $this->setId('texa_location');
         parent::__construct($a_parent_obj, $a_parent_cmd, $a_template_context);
-
-        $this->setTitle($this->plugin->txt('location_table_title'));
         $this->setFormName('formLocation');
+        $this->setFormAction($ilCtrl->getFormAction($a_parent_obj, $a_parent_cmd));
+        $this->buildTable();
+    }
+
+    protected function buildTable(): void
+    {
+        $this->setTitle($this->plugin->txt('location_table_title'));
         $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setEnableHeader(true);
-
         if (!$this->disabled) {
             $this->setShowRowsSelector(true);
             $this->setSelectAllCheckbox('locations');
-            $this->addMultiCommand("delete", $this->lng->txt('delete'));
+            $this->addMultiCommand('delete', $this->lng->txt('delete'));
         }
         $this->setRowTemplate('tpl.location_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
-        $this->setFormAction($ilCtrl->getFormAction($a_parent_obj, $a_parent_cmd));
-
         $this->addColumn('', 'location_id', '1px', true);
-        $this->addColumn($this->plugin->txt("location_table_column_location"), 'location');
+        $this->addColumn($this->plugin->txt('location_table_column_location'), 'location');
+        $this->setDefaultOrderField('location');
+        $this->setDefaultOrderDirection('asc');
 
-        $this->setDefaultOrderField("location");
-        $this->setDefaultOrderDirection("asc");
     }
 
-    /**
-     * fills an array into the tables
-     *
-     * @param array $a_set
-     * @return void
-     */
-    protected function fillRow(array $a_set) : void
+    protected function fillRow(array $a_set): void
     {
         $checkbox = '';
         $type = 'hidden';

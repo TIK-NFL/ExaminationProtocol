@@ -18,17 +18,15 @@ declare(strict_types=1);
  ********************************************************************
  */
 
-use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
+use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolTableBaseController;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
  * @ilCtrl_isCalledBy ilExaminationProtocolLocationGUI: ilObjectTestGUI, ilObjTestGUI, ilUIPluginRouterGUI, ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls ilExaminationProtocolLocationGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI
  */
-class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseController
+class ilExaminationProtocolLocationGUI extends ilExaminationProtocolTableBaseController
 {
-    private ilExaminationProtocolLocationTableGUI $location_table;
-
     /**
      * @throws ilCtrlException
      */
@@ -36,75 +34,59 @@ class ilExaminationProtocolLocationGUI extends ilExaminationProtocolBaseControll
     {
         parent::__construct();
         $this->tabs->activateSubTab(self::LOCATION_TAB_ID);
-        $this->location_table = new ilExaminationProtocolLocationTableGUI($this, self::CMD_SHOW, "", $this->protocol_has_entries);
-        $this->buildToolbar();
-
-        // load from database
-        $locations = $this->db_connector->getAllLocationsByProtocolID($this->protocol_id);
-        $this->location_table->setData($locations);
-        $this->tpl->setContent($this->location_table->getHTML());
+        $this->table = new ilExaminationProtocolLocationTableGUI($this, self::CMD_SHOW, '', $this->protocol_has_entries);
     }
 
-    public function executeCommand() : void
+    protected function buildGUI()
     {
-        switch ($this->ctrl->getCmd()) {
-            default:
-            case self::CMD_SHOW:
-                break;
-            case self::CMD_SAVE:
-                $this->saveLocation();
-                break;
-            case self::CMD_DELETE:
-                $this->deleteLocation();
-                break;
-        }
+        $this->buildToolbar();
+        $locations = $this->db_connector->getAllLocationsByProtocolID($this->protocol_id);
+        $this->table->setData($locations);
+        $this->tpl->setContent($this->table->getHTML());
+        $this->tpl->printToStdout();
     }
 
     /**
      * @throws ilCtrlException
      */
-    protected function buildToolbar() : void
+    protected function buildToolbar(): void
     {
         if (!$this->protocol_has_entries) {
             require_once 'Services/Form/classes/class.ilTextInputGUI.php';
             $this->toolbar->setFormAction($this->ctrl->getFormAction($this, self::CMD_SAVE));
-            $this->toolbar->addInputItem(new ilTextInputGUI($this->plugin->txt("location_text_title"), 'location'), true);
+            $this->toolbar->addInputItem(new ilTextInputGUI($this->plugin->txt('location_text_title'), 'location'), true);
             $btn = $this->ui_factory->button()->standard($this->plugin->txt('add'),'');
             $this->toolbar->addComponent($btn);
         } else {
-            $this->tpl->setOnScreenMessage('info', $this->plugin->txt("lock"));
+            $this->tpl->setOnScreenMessage('info', $this->plugin->txt('lock'));
         }
     }
 
-    public function getHTML() : string
-    {
-        return "";
-    }
-
-    /**
-     * @throws ilCtrlException
-     */
-    protected function deleteLocation() : void
+    protected function deleteContent(): void
     {
         if (!is_null($_POST['locations'])) {
             $this->db_connector->deleteLocationRows("(" . implode(",", $_POST['locations']) . ")");
-            $this->ctrl->redirectByClass(self::class);
         }
+        $this->ctrl->redirectByClass(self::class, self::CMD_SHOW);
     }
 
-    /**
-     * @throws ilCtrlException
-     */
-    protected function saveLocation() : void
+    protected function saveContent(): void
     {
         $values = [
             ['integer', $this->protocol_id],
             ['text',    $_POST['location']],
         ];
-
         if (!in_array($_POST['location'], $this->db_connector->getAllLocationsByProtocolID($this->protocol_id))) {
             $this->db_connector->insertLocation($values);
         }
-        $this->ctrl->redirectByClass(self::class);
+        $this->ctrl->redirectByClass(self::class, self::CMD_SHOW);
+    }
+
+    protected function applyFilter()
+    {
+    }
+
+    protected function resetFilter()
+    {
     }
 }

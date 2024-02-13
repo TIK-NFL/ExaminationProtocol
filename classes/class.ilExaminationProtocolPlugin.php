@@ -28,12 +28,11 @@ use ILIAS\ResourceStorage\Identification\ResourceIdentification;
  */
 class ilExaminationProtocolPlugin extends ilUserInterfaceHookPlugin
 {
-    // plugin definitions
-    public const CTYPE = "Services";
-    public const CNAME = "UIComponent";
-    public const SLOT_ID = "uihk";
-    public const PNAME = "ExaminationProtocol";
-    public const ID = "texa";
+    public const CTYPE = 'Services';
+    public const CNAME = 'UIComponent';
+    public const SLOT_ID = 'uihk';
+    public const PNAME = 'ExaminationProtocol';
+    public const ID = 'texa';
 
     private static ?ilExaminationProtocolPlugin $instance = null;
     protected static bool $initialized = false;
@@ -48,7 +47,7 @@ class ilExaminationProtocolPlugin extends ilUserInterfaceHookPlugin
         parent::__construct($ilDB, $cr, ilExaminationProtocolPlugin::ID);
     }
 
-    public function getPluginName() : string
+    public function getPluginName(): string
     {
         return self::PNAME;
     }
@@ -57,15 +56,15 @@ class ilExaminationProtocolPlugin extends ilUserInterfaceHookPlugin
      * @param string $test_id id of the ILIAS test Object a protocol possibly could be created.
      * @return ResourceIdentification the IRSS id of the protocols HTML file. the protocol might be empty if no protocol information is available
      */
-    public function getProtocolExportByTestID(string $test_id) : ResourceIdentification
+    public function getProtocolExportByTestID(string $test_id): ResourceIdentification
     {
-        $exporter = new ilExaminationProtocolExporter($test_id);
+        $exporter = new ilExaminationProtocolExporter(intval($test_id));
         return $exporter->getLatestExportID();
     }
 
 
 
-    protected function init() : void
+    protected function init(): void
     {
         parent::init();
         $this->registerAutoloader();
@@ -79,7 +78,7 @@ class ilExaminationProtocolPlugin extends ilUserInterfaceHookPlugin
         }
     }
 
-    public function registerAutoloader() : void
+    public function registerAutoloader(): void
     {
         require_once __DIR__ . '/../vendor/autoload.php';
     }
@@ -87,7 +86,7 @@ class ilExaminationProtocolPlugin extends ilUserInterfaceHookPlugin
     /**
      * @return ilExaminationProtocolPlugin|null
      */
-    public static function getInstance() : ?ilExaminationProtocolPlugin
+    public static function getInstance(): ?ilExaminationProtocolPlugin
     {
         if (null === self::$instance) {
             global $DIC;
@@ -97,19 +96,16 @@ class ilExaminationProtocolPlugin extends ilUserInterfaceHookPlugin
         return self::$instance;
     }
 
-    public function hasAccess() : bool
+    public function hasAccess(): bool
     {
         /** @var $ilAccess ilAccessHandler */
         global $ilAccess;
-
         if (!isset($_GET['ref_id']) || !is_numeric($_GET['ref_id'])) {
             return false;
         }
-
         if ('tst' != ilObject::_lookupType(ilObject::_lookupObjId((int) $_GET['ref_id']))) {
             return false;
         }
-
         return $ilAccess->checkAccess('write', '', (int) $_GET['ref_id']);
     }
 }

@@ -83,7 +83,6 @@ event_table_column_end#:#End time of event
 event_table_column_typ#:#Event
 event_table_column_location#:#Location
 event_table_column_student_id#:#Student information
-event_table_column_student_names#:Students
 event_table_column_supervisor_id#:#Supervisor
 event_table_column_timestamp#:#Creation Time
 event_table_column_timestamp_edit#:#Last Edited on
@@ -143,6 +142,7 @@ delete#:#Delete
 next#:#Next
 table_empty#:#No entries found.
 lock#:#Editing the general properties of the test protocol is blocked because a protocol entry already exists
+saved_successfully#:#All changes have been saved
 not_saved#:#Current changes are not saved
 not_participants#:#No participants selected
 size#:#Size

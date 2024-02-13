@@ -43,7 +43,7 @@ settings_material_radiobutton_option_open_book#:#Open-Book
 settings_material_radiobutton_option_open_book_byline#:#Prüfungsteilnehmerinnen und -teilnehmern ist es gestattet, während der Prüfung externe Hilfsmittel wie Lehrbücher, Notizen oder andere Materialien zu verwenden. Bitte unten angeben.
 settings_material_radiobutton_option_other#:#Andere
 settings_material_radiobutton_option_other_byline#:#
-settings_material_textarea_additional_information_title#:#Additional Information
+settings_material_textarea_additional_information_title#:#Weitere Informationen
 settings_location_section_title#:#Prüfungsräume Einstellungen
 settings_location_radiobutton_title#:#Prüfungsraum
 settings_location_radiobutton_option_on_premise#:#Vor Ort
@@ -82,7 +82,6 @@ event_table_column_start#:#Startzeit des Ereignisses
 event_table_column_end#:#Endzeit des Ereignisses
 event_table_column_typ#:#Ereignis
 event_table_column_location#:#Prüfungsräume
-event_table_column_student_id#:#Matrikelnummern
 event_table_column_student_id#:#Studenteninformation
 event_table_column_supervisor_id#:#Aufsichtsperson
 event_table_column_timestamp#:#Erstellt am
@@ -143,6 +142,7 @@ delete#:#Löschen
 next#:#Nächste Seite
 table_empty#:#Keine Einträge gefunden.
 lock#:#Die Bearbeitung der allgemeinen Eigenschaften des Prüfprotokolls ist blockiert, da bereits ein Protokolleintrag existiert
+saved_successfully#:#Alle Änderungen wurden gespeichert
 not_saved#:#Die aktuellen Änderungen sind nicht gespeichert
 not_participants#:#Keine Teilnehmer ausgewählt
 size#:#Größe

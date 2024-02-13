@@ -26,14 +26,31 @@ use ILIAS\ResourceStorage\Stakeholder\AbstractResourceStakeholder;
  */
 class ilExaminationProtocolStakeholder extends AbstractResourceStakeholder
 {
+    private static ilExaminationProtocolStakeholder $instance;
+    private int $owner;
+    private string $plugin_id;
 
-    public function getId() : string
+    public function __construct()
     {
-        return 'texa';
+        $this->owner = 6;
+        $this->plugin_id = 'texa';
     }
 
-    public function getOwnerOfNewResources() : int
+    public static function getInstance(): ilExaminationProtocolStakeholder
     {
-        return 6;
+        if (!isset(self::$instance)) {
+            self::$instance = new ilExaminationProtocolStakeholder();
+        }
+        return self::$instance;
+    }
+
+    public function getId(): string
+    {
+        return $this->plugin_id;
+    }
+
+    public function getOwnerOfNewResources(): int
+    {
+        return $this->owner;
     }
 }

@@ -26,47 +26,42 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
     protected ilExaminationProtocolPlugin $plugin;
     public array $current_filter;
 
-    /**
-     * @param ?object $a_parent_obj
-     * @param string $a_parent_cmd
-     * @param string $a_template_context
-     */
-    public function __construct(?object $a_parent_obj, string $a_parent_cmd = "", string $a_template_context = "")
+    public function __construct(?object $a_parent_obj, string $a_parent_cmd = '', string $a_template_context = '')
     {
         global $DIC;
         $ilCtrl = $DIC['ilCtrl'];
         $this->plugin = ilExaminationProtocolPlugin::getInstance();
-        $this->setId("texa_participant");
+        $this->setId('texa_participant');
         parent::__construct($a_parent_obj, $a_parent_cmd, $a_template_context);
-
-        $this->setTitle($this->plugin->txt('participant_table_title'));
         $this->setFormName('form_texa_participant');
-        $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setEnableHeader(true);
         $this->setFormAction($ilCtrl->getFormAction($a_parent_obj, $a_parent_cmd));
         $this->buildTable();
     }
 
-    private function buildTable(){
+    private function buildTable()
+    {
+        $this->setTitle($this->plugin->txt('participant_table_title'));
         $this->setLimit(5000);
+        $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setShowRowsSelector(true);
         $this->setSelectAllCheckbox('participant');
-        $this->addMultiCommand("delete", $this->lng->txt('delete'));
+        $this->addMultiCommand('delete', $this->lng->txt('delete'));
         $this->setRowTemplate('tpl.participant_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
         $this->initFilter();
         $this->addColumn('', 'participant', '1px', true);
-        $this->addColumn($this->plugin->txt("participant_table_column_name"), 'name');
-        $this->addColumn($this->plugin->txt("participant_table_column_login"), 'login');
-        $this->addColumn($this->plugin->txt("participant_table_column_mrt"), 'matriculation');
-        $this->addColumn($this->plugin->txt("participant_table_column_email"), 'email');
-        $this->setDefaultOrderField("matriculation");
-        $this->setDefaultOrderDirection("asc");
+        $this->addColumn($this->plugin->txt('participant_table_column_name'), 'name');
+        $this->addColumn($this->plugin->txt('participant_table_column_login'), 'login');
+        $this->addColumn($this->plugin->txt('participant_table_column_mrt'), 'matriculation');
+        $this->addColumn($this->plugin->txt('participant_table_column_email'), 'email');
+        $this->setDefaultOrderField('matriculation');
+        $this->setDefaultOrderDirection('asc');
     }
 
     /**
      * @throws Exception
      */
-    public function initFilter() : void
+    public function initFilter(): void
     {
         $this->setDefaultFilterVisiblity(true);
         $name = $this->addFilterItemByMetaType(
@@ -92,13 +87,7 @@ class ilExaminationProtocolParticipantsTableGUI extends ilTable2GUI
         $this->current_filter['MATRICULATION'] = $mrt->getValue();
     }
 
-    /**
-     * fills an array into the tables
-     *
-     * @param array $a_set
-     * @return void
-     */
-    protected function fillRow(array $a_set) : void
+    protected function fillRow(array $a_set): void
     {
         parent::fillRow([
             'CHECKBOX' => $a_set['participant_id'],

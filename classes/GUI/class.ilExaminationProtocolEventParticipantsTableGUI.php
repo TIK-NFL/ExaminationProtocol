@@ -18,7 +18,6 @@ declare(strict_types = 1);
  ********************************************************************
  */
 
-use ILIAS\UI\Factory;
 use ILIAS\UI\Renderer;
 
 /**
@@ -28,57 +27,53 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
 {
     protected ilExaminationProtocolPlugin $plugin;
     public array $current_filter;
-    private Factory $ui_factory;
     protected Renderer $renderer;
     protected array $participant_ids;
 
     /**
-     * @param object $a_parent_obj
-     * @param string $a_parent_cmd
-     * @param string $a_template_context
      * @throws ilException
      */
-    public function __construct(object $a_parent_obj, string $a_parent_cmd = "", string $a_template_context = "")
+    public function __construct(object $a_parent_obj, string $a_parent_cmd = '', string $a_template_context = '')
     {
         global $DIC;
         $ilCtrl = $DIC['ilCtrl'];
         $this->plugin = ilExaminationProtocolPlugin::getInstance();
-        $this->ui_factory = $DIC->ui()->factory();
         $this->renderer = $DIC->ui()->renderer();
-        $this->setId("texa_protocol_participant");
+        $this->setId('texa_protocol_participant');
         parent::__construct($a_parent_obj, $a_parent_cmd, $a_template_context);
-
         $this->setTitle($this->plugin->txt('participant_table_title'));
         $this->setFormName('form_texa_protocol_participant');
-        $this->addHiddenInput("entry_id", $_SESSION['examination_protocol']['entry_id']);
-        $this->buildTable();
         $this->setFormAction($ilCtrl->getFormAction($a_parent_obj, $a_parent_cmd));
+        $this->addHiddenInput('entry_id', $_SESSION['examination_protocol']['entry_id']);
+        $this->buildTable();
+
     }
 
-    private function buildTable(){
+    private function buildTable(): void
+    {
         $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setEnableHeader(true);
         $this->setShowRowsSelector(true);
         $this->setLimit(5000);
         $this->setSelectAllCheckbox('participant');
-        $this->addMultiCommand("assign", $this->plugin->txt('participant_assign'));
-        $this->addMultiCommand("unassign", $this->plugin->txt('participant_unassign'));
+        $this->addMultiCommand('assign', $this->plugin->txt('participant_assign'));
+        $this->addMultiCommand('unassign', $this->plugin->txt('participant_unassign'));
         $this->setRowTemplate('tpl.protocol_participant_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
         $this->initFilter();
         $this->addColumn('', 'participant', '1px', true);
-        $this->addColumn($this->plugin->txt("participant_table_column_name"), 'name');
-        $this->addColumn($this->plugin->txt("participant_table_column_login"), 'login');
-        $this->addColumn($this->plugin->txt("participant_table_column_mrt"), 'matriculation');
-        $this->addColumn($this->plugin->txt("participant_table_column_email"), 'email');
-        $this->addColumn($this->plugin->txt("participant_table_column_assigned"), 'assigned', '100');
-        $this->setDefaultOrderField("matriculation");
-        $this->setDefaultOrderDirection("asc");
+        $this->addColumn($this->plugin->txt('participant_table_column_name'), 'name');
+        $this->addColumn($this->plugin->txt('participant_table_column_login'), 'login');
+        $this->addColumn($this->plugin->txt('participant_table_column_mrt'), 'matriculation');
+        $this->addColumn($this->plugin->txt('participant_table_column_email'), 'email');
+        $this->addColumn($this->plugin->txt('participant_table_column_assigned'), 'assigned', '100');
+        $this->setDefaultOrderField('matriculation');
+        $this->setDefaultOrderDirection('asc');
     }
 
     /**
      * @throws Exception
      */
-    public function initFilter() : void
+    public function initFilter(): void
     {
         $this->setDefaultFilterVisiblity(true);
         $name = $this->addFilterItemByMetaType(
@@ -104,13 +99,7 @@ class ilExaminationProtocolEventParticipantsTableGUI extends ilTable2GUI
         $this->current_filter['matriculation'] = $mrt->getValue();
     }
 
-    /**
-     * fills an array into the tables
-     *
-     * @param array $a_set
-     * @return void
-     */
-    protected function fillRow(array $a_set) : void
+    protected function fillRow(array $a_set): void
     {
         parent::fillRow([
             'CHECKBOX' => $a_set['participant_id'],

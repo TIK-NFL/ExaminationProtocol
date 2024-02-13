@@ -26,72 +26,58 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
     protected ilExaminationProtocolPlugin $plugin;
 
     /**
-     * @param object $a_parent_obj
-     * @param string $a_parent_cmd
-     * @param string $a_template_context
      * @throws ilException
      */
-    public function __construct(object $a_parent_obj, string $a_parent_cmd = "", string$a_template_context = "")
+    public function __construct(object $a_parent_obj, string $a_parent_cmd = '', string$a_template_context = '')
     {
         global $DIC;
         $ctrl = $DIC['ilCtrl'];
-        $this->setId("texa_event_protocol");
+        $this->setId('texa_event_protocol');
         $this->setFormName('form_texa_event_protocol');
         $this->setFormAction($ctrl->getFormAction($a_parent_obj));
         parent::__construct($a_parent_obj, $a_parent_cmd, $a_template_context);
         $this->plugin = ilExaminationProtocolPlugin::getInstance();
-        $this->createTable();
+        $this->buildTable();
     }
 
-    /**
-     * Creates the table with columns
-     * @return void
-     */
-    protected function createTable() : void
+    protected function buildTable(): void
     {
         $this->setNoEntriesText($this->plugin->txt('table_empty'));
         $this->setEnableHeader(true);
         $this->setTitle($this->plugin->txt('protocol_tab_name'));
         $this->setRowTemplate('tpl.protocol_table_row.html', ilExaminationProtocolPlugin::getInstance()->getDirectory());
         $this->setLimit(5000);
-        $this->addColumn($this->plugin->txt("event_table_column_start"), "start");
-        $this->addColumn($this->plugin->txt("event_table_column_end"), "end");
-        $this->addColumn($this->plugin->txt("event_table_column_typ"), "event_type");
-        $this->addColumn($this->plugin->txt("description"), "comment");
-        $this->addColumn($this->plugin->txt("event_table_column_location"), "location");
-        $this->addColumn($this->plugin->txt("event_table_column_student_id"), "student_id");
-        $this->addColumn($this->plugin->txt("event_table_column_student_names"), "student_names");
-        $this->addColumn($this->plugin->txt("event_table_column_supervisor_id"), "supervisor");
+        $this->addColumn($this->plugin->txt('event_table_column_start'), 'start');
+        $this->addColumn($this->plugin->txt('event_table_column_end'), 'end');
+        $this->addColumn($this->plugin->txt('event_table_column_typ'), 'event_type');
+        $this->addColumn($this->plugin->txt('description'), 'comment');
+        $this->addColumn($this->plugin->txt('event_table_column_location'), 'location');
+        $this->addColumn($this->plugin->txt('event_table_column_student_id'), 'student_id');
+        $this->addColumn($this->plugin->txt('event_table_column_supervisor_id'), 'supervisor');
         foreach ($this->getSelectedColumns() as $column) {
             $this->addColumn($this->getSelectableColumns()[$column]['txt'], $column);
         }
-        $this->addColumn($this->plugin->txt("event_table_column_actions"), '', '90');
-
-        $this->setDefaultOrderField("start");
-        $this->setDefaultOrderDirection("asc");
+        $this->addColumn($this->plugin->txt('event_table_column_actions'), '', '90');
+        $this->setDefaultOrderField('start');
+        $this->setDefaultOrderDirection('asc');
     }
 
-    /**
-     * @return array[]
-     */
-    public function getSelectableColumns() : array
+    public function getSelectableColumns(): array
     {
         $this->plugin = ilExaminationProtocolPlugin::getInstance();
         return [
-            "edit_tstamp" => ["txt" => $this->plugin->txt("event_table_column_timestamp_edit"), "default" => false],
-            "edit_user" => ["txt" => $this->plugin->txt("event_table_column_supervisor_id_edit"), "default" => false],
-            "creation_tstamp" => ["txt" => $this->plugin->txt("event_table_column_timestamp"), "default" => false],
-            "creation_user" => ["txt" => $this->plugin->txt("event_table_column_creator_id"), "default" => false],
+            'edit_tstamp' => ['txt' => $this->plugin->txt('event_table_column_timestamp_edit'), 'default' => false],
+            'edit_user' => ['txt' => $this->plugin->txt('event_table_column_supervisor_id_edit'), 'default' => false],
+            'creation_tstamp' => ['txt' => $this->plugin->txt('event_table_column_timestamp'), 'default' => false],
+            'creation_user' => ['txt' => $this->plugin->txt('event_table_column_creator_id'), 'default' => false],
         ];
     }
 
     /**
-     * @param array $a_set
-     * @return void
      * @throws ilTemplateException
      * @throws Exception
      */
-    public function fillRow(array $a_set) : void
+    public function fillRow(array $a_set): void
     {
         $columns = [
             'START' => $a_set['start'],

@@ -21,6 +21,7 @@ declare(strict_types=1);
 use ILIAS\DI\Container;
 use ILIAS\Plugin\ExaminationProtocol\ilExaminationProtocolSettings;
 use ILIAS\UI\Component\Input\Container\Form\Standard;
+use ILIAS\UI\Component\MessageBox\MessageBox;
 use ILIAS\UI\Factory;
 use ILIAS\UI\Renderer;
 use Psr\Http\Message\RequestInterface;
@@ -56,37 +57,30 @@ class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
         $this->settings = $this->dic['plugin.examinationprotocol.settings'];
     }
 
-    /**
-     * Handles all commmands, default is "configure"
-     */
-    public function performCommand($cmd) : void
+    public function performCommand($cmd): void
     {
         switch ($cmd) {
-            case "configure":
+            case 'configure':
                 $this->configure();
                 break;
-            case "save":
-                $this->save();
+            case 'save':
+                $this->saveContent();
                 break;
         }
     }
 
-    /**
-     * Configure screen
-     */
-    public function configure() : void
+    public function configure(): void
     {
         global $tpl;
         $form = $this->renderer->render($this->initConfigurationForm());
         $tpl->setContent($form);
+
     }
 
     /**
-     * Init configuration form.
-     *
      * @throws ilCtrlException
      */
-    public function initConfigurationForm() : Standard
+    public function initConfigurationForm(): Standard
     {
         $rb_operation_mode = $this->ui_factory->input()->field()->radio($this->plugin_object->txt('config_radiobutton_title'))
             ->withOption('0', $this->plugin_object->txt('config_radiobutton_option_off'))
@@ -97,21 +91,18 @@ class ilExaminationProtocolConfigGUI extends ilPluginConfigGUI
         $section_content = [$rb_operation_mode];
         $section = $this->ui_factory->input()->field()->section($section_content, $this->plugin_object->txt('config_section_title'));
         $form_action = $this->ctrl->getFormAction($this, 'save');
-        $form = $this->ui_factory->input()->container()->form()->standard($form_action, [$section]);
-        return $form;
+        return $this->ui_factory->input()->container()->form()->standard($form_action, [$section]);
     }
 
-    public function successMessage() : \ILIAS\UI\Component\MessageBox\MessageBox
+    public function successMessage(): MessageBox
     {
-        return $this->ui_factory->messageBox()->success($this->lng->txt("saved_successfully"));
+        return $this->ui_factory->messageBox()->success($this->lng->txt('saved_successfully'));
     }
 
     /**
-     * Save form input to settings
-     *
      * @throws ilCtrlException
      */
-    public function save() : void
+    public function saveContent(): void
     {
         global $tpl;
         $form = $this->initConfigurationForm();

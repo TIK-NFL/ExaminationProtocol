@@ -18,7 +18,7 @@ declare(strict_types=1);
  ********************************************************************
  */
 
-use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
+use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolTableBaseController;
 use ILIAS\Plugin\ExaminationProtocol\ilExaminationProtocolExporter;
 use ILIAS\UI\Component\Legacy\Legacy;
 
@@ -28,7 +28,7 @@ use ILIAS\UI\Component\Legacy\Legacy;
  * @ilCtrl_Calls ilExaminationProtocolExportGUI:  ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilCommonActionDispatcherGUI, ilObjTestSettingsGeneralGUI, ilExaminationProtocolEventInput
 */
 
-class ilExaminationProtocolExportGUI extends ilExaminationProtocolBaseController
+class ilExaminationProtocolExportGUI extends ilExaminationProtocolTableBaseController
 {
     protected string $html;
     private ilExaminationProtocolExporter $exporter;
@@ -37,27 +37,18 @@ class ilExaminationProtocolExportGUI extends ilExaminationProtocolBaseController
     {
         parent::__construct();
         $this->tabs->activateSubTab(self::EXPORT_TAB_ID);
-        $this->exporter = new ilExaminationProtocolExporter((string) $this->test_object->test_id);
+        $this->exporter = new ilExaminationProtocolExporter($this->test_object->test_id);
     }
 
-    public function executeCommand() : void
+    public function executeCommand(): void
     {
+        parent::executeCommand();
         switch ($this->ctrl->getCmd()) {
-            default:
-            case self::CMD_SHOW:
-                $this->buildGUI();
-                break;
             case self::CMD_CREATE_EXPORT:
                 $this->createExport();
-                $this->buildGUI();
                 break;
             case self::CMD_DOWNLOAD_EXPORT:
                 $this->downloadExport();
-                $this->buildGUI();
-                break;
-            case self::CMD_DELETE:
-                $this->deleteExports();
-                $this->buildGUI();
                 break;
         }
     }
@@ -65,29 +56,38 @@ class ilExaminationProtocolExportGUI extends ilExaminationProtocolBaseController
     /**
      * @throws ilCtrlException
      */
-    private function buildGUI() : void
+    protected function buildGUI(): void
     {
         $this->buildToolbar();
+        $this->buildNotification();
         $export_table = $this->buildTable();
         $page = [$export_table];
-        $this->html = $this->renderer->render($page);
+        $this->tpl->setContent($this->renderer->render($page));
+        $this->tpl->printToStdout();
+    }
+
+    protected function buildNotification(): void
+    {
+        if (isset($_REQUEST['Success']) && $_REQUEST['Success'] == 'true') {
+            $this->tpl->setOnScreenMessage('info', $this->plugin->txt('protocol_export_created'));
+        }
     }
 
     /**
      * @throws ilCtrlException
      */
-    protected function buildTable() : Legacy
+    protected function buildTable(): Legacy
     {
         $export_table = new ilExaminationProtocolExportTableGUI($this, self::CMD_SHOW);
         $this->loadDataIntoTable($export_table);
         return $this->ui_factory->legacy($export_table->getHTML());
-
     }
 
     /**
      * @throws ilCtrlException
+     * @throws Exception
      */
-    private function loadDataIntoTable($export_table) : void
+    private function loadDataIntoTable($export_table): void
     {
         if(!$this->exporter->hasRevision()){
             return;
@@ -95,11 +95,11 @@ class ilExaminationProtocolExportGUI extends ilExaminationProtocolBaseController
         $data = [];
         $resource = $this->exporter->getResource();
         foreach ($resource->getAllRevisions() as $revision) {
-            $this->ctrl->setParameterByClass(ilExaminationProtocolExportGUI::class, "resource_id",
+            $this->ctrl->setParameterByClass(self::class, 'resource_id',
                 $revision->getIdentification());
-            $download_url = $this->ctrl->getLinkTargetByClass(ilExaminationProtocolExportGUI::class,
+            $download_url = $this->ctrl->getLinkTargetByClass(self::class,
                 self::CMD_DOWNLOAD_EXPORT);
-            $download_btn = $this->ui_factory->button()->shy($this->plugin->txt("download"), $download_url);
+            $download_btn = $this->ui_factory->button()->shy($this->plugin->txt('download'), $download_url);
             $download_btn_render = $this->renderer->render($download_btn);
             $row = [
                 'version_number' => (string) $revision->getVersionNumber(),
@@ -117,7 +117,7 @@ class ilExaminationProtocolExportGUI extends ilExaminationProtocolBaseController
     /**
      * @throws ilCtrlException
      */
-    protected function buildToolbar() : void
+    protected function buildToolbar(): void
     {
         $btn_create_export = $this->ui_factory->button()->standard($this->plugin->txt('protocol_create_export'),
             $this->ctrl->getLinkTargetByClass(self::class, self::CMD_CREATE_EXPORT));
@@ -127,21 +127,23 @@ class ilExaminationProtocolExportGUI extends ilExaminationProtocolBaseController
     /**
      * @throws Exception
      */
-    public function createExport() : void
+    protected function createExport(): void
     {
-        $this->exporter->createResource();
-        $this->tpl->setOnScreenMessage('info', $this->plugin->txt('protocol_export_created'));
-
+        if (!is_null($this->exporter->createResource())) {
+            $this->ctrl->setParameterByClass(self::class, 'Success', true );
+        }
+        $this->ctrl->redirectByClass(self::class, self::CMD_SHOW);
     }
 
     /**
      * @throws Exception
      */
-    public function deleteExports() : void
+    protected function deleteContent(): void
     {
-        if (!is_null($_POST['version_number'])){
+        if (!is_null($_POST['version_number'])) {
             $this->exporter->deleteProtocolRevisions($_POST['version_number']);
         }
+        $this->ctrl->redirectByClass(self::class, self::CMD_SHOW);
     }
 
     /**
@@ -152,10 +154,18 @@ class ilExaminationProtocolExportGUI extends ilExaminationProtocolBaseController
         $resource = $this->exporter->getResource();
         $download_consumer = $this->irss->consume()->download($resource->getIdentification());
         $download_consumer->run();
+        $this->ctrl->redirectByClass(self::class, self::CMD_SHOW);
     }
 
-    public function getHTML() : string
+    protected function saveContent()
     {
-        return $this->html;
+    }
+
+    protected function applyFilter()
+    {
+    }
+
+    protected function resetFilter()
+    {
     }
 }
