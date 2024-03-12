@@ -21,19 +21,17 @@ declare(strict_types=1);
 
 namespace ILIAS\Plugin\ExaminationProtocol;
 
-use DateTime;
-use DateTimeZone;
-use Exception;
 use ilExaminationProtocolPlugin;
-use ILIAS\Plugin\ExaminationProtocol\GUI\ilExaminationProtocolBaseController;
 
 /**
  * @author Ulf Bischoff <ulf.bischoff@tik.uni-stuttgart.de>
  */
 class ilExaminationProtocolHTMLBuilder
 {
-    private ?ilExaminationProtocolPlugin $plugin;
-    private ilExaminationProtocolDBConnector $db_connector;
+    /** @var ilExaminationProtocolPlugin|null  */
+    private $plugin;
+    /** @var ilExaminationProtocolDBConnector  */
+    private $db_connector;
 
     public function __construct()
     {
@@ -48,23 +46,88 @@ class ilExaminationProtocolHTMLBuilder
 
     private function buildPage(array $properties ,array $protocol): string
     {
-        $today = date("d.m.Y H:i",strtotime("now"));
-        $html_table = $this->buildTable($properties, $protocol);
-        $test_title = $this->db_connector->getTestTitleById($properties['test_id'])['title'];
+        $header = $this->buildHeader($properties);
+        $page = $this->buildBodyInfo($properties);
+        $html_table = $this->buildBodyTable($properties, $protocol);
+
+        // TODO replace with Template engine as soon as there are less revisions of the content
         return "<!DOCTYPE html>
                      <html>
                         <head>
-                           <title>" . $test_title . "</title>
+                           " . $header . "
                         </head>
                         <body>
-                           <h1>" . $test_title . " [obj_id: ". $properties['test_id'] ."]</h1>
-                           <p>" . $this->plugin->txt('protocol_creation_date') . ": " . $today . "</p>
+                           " . $page . " </br>
                            " . $html_table . " 
                            </body>
                      </html>";
     }
 
-    private function buildTable(array $properties, array $table_content): string
+    /**
+     * @throws \ilDateTimeException
+     */
+    private function buildBodyInfo(array $properties): string
+    {
+        $html = '';
+
+        $today =  new \ilDate(time(), IL_CAL_UNIX);
+        $test_title = $this->db_connector->getTestTitleById($properties['test_id'])['title'];
+        $settings = $this->db_connector->getSettingByTestID($properties['test_id']);
+        if ($settings['type_exam'] == 0) {
+            $type_text = $this->plugin->txt('settings_examination_type_radiobutton_option_online');
+        } else {
+            $type_text = $this->plugin->txt('settings_examination_type_radiobutton_option_upload');
+        }
+        if ($settings['type_only_ilias'] == 0) {
+            $tool_text = $this->plugin->txt('settings_examination_type_radiobutton_software_only_ilias_line');
+        } else {
+            $tool_text = $this->plugin->txt('settings_examination_type_radiobutton_software_additional_software_line');
+        }
+        $html .= " <h1>" . $test_title . " [obj_id: ". $properties['test_id'] ."]</h1>
+                   <p>" . $this->plugin->txt('protocol_creation_date') . ": " . $today . "</p>
+                   <p>" . $this->plugin->txt('description') . ": " . $settings['protocol_desc'] . "</p>
+                   <p>" . $this->plugin->txt('settings_examination_type_radiobutton_title') . ": " . $type_text . "</p>
+                   <p>" . $this->plugin->txt('settings_examination_type_radiobutton_software_title') . ": " . $tool_text . "</p>";
+        if ($settings['type_only_ilias'] == 1) {
+            $html .= "<p>" . $this->plugin->txt('settings_examination_type_textarea_additional_software_title') . ": " . $settings['type_desc'] . "</p>";
+        }
+        if ($settings['supervision'] == 0) {
+            $supervision_text = $this->plugin->txt('settings_supervision_radiobutton_option_onsite');
+        } elseif ($settings['supervision'] == 1){
+            $supervision_text = $this->plugin->txt('settings_supervision_radiobutton_option_remote');
+        } else {
+            $supervision_text = $this->plugin->txt('settings_supervision_radiobutton_option_none');
+        }
+        if ($settings['exam_policy'] == 0) {
+            $exam_policy_text = $this->plugin->txt('settings_material_radiobutton_option_closed_book');
+        } elseif ($settings['exam_policy'] == 1){
+            $exam_policy_text = $this->plugin->txt('settings_material_radiobutton_option_open_book');
+        } else {
+            $exam_policy_text = $this->plugin->txt('settings_material_radiobutton_option_other');
+        }
+        if ($settings['location'] == 0) {
+            $location_text = $this->plugin->txt('settings_location_radiobutton_option_on_premise');
+        } else {
+            $location_text = $this->plugin->txt('settings_location_radiobutton_option_remote');
+        }
+        $html .=  "<p>" . $this->plugin->txt('settings_supervision_section_title') . ": " . $supervision_text . "</p>
+                   <p>" . $this->plugin->txt('settings_material_radiobutton_title') . ": " . $exam_policy_text . "</p>
+                   <p>" . $this->plugin->txt('settings_material_textarea_additional_information_title') . ": " . $settings['exam_policy_desc'] . "</p>
+                   <p>" . $this->plugin->txt('settings_location_section_title') . ": " . $location_text . "</p>";
+        return $html;
+    }
+
+    private function buildHeader(array $properties): string
+    {
+        $test_title = $this->db_connector->getTestTitleById($properties['test_id'])['title'];
+        return "<title>" . $test_title . "</title>";
+
+    }
+
+    /**
+     * @throws \ilDateTimeException
+     */
+    private function buildBodyTable(array $properties, array $table_content): string
     {
         $event_options = ilExaminationProtocolEventEnumeration::getAllOptionsInLanguage($this->plugin);
         $htmlTable = "<table border='1'>
@@ -116,17 +179,23 @@ class ilExaminationProtocolHTMLBuilder
             }
             $editor = $this->db_connector->getLoginByUserID($row['last_edited_by'])[0]['login'];
             $creator = $this->db_connector->getLoginByUserID($row['last_edited_by'])[0]['login'];
+
+            $start_datetime = new \ilDateTime($row['start'], IL_CAL_DATETIME);
+            $end_datetime = new \ilDateTime($row['end'], IL_CAL_DATETIME);
+            $last_edit_datetime = new \ilDateTime($row['last_edit'], IL_CAL_DATETIME);
+            $creation_datetime = new \ilDateTime($row['creation'], IL_CAL_DATETIME);
+
             $htmlTable .= "<tr>
-                    <td>" . ilExaminationProtocolBaseController::utctolocal($row['start']) . "</td>
-                    <td>" . ilExaminationProtocolBaseController::utctolocal($row['end']) . "</td>
+                    <td>" . $start_datetime->get(IL_CAL_DATETIME) . "</td>
+                    <td>" . $end_datetime->get(IL_CAL_DATETIME) . "</td>
                     <td>" . $student_ids . "</td>
                     <td>" . $event_options[$row['event']] . "</td>
                     <td>" . $row['comment'] . "</td>
                     <td>" . $location . "</td>
                     <td>" . $responsible_supervisor. "</td>
-                    <td>" . ilExaminationProtocolBaseController::utctolocal($row['last_edit']) . "</td>
+                    <td>" . $last_edit_datetime->get(IL_CAL_DATETIME) . "</td>
                     <td>" . $editor  . "</td>
-                    <td>" . ilExaminationProtocolBaseController::utctolocal($row['creation'])  . "</td>
+                    <td>" . $creation_datetime->get(IL_CAL_DATETIME)  . "</td>
                     <td>" . $creator . "</td>
                    </tr>";
         }

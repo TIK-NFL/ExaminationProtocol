@@ -90,11 +90,12 @@ class ilExaminationProtocolExportGUI extends ilExaminationProtocolTableBaseContr
             $download_url = $this->ctrl->getLinkTargetByClass(self::class, self::CMD_DOWNLOAD_EXPORT);
             $download_btn = $this->ui_factory->button()->shy($this->plugin->txt("download"), $download_url);
             $download_btn_render = $this->renderer->render($download_btn);
+            $procesed_date = strval($revision->getInformation()->getCreationDate()->getTimestamp());
             $row = [
                 'version_number' => $revision->getVersionNumber(),
                 'file' => $revision->getTitle(),
                 'size' => ($revision->getInformation()->getSize() / 1000) ." kB",
-                'date' => $revision->getInformation()->getCreationDate()->format('d.m.Y H:i'),
+                'date' => $procesed_date,
                 'resource_id' => $revision->getIdentification(),
                 'action' => $download_btn_render
             ];

@@ -43,7 +43,7 @@ settings_material_radiobutton_option_open_book#:#Open-Book
 settings_material_radiobutton_option_open_book_byline#:#Prüfungsteilnehmerinnen und -teilnehmern ist es gestattet, während der Prüfung externe Hilfsmittel wie Lehrbücher, Notizen oder andere Materialien zu verwenden. Bitte unten angeben.
 settings_material_radiobutton_option_other#:#Andere
 settings_material_radiobutton_option_other_byline#:#
-settings_material_textarea_additional_information_title#:#Weitere Informationen
+settings_material_textarea_additional_information_title#:#Weitere Informationen zur Prüfung
 settings_location_section_title#:#Prüfungsräume Einstellungen
 settings_location_radiobutton_title#:#Prüfungsraum
 settings_location_radiobutton_option_on_premise#:#Vor Ort

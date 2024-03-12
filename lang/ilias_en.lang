@@ -43,7 +43,7 @@ settings_material_radiobutton_option_open_book#:#Open-Book
 settings_material_radiobutton_option_open_book_byline#:#Test participants are allowed to use outside resources, such as textbooks, notes, or other materials, while taking the test. Please specify below.
 settings_material_radiobutton_option_other#:#Other
 settings_material_radiobutton_option_other_byline#:#
-settings_material_textarea_additional_information_title#:#Additional Information
+settings_material_textarea_additional_information_title#:#Further information on the examination
 settings_location_section_title#:#Location settings
 settings_location_radiobutton_title#:#Location
 settings_location_radiobutton_option_on_premise#:#On premise

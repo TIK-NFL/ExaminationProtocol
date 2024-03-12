@@ -27,9 +27,12 @@ use ILIAS\ResourceStorage\Stakeholder\AbstractResourceStakeholder;
  */
 class ilExaminationProtocolStakeholder extends AbstractResourceStakeholder
 {
-    private static ilExaminationProtocolStakeholder $instance;
-    private int $owner;
-    private string $plugin_id;
+    /** @var ilExaminationProtocolStakeholder */
+    private static $instance;
+    /** @var int  */
+    private $owner;
+    /** @var string  */
+    private $plugin_id;
 
     public function __construct()
     {

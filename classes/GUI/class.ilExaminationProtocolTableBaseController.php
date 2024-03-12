@@ -53,6 +53,14 @@ abstract class ilExaminationProtocolTableBaseController extends ilExaminationPro
         }
     }
 
+    function textSorter( $field)
+    {
+        return function ($a, $b) use ($field)
+        {
+            return strcmp($a[$field], $b[$field]);
+        };
+    }
+
     abstract protected function applyFilter();
 
     abstract protected function resetFilter();

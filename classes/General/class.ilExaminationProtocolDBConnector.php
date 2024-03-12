@@ -472,7 +472,6 @@ class ilExaminationProtocolDBConnector
         return (array) $this->ilDB->fetchAll($query);
     }
 
-
     /**
      * Update specified columns in the protocol table using the provided key-value pairs and a WHERE clause.
      * @param array $values An associative array of values for the columns.

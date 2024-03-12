@@ -21,9 +21,6 @@ declare(strict_types=1);
 
 namespace ILIAS\Plugin\ExaminationProtocol\GUI;
 
-use DateTime;
-use DateTimeZone;
-use Exception;
 use ilCtrl;
 use ilDatabaseException;
 use ilExaminationProtocolPlugin;
@@ -213,14 +210,4 @@ abstract class ilExaminationProtocolBaseController
 
     abstract protected function saveContent();
 
-    /**
-     * @throws Exception
-     */
-    public static function utctolocal(string $time): string
-    {
-        $loc = (new DateTime)->getTimezone();
-        $time = new DateTime($time, new DateTimeZone('UTC'));
-        $time->setTimezone($loc);
-        return $time->format("d.m.Y H:i");
-    }
 }
