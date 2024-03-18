@@ -93,7 +93,6 @@ class ilExaminationProtocolDBConnector
      */
     public function insertSetting(array $values): void
     {
-        // add auto increment to first array element
         $primaryKey = [self::SETTINGS_PRIMARY_KEY => ['integer', $this->ilDB->nextId(self::SETTINGS_TABLE_NAME)]];
         $keyValue = array_combine(self::SETTINGS_TABLE_FIELDS, $values);
         $this->ilDB->insert(self::SETTINGS_TABLE_NAME, $primaryKey + $keyValue);
@@ -105,7 +104,6 @@ class ilExaminationProtocolDBConnector
      */
     public function createEmptySetting(array $values): void
     {
-        // add auto increment to first array element
         $primaryKey = [self::SETTINGS_PRIMARY_KEY => ['integer', $this->ilDB->nextId(self::SETTINGS_TABLE_NAME)]];
         $keyValue = array_combine([self::SETTINGS_TABLE_FIELDS[0]], $values);
         $this->ilDB->insert(self::SETTINGS_TABLE_NAME, $primaryKey + $keyValue);
@@ -239,7 +237,6 @@ class ilExaminationProtocolDBConnector
      */
     public function insertSupervisor(array $values): void
     {
-        // add auto increment to first array element
         $primary_key = [self::SUPERVISOR_PRIMARY_KEY => ['integer', $this->ilDB->nextId(self::SUPERVISOR_TABLE_NAME)]];
         $key_value = array_combine(self::SUPERVISOR_TABLE_FIELDS, $values);
         $this->ilDB->insert(self::SUPERVISOR_TABLE_NAME, $primary_key + $key_value);
@@ -293,7 +290,6 @@ class ilExaminationProtocolDBConnector
      */
     public function insertLocation(array $values): void
     {
-        // add auto increment to first array element
         $primary_key = [self::LOCATION_PRIMARY_KEY => ['integer', $this->ilDB->nextId(self::LOCATION_TABLE_NAME)]];
         $key_value = array_combine(self::LOCATION_TABLE_FIELDS, $values);
         $this->ilDB->insert(self::LOCATION_TABLE_NAME, $primary_key + $key_value);
@@ -333,7 +329,6 @@ class ilExaminationProtocolDBConnector
      */
     public function insertParticipant(array $values): void
     {
-        // add auto increment to first array element
         $primary_key = [self::PARTICIPANTS_PRIMARY_KEY => ['integer', $this->ilDB->nextId(self::PARTICIPANTS_TABLE_NAME)]];
         $key_value = array_combine(self::PARTICIPANTS_TABLE_FIELDS, $values);
         $this->ilDB->insert(self::PARTICIPANTS_TABLE_NAME, $primary_key + $key_value);
@@ -437,7 +432,6 @@ class ilExaminationProtocolDBConnector
      */
     public function insertProtocolEntry(array $values): string
     {
-        // add auto increment to first array element
         $primary_key = [self::PROTOCOL_PRIMARY_KEY => ['integer', $this->ilDB->nextId(self::PROTOCOL_TABLE_NAME)]];
         $key_value = array_combine(self::PROTOCOL_TABLE_FIELDS, $values);
         $this->ilDB->insert(self::PROTOCOL_TABLE_NAME, $primary_key + $key_value);
@@ -511,7 +505,6 @@ class ilExaminationProtocolDBConnector
      */
     public function insertProtocolParticipant(array $values): void
     {
-        // add auto increment to first array element
         $primary_key = [self::PROTOCOL_PARTICIPANT_PRIMARY_KEY => ['integer', $this->ilDB->nextId(self::PROTOCOL_PARTICIPANT_TABLE_NAME)]];
         $key_value = array_combine(self::PROTOCOL_PARTICIPANT_FIELDS, $values);
         $this->ilDB->insert(self::PROTOCOL_PARTICIPANT_TABLE_NAME, $primary_key + $key_value);

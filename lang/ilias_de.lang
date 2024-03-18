@@ -80,7 +80,8 @@ event_table_btn_add_event#:#Neuen Eintrag hinzufügen
 event_table_btn_delete_all_events#:#Alle Eintrage löschen
 event_table_column_start#:#Startzeit des Ereignisses
 event_table_column_end#:#Endzeit des Ereignisses
-event_table_column_typ#:#Ereignis
+event_table_column_typ#:#Kategorie
+event_table_column_event#:#Ereignis
 event_table_column_location#:#Prüfungsräume
 event_table_column_student_id#:#Studenteninformation
 event_table_column_supervisor_id#:#Aufsichtsperson
@@ -127,11 +128,13 @@ entry_supervisor#:#Aufsichtsperson
 
 // export
 protocol_date#:#Protokoll Datum
-protocol_creation_date#:#Generiert
+protocol_creation_date#:#Export erzeugt am
 protocol_show_export#:#Export anzeigen
 protocol_create_export#:#Export erstellen
 protocol_download_export#:#Export downloaden
 protocol_export_created#:#Export erstellt
+html_location#:#Prüfungsräume
+html_supervisors#:#Aufsichtspersonen
 
 // utility
 download#:#Download
@@ -145,3 +148,4 @@ not_saved#:#Die aktuellen Änderungen sind nicht gespeichert
 not_participants#:#Keine Teilnehmer ausgewählt
 size#:#Größe
 file#:#Datei
+no_entry#:#keinen Eintrag

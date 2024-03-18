@@ -49,7 +49,7 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
         $this->addColumn($this->plugin->txt("event_table_column_start"), "start");
         $this->addColumn($this->plugin->txt("event_table_column_end"), "end");
         $this->addColumn($this->plugin->txt("event_table_column_typ"), "event_type");
-        $this->addColumn($this->plugin->txt("description"), "comment");
+        $this->addColumn($this->plugin->txt("event_table_column_event"), "comment");
         $this->addColumn($this->plugin->txt("event_table_column_location"), "location");
         $this->addColumn($this->plugin->txt("event_table_column_student_id"), "student_id");
         $this->addColumn($this->plugin->txt("event_table_column_supervisor_id"), "supervisor");

@@ -14,7 +14,7 @@ protocol_tab_name#:#Exam Event Protocol
 sub_tab_settings#:#General Settings
 sub_tab_protocol#:#Exam Event Protocol
 sub_tab_supervisors#:#Supervisors
-sub_tab_locations#:#Locations
+sub_tab_locations#:#Exam rooms
 sub_tab_participants#:#Participants
 sub_tab_export#:#Export
 
@@ -44,8 +44,8 @@ settings_material_radiobutton_option_open_book_byline#:#Test participants are al
 settings_material_radiobutton_option_other#:#Other
 settings_material_radiobutton_option_other_byline#:#
 settings_material_textarea_additional_information_title#:#Further information on the examination
-settings_location_section_title#:#Location settings
-settings_location_radiobutton_title#:#Location
+settings_location_section_title#:#Exam room settings
+settings_location_radiobutton_title#:#Exam room
 settings_location_radiobutton_option_on_premise#:#On premise
 settings_location_radiobutton_option_remote#:#Remote
 settings_location_radiobutton_byline#:#
@@ -56,11 +56,11 @@ supervisor_text_title#:#Supervisor
 supervisor_table_title#:#Supervisors
 supervisor_table_column_name#:#Name
 
-// location tab
-location_page_title#:#List of Location for the examination
-location_text_title#:#Location
-location_table_title#:#Locations
-location_table_column_location#:#Location
+// Exam rooms tab
+location_page_title#:#List of exam rooms for the examination
+location_text_title#:#exam room
+location_table_title#:#exam rooms
+location_table_column_location#:#exam room
 
 // participant tab
 participant_btn_add_participants_title#:#Search Participants
@@ -80,8 +80,9 @@ event_table_btn_add_event#:#Add new entry
 event_table_btn_delete_all_events#:#Delete all entries
 event_table_column_start#:#Start time of event
 event_table_column_end#:#End time of event
-event_table_column_typ#:#Event
-event_table_column_location#:#Location
+event_table_column_typ#:#Category
+event_table_column_event#:#Event
+event_table_column_location#:#Exam rooms
 event_table_column_student_id#:#Student information
 event_table_column_supervisor_id#:#Supervisor
 event_table_column_timestamp#:#Creation Time
@@ -90,7 +91,7 @@ event_table_column_supervisor_id_edit#:#Last Edited by
 event_table_column_creator_id#:#Created by
 event_table_column_actions#:#Actions
 event_table_info_supervisors#:#You can add a supervisor under the <b>Supervisors</b> subtab above.</br>
-event_table_info_locations#:#You can add a location under the <b>Locations</b> subtab above.</br>
+event_table_info_locations#:#You can add a exam room under the <b>Exam rooms</b> subtab above.</br>
 event_table_info_participants#:#You can add a participant under the <b>Participants</b> subtab above
 event_table_action#:#Action
 event_table_action_edit_event#:#Edit event
@@ -112,8 +113,8 @@ entry_dropdown_event_general#:#General test event
 entry_dropdown_event_other#:#Other
 entry_dropdown_supervisor_title#:#Supervisor
 entry_dropdown_supervisor_no_supervisor#:#No Supervisor
-entry_dropdown_location_title#:#Location
-entry_dropdown_location_no_location#:#No location
+entry_dropdown_location_title#:#Exam room
+entry_dropdown_location_no_location#:#No exam rooms
 entry_datetime_empty#:#The event times can not be empty.
 entry_datetime_wrong#:#The start of the event can not be after the end of the event.
 
@@ -121,17 +122,19 @@ entry_datetime_wrong#:#The start of the event can not be after the end of the ev
 entry_participant_section#:#Test Participants
 entry_button_protocol#:#Save and return
 entry_type#:#Event Type
-entry_location#:#Location
+entry_location#:#Exam room
 entry_last_update#:#Last Update
 entry_supervisor#:#Supervisor
 
 // export
 protocol_date#:#Protocol date
-protocol_creation_date#:#Generated
+protocol_creation_date#:#Export generated on
 protocol_show_export#:#Show Export
 protocol_create_export#:#Create Export
 protocol_download_export#:#Download Export
 protocol_export_created#:#Export created
+html_location#:#Exam rooms
+html_supervisors#:#Supervisors
 
 // utility
 download#:#Download
@@ -145,3 +148,4 @@ not_saved#:#Current changes are not saved
 not_participants#:#No participants selected
 size#:#Size
 file#:#File
+no_entry#:#no entry
