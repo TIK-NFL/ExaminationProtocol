@@ -28,8 +28,7 @@ use ilDBInterface;
 class ilExaminationProtocolDBConnector
 {
     /** @var string */
-    public const  SETTINGS_PRIMARY_KEY = 'protocol_id';
-
+    public const SETTINGS_PRIMARY_KEY = 'protocol_id';
     /** @var string  */
     public const TEST_ID_KEY = 'test_id';
     /** @var string  */
@@ -38,21 +37,18 @@ class ilExaminationProtocolDBConnector
     public const SETTINGS_TABLE_FIELDS = ['test_id', 'protocol_title', 'protocol_desc', 'type_exam', 'type_only_ilias',
                                           'type_desc', 'supervision', 'exam_policy', 'exam_policy_desc', 'location',
                                           'resource_storage_id'];
-
     /** @var string  */
     public const LOCATION_TABLE_NAME = 'tst_uihk_texa_location';
     /** @var string */
     public const LOCATION_PRIMARY_KEY = 'location_id';
     /** @var array */
     public const LOCATION_TABLE_FIELDS = ['protocol_id', 'location'];
-
     /** @var string  */
     public const SUPERVISOR_TABLE_NAME = 'tst_uihk_texa_supvis';
     /** @var string */
     public const SUPERVISOR_PRIMARY_KEY = 'supervisor_id';
     /** @var array */
     public const SUPERVISOR_TABLE_FIELDS = ['protocol_id', 'name'];
-
     /** @var string  */
     public const PROTOCOL_TABLE_NAME = 'tst_uihk_texa_protocol';
     /** @var string */
@@ -60,14 +56,12 @@ class ilExaminationProtocolDBConnector
     /** @var array */
     public const PROTOCOL_TABLE_FIELDS = ['protocol_id', 'supervisor_id', 'location_id', 'start', 'end', 'creation',
                                           'event', 'comment', 'last_edit', 'last_edited_by', 'created_by'];
-
     /** @var string  */
     public const PROTOCOL_PARTICIPANT_TABLE_NAME = 'tst_uihk_texa_propar';
     /** @var string */
     public const PROTOCOL_PARTICIPANT_PRIMARY_KEY = 'propar_id';
     /** @var array */
     public const PROTOCOL_PARTICIPANT_FIELDS = ['protocol_id', 'entry_id', 'participant_id'];
-
     /** @var string  */
     public const PARTICIPANTS_TABLE_NAME = 'tst_uihk_texa_partic';
     /** @var string */

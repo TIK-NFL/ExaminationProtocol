@@ -113,9 +113,15 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
         $data_factory = new ILIAS\Data\Factory();
         // load existing entry
         $start = $end = date('d.m.Y H:i');
+        $date_now = new DateTime('now');
         if (!empty($this->entry)) {
-            $start = $this->utctolocal($this->entry['start']);
-            $end = $this->utctolocal($this->entry['end']);
+            $start_ildatetime = new \ilDateTime($this->entry['start'], IL_CAL_DATETIME);
+            $start_date_time = DateTime::createFromFormat('Y-m-d H:i:s', $start_ildatetime->get(IL_CAL_DATETIME));
+            $start = $start_date_time->format('d.m.Y H:i');
+            $end_ildatetime = new \ilDateTime($this->entry['end'], IL_CAL_DATETIME);
+            $end_date_time = DateTime::createFromFormat('Y-m-d H:i:s', $end_ildatetime->get(IL_CAL_DATETIME));
+            $end = $end_date_time->format('d.m.Y H:i');
+
             $this->ctrl->setParameterByClass(self::class, 'entry_id', $_REQUEST['entry_id']);
         }
         $dt_start = $this->field_factory->dateTime($this->plugin->txt('entry_datetime_start_title'))
@@ -126,7 +132,7 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
         $dt_end = $this->field_factory->dateTime($this->plugin->txt('entry_datetime_end_title'))
                                       ->withUseTime(true)
                                       ->withFormat($data_factory->dateFormat()->germanShort())
-                                      ->withValue($end)
+                                      ->withValue($end ?? $date_now->format("d.m.Y H:i"))
                                       ->withRequired(true);
         $se_event_type = $this->field_factory->select($this->plugin->txt('entry_dropdown_event_title'), $this->event_options)
                                              ->withValue($this->entry['event'] ?? 0)

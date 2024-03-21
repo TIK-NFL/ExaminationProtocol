@@ -66,10 +66,10 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
     {
         $this->plugin = ilExaminationProtocolPlugin::getInstance();
         return [
-            'edit_tstamp' => ['txt' => $this->plugin->txt('event_table_column_timestamp_edit'), 'default' => false],
-            'edit_user' => ['txt' => $this->plugin->txt('event_table_column_supervisor_id_edit'), 'default' => false],
-            'creation_tstamp' => ['txt' => $this->plugin->txt('event_table_column_timestamp'), 'default' => false],
-            'creation_user' => ['txt' => $this->plugin->txt('event_table_column_creator_id'), 'default' => false],
+            "last_edit" => ["txt" => $this->plugin->txt("event_table_column_timestamp_edit"), "a_sort_field" => 'last_edit', "default" => false],
+            "last_edited_by" => ["txt" => $this->plugin->txt("event_table_column_supervisor_id_edit"), "a_sort_field" => 'last_edited_by', "default" => false],
+            "creation" => ["txt" => $this->plugin->txt("event_table_column_timestamp"), "a_sort_field" => 'creation', "default" => false],
+            "created_by" => ["txt" => $this->plugin->txt("event_table_column_creator_id"), "a_sort_field" => 'created_by', "default" => false],
         ];
     }
 
@@ -80,8 +80,8 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
     public function fillRow(array $a_set): void
     {
         $columns = [
-            'START' => $a_set['start'],
-            'END' => $a_set['end'],
+            'START' => ilDatePresentation::formatDate(new \ilDateTime(strtotime($a_set['start']), IL_CAL_UNIX)),
+            'END' => ilDatePresentation::formatDate(new \ilDateTime($a_set['end'], IL_CAL_DATETIME)),
             'EVENT_TYPE' => $a_set['event_type'],
             'COMMENT' => $a_set['comment'],
             'LOCATION' => $a_set['location'],
@@ -89,18 +89,18 @@ class ilExaminationProtocolEventTableGUI extends ilTable2GUI
             'SUPERVISOR' => $a_set['supervisor'],
         ];
         foreach ($this->getSelectedColumns() as $column) {
-            switch (strtoupper($column)) {
-                case 'EDIT_TSTAMP':
-                    $columns['EDIT_TSTAMP'] = date('d.m.y H:i', strtotime($a_set['last_edit']));
+            switch ($column) {
+                case 'last_edit':
+                    $columns['LAST_EDIT'] = ilDatePresentation::formatDate(new \ilDateTime($a_set['last_edit'], IL_CAL_DATETIME));
                     break;
-                case 'EDIT_USER':
-                    $columns['EDIT_USER'] = $a_set['last_edited_by'];
+                case 'last_edited_by':
+                    $columns['LAST_EDITED_BY'] = $a_set['last_edited_by'];
                     break;
-                case 'CREATION_TSTAMP':
-                    $columns['CREATION_TSTAMP'] = date('d.m.y H:i', strtotime($a_set['creation']));
+                case 'creation':
+                    $columns['CREATION'] = ilDatePresentation::formatDate(new \ilDateTime($a_set['creation'], IL_CAL_DATETIME));
                     break;
-                case 'CREATION_USER':
-                    $columns['CREATION_USER'] = $a_set['created_by'];
+                case 'created_by':
+                    $columns['CREATED_BY'] = $a_set['created_by'];
                     break;
             }
         }

@@ -63,7 +63,7 @@ class ilExaminationProtocolExportTableGUI extends ilTable2GUI
             'CHECKBOX' => $a_set['version_number'],
             'FILE' => $a_set['file'],
             'SIZE' => $a_set['size'],
-            'DATE' => $a_set['date'],
+            'DATE' => ilDatePresentation::formatDate(new ilDateTime($a_set['date'], IL_CAL_UNIX)),
             'ACTION' => $a_set['action']
         ]);
     }

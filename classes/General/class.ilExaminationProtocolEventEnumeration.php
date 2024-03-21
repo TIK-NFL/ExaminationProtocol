@@ -31,40 +31,40 @@ use ilExaminationProtocolPlugin;
  */
 class ilExaminationProtocolEventEnumeration
 {
-    const GENERAL = 'entry_dropdown_event_general';
-    const QUESTION = 'entry_dropdown_event_question';
-    const MATERIAL = 'entry_dropdown_event_material';
-    const TOILET = 'entry_dropdown_event_toilet';
-    const ILLNESS = 'entry_dropdown_event_illness';
-    const TECHNICAL = 'entry_dropdown_event_technical';
-    const OTHER = 'entry_dropdown_event_other';
+    private const OPTIONS = [
+        0 => 'entry_dropdown_event_general',
+        1 => 'entry_dropdown_event_question',
+        2 => 'entry_dropdown_event_material',
+        3 => 'entry_dropdown_event_toilet',
+        4 => 'entry_dropdown_event_illness',
+        5 => 'entry_dropdown_event_technical',
+        6 => 'entry_dropdown_event_other'
+    ];
 
-    public static function getAllOptions(): array {
+    /**
+     * @return array of strings containing the event options in the correct interface langauge.
+     */
+    public static function getAllOptionsInLanguage(): array
+    {
+        $plugin = ilExaminationProtocolPlugin::getInstance();
         return [
-            self::GENERAL,
-            self::QUESTION,
-            self::MATERIAL,
-            self::TOILET,
-            self::ILLNESS,
-            self::TECHNICAL,
-            self::OTHER
+            0 => $plugin->txt(self::OPTIONS[0]),
+            1 => $plugin->txt(self::OPTIONS[1]),
+            2 => $plugin->txt(self::OPTIONS[2]),
+            3 => $plugin->txt(self::OPTIONS[3]),
+            4 => $plugin->txt(self::OPTIONS[4]),
+            5 => $plugin->txt(self::OPTIONS[5]),
+            6 => $plugin->txt(self::OPTIONS[6])
         ];
     }
 
     /**
-     * @param $plugin ilExaminationProtocolPlugin the plugin for easy access to the language module
-     * @return array of strings containing the event options in the correct interface langauge.
+     * @param int $key Usually stored in the Database per Protocol entry
+     * @return string The correct localized languagestring for the key
      */
-    public static function getAllOptionsInLanguage(ilExaminationProtocolPlugin $plugin): array
+    public static function getLanguageStringForKey(int $key): string
     {
-        return [
-            $plugin->txt(self::GENERAL),
-            $plugin->txt(self::QUESTION),
-            $plugin->txt(self::MATERIAL),
-            $plugin->txt(self::TOILET),
-            $plugin->txt(self::ILLNESS),
-            $plugin->txt(self::TECHNICAL),
-            $plugin->txt(self::OTHER)
-        ];
+        $plugin = ilExaminationProtocolPlugin::getInstance();
+        return $plugin->txt(self::OPTIONS[$key]);
     }
 }

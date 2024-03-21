@@ -78,10 +78,6 @@ class ilExaminationProtocolEventGUI extends ilExaminationProtocolTableBaseContro
         $event_entries = $this->db_connector->getAllProtocolEntriesByProtocolID($this->protocol_id);
         $data = [];
         foreach ($event_entries as $entry) {
-            $entry['start'] = $this->utctolocal($entry['start']);
-            $entry['end'] = $this->utctolocal($entry['end']);
-            $entry['creation'] = $this->utctolocal($entry['creation']);
-            $entry['last_edit'] = $this->utctolocal($entry['last_edit']);
             $participants = $this->db_connector->getAllProtocolParticipants(intval($entry['entry_id']));
             if (!isset($entry['student_id'])) {
                 $entry['student_id'] = '';

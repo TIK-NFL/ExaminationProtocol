@@ -115,10 +115,8 @@ class ilExaminationProtocolExporter
 
     public function createHTMLProtocol(): string
     {
-        $html_builder = new ilExaminationProtocolHTMLBuilder();
-        $protocol_id = intval($this->db->getProtocolIDByTestID($this->test_id));
-        $table_data = $this->db->getAllProtocolEntriesByProtocolID($protocol_id);
-        return $html_builder->getHTML($this->properties, $table_data);
+        $html_builder = new ilExaminationProtocolHTMLBuilder($this->test_id);
+        return $html_builder->getHTML();
     }
 
     /**
@@ -130,7 +128,7 @@ class ilExaminationProtocolExporter
         $html = $this->createHTMLProtocol();
         $stream = Streams::ofString($html);
         $stakeholder = new ilExaminationProtocolStakeholder();
-        $filename = "examprotocol_ " . $this->test_id . "_". strtotime("now") .".html";
+        $filename = "examprotocol_ " . $this->test_id . "_". strtotime('now') .".html";
         if (empty($resource_id)) {
             $resource_identification = $this->irss->manage()->stream($stream, $stakeholder, $filename);
             $resource_id = $resource_identification->serialize();

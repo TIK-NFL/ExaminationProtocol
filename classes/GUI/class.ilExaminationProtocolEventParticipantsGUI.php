@@ -93,11 +93,13 @@ class ilExaminationProtocolEventParticipantsGUI extends ilExaminationProtocolTab
 
     private function buildListing(): Standard
     {
+
         $event = $this->db_connector->getAllProtocolEntries(intval($_SESSION['examination_protocol']['entry_id']))[0];
+        $last_edit = ilDatePresentation::formatDate(new \ilDateTime($event['last_edit'], IL_CAL_DATETIME));
         $properties = [
             $this->plugin->txt('entry_type') => $this->event_options[$event['event']],
             $this->plugin->txt('description') => $event['comment'],
-            $this->plugin->txt('entry_last_update') => $this->utctolocal($event['last_edit']),
+            $this->plugin->txt('entry_last_update') => $last_edit,
         ];
         if ($this->plugin_settings['supervision'] != '2') {
             $supervisor = $this->db_connector->getSupervisorBySupervisorID(intval($event['supervisor_id']));
