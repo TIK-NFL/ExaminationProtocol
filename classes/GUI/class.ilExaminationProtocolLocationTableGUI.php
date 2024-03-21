@@ -29,12 +29,6 @@ class ilExaminationProtocolLocationTableGUI extends ilTable2GUI
     /** @var bool  */
     private $disabled;
 
-    /**
-     * @param object $a_parent_obj
-     * @param string $a_parent_cmd
-     * @param string $a_template_context
-     * @param bool   $disabled
-     */
     public function __construct($a_parent_obj, string $a_parent_cmd = "", string $a_template_context = "", bool $disabled = false)
     {
         global $DIC;
@@ -60,11 +54,6 @@ class ilExaminationProtocolLocationTableGUI extends ilTable2GUI
         $this->setDefaultOrderDirection("asc");
     }
 
-    /**
-     * fills an array into the tables
-     * @param array $a_set
-     * @return void
-     */
     protected function fillRow($a_set): void
     {
         $checkbox = "";

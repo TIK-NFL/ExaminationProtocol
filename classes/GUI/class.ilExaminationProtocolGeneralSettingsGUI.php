@@ -45,18 +45,12 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
 
     private function buildForm(): void
     {
-        $section_general = $this->buildGeneralSettingsSection();
-        $section_examination = $this->buildExaminationTypeSection();
-        $section_supervision = $this->buildSupervisionSection();
-        $section_material = $this->buildMaterialSection();
-        $section_location = $this->buildLocationSection();
-
         $site = [
-            $section_general,
-            $section_examination,
-            $section_supervision,
-            $section_material,
-            $section_location
+            $this->buildGeneralSettingsSection(),
+            $this->buildExaminationTypeSection(),
+            $this->buildSupervisionSection(),
+            $this->buildMaterialSection(),
+            $this->buildLocationSection()
         ];
 
         $form_action = $this->ctrl->getFormAction($this, self::CMD_SHOW);
@@ -70,7 +64,7 @@ class ilExaminationProtocolGeneralSettingsGUI extends ilExaminationProtocolBaseC
         }
     }
 
-    public function buildNotification(): void {
+    protected function buildNotification(): void {
         if ($this->protocol_has_entries) {
             $this->tpl->setOnScreenMessage('info', $this->plugin->txt("lock"));
         }

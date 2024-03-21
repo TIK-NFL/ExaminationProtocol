@@ -37,8 +37,8 @@ class ilExaminationProtocolExporter
     private $irss;
     /** @var string */
     private $test_id;
-    /** @var array  */
-    private $properties;
+
+
     /**
      * @return string
      */
@@ -58,7 +58,6 @@ class ilExaminationProtocolExporter
         $this->irss = $DIC->resourceStorage();
         $this->db = new ilExaminationProtocolDBConnector();
         $this->test_id = $test_id;
-        $this->properties = $this->db->getSettingByTestID($test_id);
     }
 
     /**
@@ -116,10 +115,9 @@ class ilExaminationProtocolExporter
 
     public function createHTMLProtocol(): string
     {
-        $html_builder = new ilExaminationProtocolHTMLBuilder();
-        $protocol_id = $this->db->getProtocolIDByTestID($this->test_id);
-        $table_data = $this->db->getAllProtocolEntriesByProtocolID($protocol_id);
-        return $html_builder->getHTML($this->properties, $table_data);
+        $html_builder = new ilExaminationProtocolHTMLBuilder($this->test_id);
+
+        return $html_builder->getHTML();
     }
 
     /**

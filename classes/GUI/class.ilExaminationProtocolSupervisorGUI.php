@@ -51,8 +51,8 @@ class ilExaminationProtocolSupervisorGUI extends ilExaminationProtocolTableBaseC
 
     protected function buildToolbar(): void
     {
-        require_once 'Services/Form/classes/class.ilTextInputGUI.php';
         if (!$this->protocol_has_entries) {
+            require_once 'Services/Form/classes/class.ilTextInputGUI.php';
             $this->toolbar->setFormAction($this->ctrl->getFormAction($this, self::CMD_SAVE));
             $this->toolbar->addInputItem(new ilTextInputGUI($this->plugin->txt("supervisor_text_title"), 'name'), true);
             $button = ilSubmitButton::getInstance();

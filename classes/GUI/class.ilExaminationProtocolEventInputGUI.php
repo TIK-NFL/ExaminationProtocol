@@ -61,8 +61,14 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
         $start = $end = null;
         $date_now = new DateTime('now');
         if (!empty($this->entry)) {
-            $start = $this->utctolocal($this->entry['start']);
-            $end = $this->utctolocal($this->entry['end']);
+
+            $start_ildatetime = new \ilDateTime($this->entry['start'], IL_CAL_DATETIME);
+            $start_date_time = DateTime::createFromFormat('Y-m-d H:i:s', $start_ildatetime->get(IL_CAL_DATETIME));
+            $start = $start_date_time->format('d.m.Y H:i');
+            $end_ildatetime = new \ilDateTime($this->entry['end'], IL_CAL_DATETIME);
+            $end_date_time = DateTime::createFromFormat('Y-m-d H:i:s', $end_ildatetime->get(IL_CAL_DATETIME));
+            $end = $end_date_time->format('d.m.Y H:i');
+
             $this->ctrl->setParameterByClass(self::class, "entry_id", $_REQUEST['entry_id']);
         }
         $dt_start = $this->field_factory->dateTime($this->plugin->txt("entry_datetime_start_title"))
@@ -73,7 +79,7 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
         $dt_end = $this->field_factory->dateTime($this->plugin->txt("entry_datetime_end_title"))
             ->withUseTime(true)
             ->withFormat($data_factory->dateFormat()->germanShort())
-            ->withValue($end ?? $date_now->format("d.m.Y H:i"))
+            ->withValue($end  ?? $date_now->format("d.m.Y H:i"))
             ->withRequired(true);
         $se_event_type = $this->field_factory->select($this->plugin->txt("entry_dropdown_event_title"), $this->event_options)
             ->withValue($this->entry['event'] ?? 0)
@@ -172,9 +178,10 @@ class ilExaminationProtocolEventInputGUI extends ilExaminationProtocolBaseContro
             }
         }
 
-        $dt_now = gmdate("Y-m-d H:i:s", strtotime($date_now->format("Y-m-d H:i:s")));
-        $start = gmdate("Y-m-d H:i:s", strtotime($_POST["form_input_2"]));
-        $end = gmdate("Y-m-d H:i:s", strtotime($_POST["form_input_3"]));
+        $date_now = new DateTime('now');
+        $dt_now = gmdate('Y-m-d H:i:s', strtotime($date_now->format('Y-m-d H:i:s')));
+        $start = gmdate('Y-m-d H:i:s', strtotime($_POST['form_input_2']));
+        $end = gmdate('Y-m-d H:i:s', strtotime($_POST['form_input_3']));
         $user = $ilUser->getId();
         $values = [
             ['integer', $this->protocol_id],
